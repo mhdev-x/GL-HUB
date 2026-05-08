@@ -51,7 +51,7 @@ Face à la **dispersion des supports de cours** et au **manque de centralisation
 |---------|-------------|------|
 | **Langage C** | Programmation en C, pointeurs, structures de données | [Accéder →](langageC.html) |
 | **Systèmes d'Exploitation** | Concepts OS, processus, gestion mémoire | [Accéder →](systemedExploitation.html) |
-| **Technologies Web** | HTML, CSS, PHP, développement web | [Accéder →](technologieWeb.html) |
+| **Technologies Web** | HTML, CSS, développement web | [Accéder →](technologieWeb.html) |
 | **Base de Données** | SQL, modélisation, conception BDD | [Accéder →](basedeDonnees.html) |
 | **Algorithmique** | Algorithmes, complexité, structures de données | [Accéder →](algo.html) |
 
