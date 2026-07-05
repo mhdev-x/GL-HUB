@@ -37,7 +37,7 @@ Face à la **dispersion des supports de cours** et au **manque de centralisation
 ## ✨ Fonctionnalités
 
 - 📚 **5 matières principales** organisées et accessibles  
-- 📄 **37 fichiers pédagogiques** (cours, TD, projets)  
+- 📄 **48 fichiers pédagogiques** (cours, TD, projets)  
 - 🆓 **Accès totalement gratuit** et sans inscription  
 - 📱 **Interface responsive** adaptée à tous les appareils  
 - 🎨 **Design moderne** et navigation intuitive  
