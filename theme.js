@@ -1,6 +1,3 @@
-// theme-toggle.js
-// A inclure sur toutes les pages, juste avant </body>
-
 document.addEventListener("DOMContentLoaded", () => {
     let racine = document.documentElement;
     let boutonTheme = document.querySelector("#themeToggle");
