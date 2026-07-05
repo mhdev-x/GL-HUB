@@ -1,10 +1,9 @@
-document.addEventListener("DOMContentLoaded", 
-    () => {
+document.addEventListener("DOMContentLoaded", () => {
     let racine = document.documentElement;
     let boutonTheme = document.querySelector("#themeToggle");
 
     let mettreAJourIcone = (theme) => {
-        // ON VÉRIFIE SI LE BOUTON EXISTE AVANT DE CHANGER SON TEXTE
+        // Sécurité : On ne change le texte que si le bouton existe sur la page
         if (boutonTheme) {
             boutonTheme.textContent = theme === "dark" ? "☀️" : "🌙";
         }
@@ -15,10 +14,9 @@ document.addEventListener("DOMContentLoaded",
     racine.setAttribute("data-theme", themeSauvegarde);
     mettreAJourIcone(themeSauvegarde);
 
-    // ON AJOUTE L'ÉCOUTEUR DE CLIC UNIQUEMENT SI LE BOUTON EST PRÉSENT
+    // Sécurité : On écoute le clic uniquement si le bouton est bien présent
     if (boutonTheme) {
-        boutonTheme.addEventListener("click", 
-            () => {
+        boutonTheme.addEventListener("click", () => {
             let themeActuel = racine.getAttribute("data-theme");
             let nouveauTheme = themeActuel === "light" ? "dark" : "light";
 
