@@ -1,0 +1,111 @@
+:root {
+    --color-text: #0B204C;
+    --color-accent: #0B204C;
+    --color-accent-text: #ffffff;
+
+    --color-header-bg: #0B204C;
+    --color-header-text: #ffffff;
+
+    --color-nav-bg: #ffffff;
+    --color-nav-border: #e2e8f0;
+    --color-nav-link: #475569;
+    --color-nav-link-hover-bg: #f1f5f9;
+    --color-nav-link-active-bg: #eff6ff;
+
+    --color-card-bg: #ffffff;
+    --color-card-border: #e2e8f0;
+    --color-card-hover-border: #0B204C;
+
+    --color-text-secondary: #64748b;
+    --color-text-tertiary: #1e293b;
+
+    --color-button-bg: #0B204C;
+    --color-button-hover: #1e3a8a;
+
+    --color-footer-bg: #0B204C;
+    --color-footer-text: #ffffff;
+
+    --color-hr: #000000;
+
+    --shadow-light: rgba(0, 0, 0, 0.05);
+    --shadow-medium: rgba(0, 0, 0, 0.1);
+    --shadow-accent: rgba(11, 32, 76, 0.1);
+}
+
+/* MODE SOMBRE */
+[data-theme="dark"] {
+    --color-text: #e2e8f0;
+    --color-accent: #3b82f6;
+    --color-accent-text: #ffffff;
+
+    --color-header-bg: #060c18;
+    --color-header-text: #e2e8f0;
+
+    --color-nav-bg: #111827;
+    --color-nav-border: #1f2937;
+    --color-nav-link: #94a3b8;
+    --color-nav-link-hover-bg: #1e293b;
+    --color-nav-link-active-bg: #1e3a5f;
+
+    --color-card-bg: #1a2332;
+    --color-card-border: #263449;
+    --color-card-hover-border: #3b82f6;
+
+    --color-text-secondary: #94a3b8;
+    --color-text-tertiary: #cbd5e1;
+
+    --color-button-bg: #3b82f6;
+    --color-button-hover: #2563eb;
+
+    --color-footer-bg: #060c18;
+    --color-footer-text: #e2e8f0;
+
+    --color-hr: #475569;
+
+    --shadow-light: rgba(0, 0, 0, 0.3);
+    --shadow-medium: rgba(0, 0, 0, 0.4);
+    --shadow-accent: rgba(59, 130, 246, 0.15);
+
+    --color-body-bg: #0f172a;
+    --color-hero-bg: #1a2332;
+}
+
+body {
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* BOUTON TOGGLE */
+.theme-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 200;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 2px solid var(--color-nav-border);
+    background-color: var(--color-nav-bg);
+    color: var(--color-text);
+    font-size: 1.4rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px var(--shadow-medium);
+    transition: all 0.3s ease;
+}
+
+.theme-toggle:hover {
+    transform: scale(1.1);
+    border-color: var(--color-accent);
+}
+
+@media (max-width: 768px) {
+    .theme-toggle {
+        top: 10px;
+        right: 10px;
+        width: 40px;
+        height: 40px;
+        font-size: 1.1rem;
+    }
+}

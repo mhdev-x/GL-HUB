@@ -6,26 +6,26 @@
 
 body {
     font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    background-color: white;
-    color: #0B204C;
+    background-color: var(--color-body-bg, #ffffff);
+    color: var(--color-text);
     line-height: 1.6;
     display: flex;
     flex-direction: column;
     min-height: 100vh;
 }
 hr {
-    border-top: 6px solid #000000;
+    border-top: 6px solid var(--color-hr);
     border-radius: 5px;
     margin: 40px auto;
     width: 80%;
 }    
 /* --- HEADER --- */
 .site-header {
-    background:fixed #0B204C;
-    color: white;
+    background: var(--color-header-bg);
+    color: var(--color-header-text);
     padding: 20px 20px;
     text-align: center;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px var(--shadow-medium);
 }
 
 .logo-text,logo-img {
@@ -50,8 +50,8 @@ hr {
 
 /* --- NAVIGATION --- */
 nav {
-    background-color: #ffffff;
-    border-bottom: 1px solid #e2e8f0;
+    background-color: var(--color-nav-bg);
+    border-bottom: 1px solid var(--color-nav-border);
     position: sticky;
     top: 0;
     z-index: 100;
@@ -72,7 +72,7 @@ ul{
     display: block;
     padding: 18px 25px;
     text-decoration: none;
-    color: #475569;
+    color: var(--color-nav-link);
     font-weight: 600;
     font-size: 0.95rem;
     transition: all 0.3s ease;
@@ -80,14 +80,14 @@ ul{
 }
 
 .menu li a:hover {
-    color: #0B204C; 
-    background-color: #f1f5f9;
+    color: var(--color-accent); 
+    background-color: var(--color-nav-link-hover-bg);
 }
 
 .menu li a.active {
-    color: #0B204C;  
-    border-bottom-color: #0B204C;  
-    background-color: #eff6ff;
+    color: var(--color-accent);  
+    border-bottom-color: var(--color-accent);  
+    background-color: var(--color-nav-link-active-bg);
 }
 
 /* --- ZONE PRINCIPALE (LIBRARY) --- */
@@ -103,7 +103,7 @@ ul{
     text-align: center;
     font-size: 3rem; 
     text-decoration: underline;
-    color: #0B204C;
+    color: var(--color-text);
     margin: 0 auto 30px;
     padding: 10px;
 }
@@ -114,8 +114,8 @@ ul{
     padding: 50px;
     border-radius: 20px;
     text-align: center;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05); 
-    background: #0B204C; 
+    box-shadow: 0 10px 25px var(--shadow-light); 
+    background: var(--color-accent); 
     margin-bottom: 30px; 
 }
 .BGLHUB{
@@ -123,31 +123,31 @@ ul{
 }
 .hero h2 {
     font-size: 3.2rem;
-    color: white; 
+    color: var(--color-accent-text); 
     margin: 20px auto 30px;
     padding-bottom: 20px;
     position: relative;  
 }
 
 .hero h2::after { 
+    content: "";
     display: block;
     width: 80px;
     height: 4px;
-    background: white;
+    background: var(--color-accent-text);
     margin: 15px auto 0;
     border-radius: 2px;
 }
 
 .hero p {
     font-size: 1.1rem;
-    color: white; 
+    color: var(--color-accent-text); 
     max-width: 800px;
     margin: 20px auto 0; 
     line-height: 1.8;  
 }
 .hero2{
-
-    color: white;
+    color: var(--color-accent-text);
 }
 
 
@@ -160,7 +160,7 @@ ul{
 }
 
 .stat-card {
-    background: white;
+    background: var(--color-card-bg);
     padding: 30px;
     border-radius: 15px;
     transition: all 0.3s ease; 
@@ -171,16 +171,16 @@ ul{
 
 .stat-card:hover {
     transform: translateY(-10px);
-    background: #ffffff;
-    border-color: #0B204C;
-    box-shadow: 0 8px 20px rgba(11, 32, 76, 0.1);
+    background: var(--color-card-bg);
+    border-color: var(--color-card-hover-border);
+    box-shadow: 0 8px 20px var(--shadow-accent);
 }
 
 .stat-number {
     display: block;
     font-size: 2.5rem;
     font-weight: 800;
-    color: #0B204C;
+    color: var(--color-accent);
     margin-bottom: 10px;
 }
 .contact,.réseaux-sociaux {
@@ -196,14 +196,14 @@ ul{
 }
 .réseaux-sociaux, span.hero3,a {
     font-size: 1.6rem;
-    color: #0B204C;
+    color: var(--color-text);
 }   
 
 /* --- FOOTER --- */
 
 footer {
-    background-color: #0B204C;
-    color: white;
+    background-color: var(--color-footer-bg);
+    color: var(--color-footer-text);
     text-align: center;
     padding: 20px 20px;
     margin-top: 60px;
