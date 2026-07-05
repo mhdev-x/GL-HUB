@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded",
 
     let mettreAJourIcone = (theme) => {
         if (boutonTheme) {
-            boutonTheme.textContent = theme === "dark" ? "☀️" : "🌙";
+            boutonTheme.textContent = theme === "dark" ? "🌝" : "🌚";
         }
     };
 
