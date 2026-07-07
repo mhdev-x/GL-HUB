@@ -55,8 +55,6 @@ Face à la **dispersion des supports de cours** et au **manque de centralisation
 | **Base de Données** | SQL, modélisation, conception BDD | [Accéder →](basedeDonnees.html) |
 | **Algorithmique** | Algorithmes, complexité, structures de données | [Accéder →](algo.html) |
 
-🌐 ** URL de production** : [https://mhdev-x.github.io/GL-HUB/](https://mhdev-x.github.io/GL-HUB/)
-
 ---
 
 ## 📁 Structure du projet
