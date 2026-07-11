@@ -97,7 +97,7 @@ Merci de :
 
 ## 👤 Auteur
 
-**Mohamed BATHILY** – étudiant en Génie Logiciel  
+**Mohamed BATHILY** – Étudiant en Génie Logiciel  
 
 - GitHub : [@mhdev-x](https://github.com/mhdev-x)  
 - Projet : [GL HUB](https://github.com/mhdev-x/GL-HUB)
