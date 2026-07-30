@@ -58,6 +58,8 @@ Face à la **dispersion des supports de cours** et au **manque de centralisation
 ---
 
 ## 📁 Structure du projet
+
+```text
 GL-HUB/
 ├── index.html
 ├── langageC.html
@@ -66,16 +68,14 @@ GL-HUB/
 ├── basedeDonnees.html
 ├── algo.html
 ├── FICHIERS/
-│ ├── MEDIAS/
-│ │ └── logo-gl-hub.png
-│ └── DOCUMENTS/
-│ └── (cours, TD, projets)
+│   ├── MEDIAS/
+│   │   └── LOGO-GL-HUB.png
+│   └── DOCUMENTS/
+│       └── (cours, TD, projets)
 ├── assets/
-│ └── css/
+│   └── css/
 └── LICENSE
-
-
----
+```
 
 ## 🤝 Contribution
 
