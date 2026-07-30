@@ -19,9 +19,9 @@ document.addEventListener("DOMContentLoaded",
     if (boutonTheme) {
         boutonTheme.addEventListener("click", 
             () => {
-            let estSombre = document.body.classList.toggle("dark-theme");
+            let darkTheme = document.body.classList.toggle("dark-theme");
             
-            let nouveauTheme = estSombre ? "dark" : "light";
+            let nouveauTheme = darkTheme ? "dark" : "light";
             
             localStorage.setItem("theme", nouveauTheme);
             mettreAJourIcone(nouveauTheme);
