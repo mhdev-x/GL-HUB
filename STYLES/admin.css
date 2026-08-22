@@ -1,0 +1,230 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--color-body-bg, #f8fafc);
+    color: var(--color-text);
+    line-height: 1.6;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+hr {
+    border-top: 6px solid var(--color-hr);
+    border-radius: 5px;
+    margin: 40px auto;
+    width: 80%;
+}
+
+/* --- HEADER (identique au reste du site) --- */
+.site-header {
+    background: var(--color-header-bg);
+    color: var(--color-header-text);
+    padding: 20px 20px;
+    text-align: center;
+    box-shadow: 0 4px 12px var(--shadow-medium);
+}
+
+.logo-text {
+    font-size: 2.8rem;
+    font-weight: 800;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+}
+
+.logo-img {
+    width: 175px;
+}
+
+nav {
+    background-color: var(--color-nav-bg);
+    border-bottom: 1px solid var(--color-nav-border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.menu {
+    list-style: none;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.menu li a, .lien-menu-bouton {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 18px 25px;
+    text-decoration: none;
+    color: var(--color-nav-link);
+    font-weight: 600;
+    font-size: 0.95rem;
+    background: none;
+    border: none;
+    font-family: inherit;
+    cursor: pointer;
+}
+
+.menu li a:hover, .lien-menu-bouton:hover {
+    color: var(--color-accent);
+    background-color: var(--color-nav-link-hover-bg);
+}
+
+.container {
+    flex: 1;
+    width: 100%;
+    max-width: 1000px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.section-title {
+    margin: 30px 0 20px;
+    color: var(--color-text);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* --- Statistiques --- */
+.stats-admin {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 20px;
+}
+
+.stat-card {
+    background: var(--color-card-bg);
+    border: 1px solid var(--color-card-border);
+    padding: 25px;
+    border-radius: 15px;
+    text-align: center;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+}
+
+.stat-number {
+    display: block;
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: var(--color-accent);
+    margin-bottom: 8px;
+}
+
+/* --- Liste des paiements --- */
+.liste-paiements {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.message-chargement {
+    color: var(--color-text-secondary);
+    font-style: italic;
+}
+
+.carte-paiement {
+    background: var(--color-card-bg);
+    border: 1px solid var(--color-card-border);
+    border-radius: 12px;
+    padding: 18px 22px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.infos-paiement h4 {
+    color: var(--color-text-tertiary);
+    margin-bottom: 4px;
+}
+
+.infos-paiement p {
+    color: var(--color-text-secondary);
+    font-size: 0.9rem;
+}
+
+.infos-paiement .montant {
+    font-weight: 700;
+    color: var(--color-accent);
+}
+
+.actions-paiement {
+    display: flex;
+    gap: 10px;
+}
+
+.bouton-valider, .bouton-refuser {
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.bouton-valider {
+    background-color: #16a34a;
+    color: white;
+}
+
+.bouton-valider:hover {
+    background-color: #15803d;
+}
+
+.bouton-refuser {
+    background-color: #dc2626;
+    color: white;
+}
+
+.bouton-refuser:hover {
+    background-color: #b91c1c;
+}
+
+.badge-statut {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.badge-valide {
+    background-color: #dcfce7;
+    color: #16a34a;
+}
+
+.badge-echoue {
+    background-color: #fee2e2;
+    color: #dc2626;
+}
+
+footer {
+    background-color: var(--color-footer-bg);
+    color: var(--color-footer-text);
+    text-align: center;
+    padding: 20px 20px;
+    margin-top: 60px;
+}
+
+@media (max-width: 768px) {
+    .carte-paiement {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .menu {
+        flex-direction: column;
+    }
+}

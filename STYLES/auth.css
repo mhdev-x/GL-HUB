@@ -1,0 +1,284 @@
+/* ========================================================
+   AUTH.CSS — Modale Connexion/Inscription + Panneau Matières
+   Utilise les variables définies dans theme.css
+   ======================================================== */
+
+/* --- Bouton dans la nav (Matières / Se connecter) --- */
+.lien-menu-bouton {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 18px 25px;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: var(--color-nav-link);
+    font-weight: 600;
+    font-size: 0.95rem;
+    font-family: inherit;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#zoneAuthNav {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.lien-menu-bouton:hover {
+    color: var(--color-accent);
+    background-color: var(--color-nav-link-hover-bg);
+}
+
+/* --- Voile sombre derrière la modale / le panneau --- */
+.voile {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 300;
+}
+
+.voile.visible {
+    display: block;
+}
+
+/* ========================================================
+   PANNEAU LATÉRAL — MATIÈRES (menu burger)
+   ======================================================== */
+.panneau-lateral {
+    position: fixed;
+    top: 0;
+    right: -340px;
+    width: 320px;
+    height: 100%;
+    background-color: var(--color-card-bg);
+    box-shadow: -4px 0 20px var(--shadow-medium);
+    z-index: 301;
+    padding: 25px;
+    transition: right 0.35s ease;
+    overflow-y: auto;
+}
+
+.panneau-lateral.ouvert {
+    right: 0;
+}
+
+.panneau-entete {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--color-nav-border);
+}
+
+.panneau-entete h3 {
+    color: var(--color-text);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.panneau-message {
+    text-align: center;
+    padding: 30px 10px;
+    color: var(--color-text-secondary);
+}
+
+.panneau-message i {
+    color: var(--color-accent);
+    margin-bottom: 15px;
+    display: block;
+}
+
+.panneau-message p {
+    margin: 15px 0 20px;
+}
+
+.liste-matieres {
+    list-style: none;
+}
+
+.liste-matieres li a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 10px;
+    color: var(--color-text);
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: background 0.25s ease;
+}
+
+.liste-matieres li a:hover {
+    background-color: var(--color-nav-link-hover-bg);
+}
+
+/* ========================================================
+   MODALE — CONNEXION / INSCRIPTION
+   ======================================================== */
+.modale {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 420px;
+    background-color: var(--color-card-bg);
+    border-radius: 16px;
+    box-shadow: 0 15px 40px var(--shadow-medium);
+    padding: 35px 30px;
+    z-index: 302;
+}
+
+.modale.visible {
+    display: block;
+}
+
+.bouton-fermer {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+}
+
+.onglets-auth {
+    display: flex;
+    margin-bottom: 25px;
+    border-bottom: 1px solid var(--color-nav-border);
+}
+
+.onglet-auth {
+    flex: 1;
+    padding: 12px;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.onglet-auth.actif {
+    color: var(--color-accent);
+    border-bottom-color: var(--color-accent);
+}
+
+.formulaire-auth {
+    display: flex;
+    flex-direction: column;
+}
+
+.formulaire-auth label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-text);
+    margin: 12px 0 6px;
+}
+
+.formulaire-auth input {
+    padding: 12px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--color-card-border);
+    background-color: var(--color-body-bg);
+    color: var(--color-text);
+    font-size: 0.95rem;
+}
+
+.formulaire-auth input:focus {
+    outline: none;
+    border-color: var(--color-accent);
+}
+
+.message-erreur {
+    color: #dc2626;
+    font-size: 0.85rem;
+    min-height: 18px;
+    margin-top: 8px;
+}
+
+.bouton-accent {
+    background-color: var(--color-button-bg);
+    color: var(--color-accent-text);
+    border: none;
+    padding: 13px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.bouton-accent:hover {
+    background-color: var(--color-button-hover);
+}
+
+.bouton-pleine-largeur {
+    width: 100%;
+    margin-top: 20px;
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 768px) {
+    .panneau-lateral {
+        width: 85%;
+        right: -100%;
+    }
+    .modale {
+        padding: 25px 20px;
+    }
+}
+
+/* ========================================================
+   PAYWALL — Bouton verrouillé + modale de paiement manuel
+   ======================================================== */
+.bouton-verrouille {
+    background-color: var(--color-nav-link-hover-bg);
+    color: var(--color-text-secondary);
+    border: 1px dashed var(--color-card-border);
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.bouton-verrouille:not(:disabled):hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+}
+
+.bouton-verrouille:disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.modale-paiement h3 {
+    color: var(--color-text);
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.prix-a-payer {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--color-accent);
+    margin-bottom: 15px;
+}
+
+.instructions-paiement {
+    color: var(--color-text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-bottom: 20px;
+}

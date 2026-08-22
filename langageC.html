@@ -1,16 +1,31 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabaseClient.js"></script>
+    <script>
+        // 🔒 GARDE D'ACCÈS — vérifie la vraie session Supabase avant d'afficher la page
+        document.documentElement.style.visibility = "hidden";
+        (async () => {
+            let { data } = await supabaseClient.auth.getSession();
+            if (!data.session) {
+                window.location.replace("index.html");
+            } else {
+                document.documentElement.style.visibility = "visible";
+            }
+        })();
+    </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" ...>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="STYLES/langageC.css">
     <link rel="stylesheet" href="STYLES/theme.css">
+    <link rel="stylesheet" href="STYLES/auth.css">
     <title>GL HUB</title>
     
 </head>
-<body>
+<body data-matiere="langageC">
     <button id="themeToggle" class="theme-toggle" aria-label="Changer de thème">🌚</button>
 
 <header class="site-header">
@@ -26,14 +41,60 @@
 <nav>
     <ul class="menu">
         <li><a href="index.html"><i class="fa-solid fa-house fa-bounce" style="color: rgb(4, 51, 131);"></i>Accueil</a></li>
-        <li><a href="langageC.html"><i class="fa-solid fa-bug fa-shake" style="color: rgb(4, 51, 131);"></i>Langage C</a></li>
-        <li><a href="systemedExploitation.html"><i class="fa-brands fa-windows fa-flip" style="color: rgb(6, 58, 147);"></i>Système d'Exploitation</a></li>
-        <li><a href="technologieWeb.html"><i class="fa-solid fa-laptop-code fa-beat" style="color: rgb(6, 58, 147);"></i>Technologie Web</a></li>
-        <li><a href="basedeDonnees.html"><i class="fa-solid fa-database fa-bounce" style="color: rgb(6, 78, 146);"></i>Base de Données</a></li>
-        <li><a href="algo.html"><i class="fa-solid fa-brain fa-beat" style="color: rgb(4, 51, 131);"></i>Algorithme</a></li>
         <li><a href="contact.html"><i class="fa-solid fa-envelope fa-bounce" style="color: rgb(4, 51, 131);"></i>Contact</a></li>
+        <li><button id="boutonMatieres" class="lien-menu-bouton"><i class="fa-solid fa-bars"></i>Matières</button></li>
+        <li id="zoneAuthNav"><button id="boutonAuth" class="lien-menu-bouton"><i class="fa-solid fa-user"></i>Se connecter</button></li>
     </ul>
 </nav>
+
+<!-- ===================== PANNEAU BURGER : MATIÈRES ===================== -->
+<div id="voileMatieres" class="voile"></div>
+<aside id="panneauMatieres" class="panneau-lateral">
+    <div class="panneau-entete">
+        <h3><i class="fa-solid fa-book"></i>Espace Matières</h3>
+        <button id="fermerPanneauMatieres" class="bouton-fermer" aria-label="Fermer">✕</button>
+    </div>
+    <div id="matieresVerrouillees" class="panneau-message">
+        <i class="fa-solid fa-lock fa-2x"></i>
+        <p>Connecte-toi pour accéder aux cours, TD et examens de chaque matière.</p>
+        <button id="boutonConnexionDepuisPanneau" class="bouton-accent">Se connecter</button>
+    </div>
+    <ul id="listeMatieres" class="liste-matieres" style="display: none;">
+        <li><a href="langageC.html"><i class="fa-solid fa-bug" style="color: rgb(4, 51, 131);"></i>Langage C</a></li>
+        <li><a href="systemedExploitation.html"><i class="fa-brands fa-windows" style="color: rgb(6, 58, 147);"></i>Système d'Exploitation</a></li>
+        <li><a href="technologieWeb.html"><i class="fa-solid fa-laptop-code" style="color: rgb(6, 58, 147);"></i>Technologie Web</a></li>
+        <li><a href="basedeDonnees.html"><i class="fa-solid fa-database" style="color: rgb(6, 78, 146);"></i>Base de Données</a></li>
+        <li><a href="algo.html"><i class="fa-solid fa-brain" style="color: rgb(4, 51, 131);"></i>Algorithme</a></li>
+    </ul>
+</aside>
+
+<!-- ===================== MODALE : CONNEXION / INSCRIPTION ===================== -->
+<div id="voileAuth" class="voile"></div>
+<div id="modaleAuth" class="modale">
+    <button id="fermerModaleAuth" class="bouton-fermer" aria-label="Fermer">✕</button>
+    <div class="onglets-auth">
+        <button id="ongletConnexion" class="onglet-auth actif">Connexion</button>
+        <button id="ongletInscription" class="onglet-auth">Inscription</button>
+    </div>
+    <div id="formConnexion" class="formulaire-auth">
+        <label for="emailConnexion">Adresse e-mail</label>
+        <input type="email" id="emailConnexion" placeholder="toi@exemple.com" required>
+        <label for="motDePasseConnexion">Mot de passe</label>
+        <input type="password" id="motDePasseConnexion" placeholder="••••••••" required>
+        <p id="erreurConnexion" class="message-erreur"></p>
+        <button id="boutonValiderConnexion" class="bouton-accent bouton-pleine-largeur">Se connecter</button>
+    </div>
+    <div id="formInscription" class="formulaire-auth" style="display: none;">
+        <label for="nomInscription">Nom complet</label>
+        <input type="text" id="nomInscription" placeholder="Ton nom et prénom" required>
+        <label for="emailInscription">Adresse e-mail</label>
+        <input type="email" id="emailInscription" placeholder="toi@exemple.com" required>
+        <label for="motDePasseInscription">Mot de passe</label>
+        <input type="password" id="motDePasseInscription" placeholder="6 caractères minimum" required>
+        <p id="erreurInscription" class="message-erreur"></p>
+        <button id="boutonValiderInscription" class="bouton-accent bouton-pleine-largeur">Créer mon compte</button>
+    </div>
+</div>
 
 <main class="container">
 
@@ -45,12 +106,7 @@
             <div class="card-icon"><i class="fas fa-file-code"></i></div>
             <h4>Chapitre 1 : Généralités</h4>
             <p>Introduction à la Programmation en C</p>
-            <a href="FICHIERS/COURS/LangageC/Chapitre.1-Généralités.pdf" 
-            class="bouton-download" 
-            download="Chapitre.1-Généralités.pdf" 
-            target="_blank">
-            <i class="fas fa-download"></i>Télécharger PDF
-            </a>
+            <button type="button" class="bouton-download" data-fichier="FICHIERS/COURS/LangageC/Chapitre.1-Généralités.pdf"><i class="fas fa-download"></i>Télécharger PDF</button>
         </div>
 
         <!-- Carte Cours 2 -->
@@ -58,71 +114,41 @@
             <div class="card-icon"><i class="fas fa-microchip"></i></div>
             <h4>Chapitre 2 : Les Structures Conditionnelles en C</h4>
             <p>Contrôle du Flux d'Exécution : Maîtriser les Tests de Condition</p>
-            <a href="FICHIERS/COURS/LangageC/Chapitre.2-Les-structures-conditionnelles.pdf" 
-            class="bouton-download" 
-            download="Chapitre.2-Les-structures-conditionnelles.pdf" 
-            target="_blank">
-                <i class="fas fa-download"></i> Télécharger PDF
-            </a>
+            <button type="button" class="bouton-download" data-fichier="FICHIERS/COURS/LangageC/Chapitre.2-Les-structures-conditionnelles.pdf"><i class="fas fa-download"></i> Télécharger PDF</button>
         </div>
 
         <div class="card">
             <div class="card-icon"><i class="fas fa-microchip"></i></div>
             <h4>Chapitre 3 : Les Structures Itératives en C</h4>
             <p>Automatisation du Flux d'Exécution : Maîtriser la Répétition de Tâches</p>
-            <a href="FICHIERS/COURS/LangageC/Chapitre.3-Les-structures-iteratives-C.pdf" 
-            class="bouton-download" 
-            download="Chapitre.3-Les-structures-iteratives-C.pdf" 
-            target="_blank">
-                <i class="fas fa-download"></i> Télécharger PDF
-            </a>
+            <button type="button" class="bouton-download" data-fichier="FICHIERS/COURS/LangageC/Chapitre.3-Les-structures-iteratives-C.pdf"><i class="fas fa-download"></i> Télécharger PDF</button>
         </div>
 
         <div class="card">
             <div class="card-icon"><i class="fas fa-id-card"></i></div>
             <h4>Chapitre 5 : Les Types Composés</h4>
             <p>Manipulation de Textes et Regroupement de Données : Maîtriser les Chaînes et les Structures</p>
-            <a href="FICHIERS/COURS/LangageC/Chapitre.5-Les-types-composes.pdf" 
-            class="bouton-download" 
-            download="Chapitre.5-Les-types-composes.pdf" 
-            target="_blank">
-                <i class="fas fa-download"></i> Télécharger PDF
-            </a>
+            <button type="button" class="bouton-download" data-fichier="FICHIERS/COURS/LangageC/Chapitre.5-Les-types-composes.pdf"><i class="fas fa-download"></i> Télécharger PDF</button>
         </div>
 
         <div class="card">
             <div class="card-icon"><i class="fas fa-id-card"></i></div>
             <h4>Complément Chapitre 5 : Les Chaines de Caractères</h4>
             <p>Manipulation de Textes et Regroupement de Données : Maîtriser les Chaînes et les Structures</p>
-            <a href="FICHIERS/COURS/LangageC/Complément-Chapitre.5-les-fonctions-chaines-de-caracteres.pdf" 
-            class="bouton-download" 
-            download="Complément-Chapitre.5-les-fonctions-chaines-de-caracteres.pdf" 
-            target="_blank">
-                <i class="fas fa-download"></i> Télécharger PDF
-            </a>
+            <button type="button" class="bouton-download" data-fichier="FICHIERS/COURS/LangageC/Complément-Chapitre.5-les-fonctions-chaines-de-caracteres.pdf"><i class="fas fa-download"></i> Télécharger PDF</button>
         </div>
 
         <div class="card">
             <div class="card-icon"><i class="fas fa-th"></i></div>
             <h4>Chapitre 6 : Les Tableaux</h4>
             <p>Gestion de Collections de Données : Structurer, Indexer et Parcourir les Séries de Variables</p>
-            <a href="FICHIERS/COURS/LangageC/Chapitre.6-Langage-C-Les-Tableaux.pdf" 
-            class="bouton-download" 
-            download="Chapitre.6-Langage-C-Les-Tableaux.pdf" 
-            target="_blank">
-                <i class="fas fa-download"></i> Télécharger PDF
-            </a>
+            <button type="button" class="bouton-download" data-fichier="FICHIERS/COURS/LangageC/Chapitre.6-Langage-C-Les-Tableaux.pdf"><i class="fas fa-download"></i> Télécharger PDF</button>
         </div>
         <div class="card">
             <div class="card-icon"><i class="fas fa-th"></i></div>
             <h4>Chapitre 7 : La Programmation Modulaire</h4>
             <p>Organisation du Code en Modules : Maîtriser les Fonctions et la Décomposition en Fichiers</p>
-            <a href="FICHIERS/COURS/LangageC/Chapitre.7-Programmation-Modulaire.pdf" 
-            class="bouton-download" 
-            download="Chapitre.7-Programmation-Modulaire.pdf" 
-            target="_blank">
-                <i class="fas fa-download"></i> Télécharger PDF
-            </a>
+            <button type="button" class="bouton-download" data-fichier="FICHIERS/COURS/LangageC/Chapitre.7-Programmation-Modulaire.pdf"><i class="fas fa-download"></i> Télécharger PDF</button>
         </div>
 
     </section>
@@ -134,70 +160,42 @@
         <div class="card">
             <h4>TD 1 : Introduction au Langage C</h4>
             <p>Les Notions de Base du Langage C</p>
-             <a href="FICHIERS/TD/TD-LangageC/Serie-Chapitre.1-lang-C.pdf" 
-            class="bouton-download"
-            download="Serie-Chapitre.1-lang-C.pdf">
-                <i class="fas fa-download"></i>Télécharger PDF
-            </a>
+             <button type="button" class="bouton-download" data-fichier="FICHIERS/TD/TD-LangageC/Serie-Chapitre.1-lang-C.pdf"><i class="fas fa-download"></i>Télécharger PDF</button>
         </div>
 
         <!-- Carte TD 2 -->
         <div class="card">
             <h4>TD 2 : Structures Conditionnelles</h4>
             <p>Série d'exercices sur les conditions et les boucles itératives</p>
-            <a href="FICHIERS/TD/TD-LangageC/Serie-Chapitre.2-Structures-conditionnelles.pdf" 
-            class="bouton-download" 
-            download="Serie-Chapitre.2-Structures-conditionnelles.pdf">
-                <i class="fas fa-download"></i>Télécharger PDF
-            </a>
+            <button type="button" class="bouton-download" data-fichier="FICHIERS/TD/TD-LangageC/Serie-Chapitre.2-Structures-conditionnelles.pdf"><i class="fas fa-download"></i>Télécharger PDF</button>
         </div>
         
         <div class="card">
             <h4>TD 3 : Structures Itératives</h4>
             <p>Les boucles itératives</p>
-            <a href="FICHIERS/TD/TD-LangageC/TD-Chapitre.3-Boucles.pdf" 
-            class="bouton-download" 
-            download="TD-Chapitre.3-Boucles.pdf">
-                <i class="fas fa-download"></i>Télécharger PDF
-            </a>
+            <button type="button" class="bouton-download" data-fichier="FICHIERS/TD/TD-LangageC/TD-Chapitre.3-Boucles.pdf"><i class="fas fa-download"></i>Télécharger PDF</button>
         </div>
 
         <div class="card">
             <h4>TD 4 : Types Composés et Chaines de Caractères</h4>
             <p>Exercices de Manipulation de Textes et de Structures de Données</p>
-            <a href="FICHIERS/TD/TD-LangageC/Serie-Exos-chapitre.5-Types-composes.pdf" 
-            class="bouton-download" 
-            download="FICHIERS/TD/TD-LangageC/Serie-Exos-chapitre.5-Types-composes.pdf">
-                <i class="fas fa-download"></i>Télécharger PDF
-            </a>
+            <button type="button" class="bouton-download" data-fichier="FICHIERS/TD/TD-LangageC/Serie-Exos-chapitre.5-Types-composes.pdf"><i class="fas fa-download"></i>Télécharger PDF</button>
         </div>
 
         <div class="card">
             <h4>TD 5 : Tableaux</h4>
             <p>Exercices de Parcours, de Recherche et de Manipulation de Vecteurs</p>
-            <a href="FICHIERS/TD/TD-Langage C/TD-Chapitre.6-TABLEAUX.pdf" 
-            class="bouton-download" 
-            download="TD-Chapitre.6-TABLEAUX.pdf">
-                <i class="fas fa-download"></i>Télécharger PDF
-            </a>
+            <button type="button" class="bouton-download" data-fichier="FICHIERS/TD/TD-Langage C/TD-Chapitre.6-TABLEAUX.pdf"><i class="fas fa-download"></i>Télécharger PDF</button>
         </div>
         <div class="card">
             <h4>TD 6 : Programmation Modulaire</h4>
             <p>Exercices de Découpage en Fonctions et d'Organisation du Code en Plusieurs Fichiers</p>
-            <a href="FICHIERS/TD/TD-LangageC/Serie-Chapitre.7-lang-C-Programmation-Modulaire.pdf" 
-            class="bouton-download" 
-            download="TD-Chapitre.7-Programmation-Modulaire.pdf">
-                <i class="fas fa-download"></i>Télécharger PDF
-            </a>
+            <button type="button" class="bouton-download" data-fichier="FICHIERS/TD/TD-LangageC/Serie-Chapitre.7-lang-C-Programmation-Modulaire.pdf"><i class="fas fa-download"></i>Télécharger PDF</button>
         </div>
         <div class="card">
             <h4>Projet d'Examen</h4>
             <p>Création d’une Application de Gestion Avec Thème au Choix</p>
-            <a href="FICHIERS/TD/TD-LangageC/Sujet-Examen-L1-GL-KM-LangageC-2026.pdf" 
-            class="bouton-download" 
-            download="Sujet-Examen-L1-GL-KM-LangageC-2026.pdf">
-                <i class="fas fa-download"></i>Télécharger PDF
-            </a>
+            <button type="button" class="bouton-download" data-fichier="FICHIERS/TD/TD-LangageC/Sujet-Examen-L1-GL-KM-LangageC-2026.pdf"><i class="fas fa-download"></i>Télécharger PDF</button>
         </div>
 
     </section>
@@ -208,5 +206,7 @@
     <p>&copy; 2026 - GL HUB | Département Informatique</p>
 </footer>
 <script src="theme.js"></script>
+<script src="auth.js"></script>
+<script src="paywall.js"></script>
 </body>
 </html>

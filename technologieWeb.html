@@ -1,16 +1,31 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabaseClient.js"></script>
+    <script>
+        // 🔒 GARDE D'ACCÈS — vérifie la vraie session Supabase avant d'afficher la page
+        document.documentElement.style.visibility = "hidden";
+        (async () => {
+            let { data } = await supabaseClient.auth.getSession();
+            if (!data.session) {
+                window.location.replace("index.html");
+            } else {
+                document.documentElement.style.visibility = "visible";
+            }
+        })();
+    </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" ...>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="STYLES/technologieWeb.css">
     <link rel="stylesheet" href="STYLES/theme.css">
+    <link rel="stylesheet" href="STYLES/auth.css">
     <title>GL HUB</title>
     
 </head>
-<body>
+<body data-matiere="technologieWeb">
     <button id="themeToggle" class="theme-toggle" aria-label="Changer de thème">🌚</button>
 
 <header class="site-header">
@@ -25,16 +40,61 @@
 
 <nav>
     <ul class="menu">
-        <!-- class="active" permet de surligner la page en cours -->
         <li><a href="index.html"><i class="fa-solid fa-house fa-bounce" style="color: rgb(4, 51, 131);"></i>Accueil</a></li>
-        <li><a href="langageC.html"><i class="fa-solid fa-bug fa-shake" style="color: rgb(4, 51, 131);"></i>Langage C</a></li>
-        <li><a href="systemedExploitation.html"><i class="fa-brands fa-windows fa-flip" style="color: rgb(6, 58, 147);"></i>Système d'Exploitation</a></li>
-        <li><a href="technologieWeb.html"><i class="fa-solid fa-laptop-code fa-beat" style="color: rgb(6, 58, 147);"></i>Technologie Web</a></li>
-        <li><a href="basedeDonnees.html"><i class="fa-solid fa-database fa-bounce" style="color: rgb(6, 78, 146);"></i>Base de Données</a></li>
-        <li><a href="algo.html"><i class="fa-solid fa-brain fa-beat" style="color: rgb(4, 51, 131);"></i>Algorithme</a></li>
         <li><a href="contact.html"><i class="fa-solid fa-envelope fa-bounce" style="color: rgb(4, 51, 131);"></i>Contact</a></li>
+        <li><button id="boutonMatieres" class="lien-menu-bouton"><i class="fa-solid fa-bars"></i>Matières</button></li>
+        <li id="zoneAuthNav"><button id="boutonAuth" class="lien-menu-bouton"><i class="fa-solid fa-user"></i>Se connecter</button></li>
     </ul>
 </nav>
+
+<!-- ===================== PANNEAU BURGER : MATIÈRES ===================== -->
+<div id="voileMatieres" class="voile"></div>
+<aside id="panneauMatieres" class="panneau-lateral">
+    <div class="panneau-entete">
+        <h3><i class="fa-solid fa-book"></i>Espace Matières</h3>
+        <button id="fermerPanneauMatieres" class="bouton-fermer" aria-label="Fermer">✕</button>
+    </div>
+    <div id="matieresVerrouillees" class="panneau-message">
+        <i class="fa-solid fa-lock fa-2x"></i>
+        <p>Connecte-toi pour accéder aux cours, TD et examens de chaque matière.</p>
+        <button id="boutonConnexionDepuisPanneau" class="bouton-accent">Se connecter</button>
+    </div>
+    <ul id="listeMatieres" class="liste-matieres" style="display: none;">
+        <li><a href="langageC.html"><i class="fa-solid fa-bug" style="color: rgb(4, 51, 131);"></i>Langage C</a></li>
+        <li><a href="systemedExploitation.html"><i class="fa-brands fa-windows" style="color: rgb(6, 58, 147);"></i>Système d'Exploitation</a></li>
+        <li><a href="technologieWeb.html"><i class="fa-solid fa-laptop-code" style="color: rgb(6, 58, 147);"></i>Technologie Web</a></li>
+        <li><a href="basedeDonnees.html"><i class="fa-solid fa-database" style="color: rgb(6, 78, 146);"></i>Base de Données</a></li>
+        <li><a href="algo.html"><i class="fa-solid fa-brain" style="color: rgb(4, 51, 131);"></i>Algorithme</a></li>
+    </ul>
+</aside>
+
+<!-- ===================== MODALE : CONNEXION / INSCRIPTION ===================== -->
+<div id="voileAuth" class="voile"></div>
+<div id="modaleAuth" class="modale">
+    <button id="fermerModaleAuth" class="bouton-fermer" aria-label="Fermer">✕</button>
+    <div class="onglets-auth">
+        <button id="ongletConnexion" class="onglet-auth actif">Connexion</button>
+        <button id="ongletInscription" class="onglet-auth">Inscription</button>
+    </div>
+    <div id="formConnexion" class="formulaire-auth">
+        <label for="emailConnexion">Adresse e-mail</label>
+        <input type="email" id="emailConnexion" placeholder="toi@exemple.com" required>
+        <label for="motDePasseConnexion">Mot de passe</label>
+        <input type="password" id="motDePasseConnexion" placeholder="••••••••" required>
+        <p id="erreurConnexion" class="message-erreur"></p>
+        <button id="boutonValiderConnexion" class="bouton-accent bouton-pleine-largeur">Se connecter</button>
+    </div>
+    <div id="formInscription" class="formulaire-auth" style="display: none;">
+        <label for="nomInscription">Nom complet</label>
+        <input type="text" id="nomInscription" placeholder="Ton nom et prénom" required>
+        <label for="emailInscription">Adresse e-mail</label>
+        <input type="email" id="emailInscription" placeholder="toi@exemple.com" required>
+        <label for="motDePasseInscription">Mot de passe</label>
+        <input type="password" id="motDePasseInscription" placeholder="6 caractères minimum" required>
+        <p id="erreurInscription" class="message-erreur"></p>
+        <button id="boutonValiderInscription" class="bouton-accent bouton-pleine-largeur">Créer mon compte</button>
+    </div>
+</div>
 
 <main class="container">
 
@@ -46,12 +106,7 @@
             <div class="card-icon"><i class="fas fa-microchip"></i></div>
             <h4>Chapitre 1 : Développement WEB</h4>
             <p>Introduction aux technologies web</p>
-            <a href="FICHIERS/COURS/TechnologieWeb/Chapitre.1-Développement-WEB.pdf" 
-            class="bouton-download"
-            download="Chapitre.1-Développement-WEB.pdf" 
-            target="_blank">
-                <i class="fas fa-download"></i>Télécharger PDF
-            </a>
+            <button type="button" class="bouton-download" data-fichier="FICHIERS/COURS/TechnologieWeb/Chapitre.1-Développement-WEB.pdf"><i class="fas fa-download"></i>Télécharger PDF</button>
         </div>
 
         <!-- Carte Cours 2 -->
@@ -59,12 +114,7 @@
             <div class="card-icon"><i class="fas fa-microchip"></i></div>
             <h4>Chapitre 2 : Insertion de médias</h4>
             <p>Insertion et gestion des médias dans les pages web</p>
-            <a href="FICHIERS/COURS/TechnologieWeb/Chapitre.2-Insertion-de-médias.pdf" 
-            class="bouton-download"
-            download="Chapitre.2-Insertion-de-médias.pdf" 
-            target="_blank">
-                <i class="fas fa-download"></i>Télécharger PDF
-            </a>
+            <button type="button" class="bouton-download" data-fichier="FICHIERS/COURS/TechnologieWeb/Chapitre.2-Insertion-de-médias.pdf"><i class="fas fa-download"></i>Télécharger PDF</button>
         </div>
 
         <!-- Carte Cours 3 -->
@@ -72,119 +122,69 @@
             <div class="card-icon"><i class="fas fa-microchip"></i></div>
             <h4>Chapitre 3 : Les Listes</h4>
             <p>Présentation et utilisation des listes dans les pages web</p>
-            <a href="FICHIERS/COURS/TechnologieWeb/Chapitre.3-Les-Listes.pdf" 
-            class="bouton-download"
-            download="Chapitre.3-Les-Listes.pdf" 
-            target="_blank">
-                <i class="fas fa-download"></i>Télécharger PDF
-            </a>
+            <button type="button" class="bouton-download" data-fichier="FICHIERS/COURS/TechnologieWeb/Chapitre.3-Les-Listes.pdf"><i class="fas fa-download"></i>Télécharger PDF</button>
         </div>
 
         <div class="card">
             <div class="card-icon"><i class="fas fa-microchip"></i></div>
             <h4>Chapitre 4 : Les Liens</h4>
             <p>Présentation et utilisation des liens dans les pages web</p>
-            <a href="FICHIERS/COURS/Technologie Web/Chapitre.4-Les-Liens.pdf" 
-            class="bouton-download"
-            download="Chapitre.4-Les-Liens.pdf" 
-            target="_blank">
-                <i class="fas fa-download"></i>Télécharger PDF
-            </a>
+            <button type="button" class="bouton-download" data-fichier="FICHIERS/COURS/Technologie Web/Chapitre.4-Les-Liens.pdf"><i class="fas fa-download"></i>Télécharger PDF</button>
         </div>
 
         <div class="card">
             <div class="card-icon"><i class="fas fa-microchip"></i></div>
             <h4>Chapitre 5 : Les Formulaires</h4>
             <p>Présentation et utilisation des formulaires dans les pages web</p>
-            <a href="FICHIERS/COURS/TechnologieWeb/Chapitre.5-Les-Formulaires.pdf" 
-            class="bouton-download"
-            download="Chapitre.5-Les-Formulaires.pdf" 
-            target="_blank">
-                <i class="fas fa-download"></i>Télécharger PDF
-            </a>
+            <button type="button" class="bouton-download" data-fichier="FICHIERS/COURS/TechnologieWeb/Chapitre.5-Les-Formulaires.pdf"><i class="fas fa-download"></i>Télécharger PDF</button>
         </div>
 
         <div class="card">
             <div class="card-icon"><i class="fas fa-microchip"></i></div>
             <h4>Chapitre 6 : Le Langage CSS</h4>
             <p>Introduction au langage CSS et ses principes de base</p>
-            <a href="FICHIERS/COURS/TechnologieWeb/Chapitre.6-Le-Langage-CSS.pdf" 
-            class="bouton-download"
-            download="Chapitre.6-Le-Langage-CSS.pdf" 
-            target="_blank">
-                <i class="fas fa-download"></i>Télécharger PDF
-            </a>
+            <button type="button" class="bouton-download" data-fichier="FICHIERS/COURS/TechnologieWeb/Chapitre.6-Le-Langage-CSS.pdf"><i class="fas fa-download"></i>Télécharger PDF</button>
         </div>
 
         <div class="card">
             <div class="card-icon"><i class="fas fa-microchip"></i></div>
             <h4>Chapitre 7 : Margin & Padding</h4>
             <p>Présentation des propriétés margin et padding dans CSS</p>
-            <a href="FICHIERS/COURS/Technologie Web/Chapitre.7-Margin_Padding.pdf" 
-            class="bouton-download"
-            download="Chapitre.7-Margin_Padding.pdf" 
-            target="_blank">
-                <i class="fas fa-download"></i>Télécharger PDF
-            </a>
+            <button type="button" class="bouton-download" data-fichier="FICHIERS/COURS/Technologie Web/Chapitre.7-Margin_Padding.pdf"><i class="fas fa-download"></i>Télécharger PDF</button>
         </div>
 
         <div class="card">
             <div class="card-icon"><i class="fas fa-microchip"></i></div>
             <h4>Utilitaire: Liste des propriétés CSS</h4>
             <p>Liste complète des propriétés CSS avec leurs descriptions et exemples</p>
-            <a href="FICHIERS/COURS/TechnologieWeb/Liste-des-propriétés-CSS-Support-PDF-Pierre-Giraud.pdf" 
-            class="bouton-download"
-            download="Liste-des-propriétés-CSS-Support-PDF-Pierre-Giraud.pdf" 
-            target="_blank">
-                <i class="fas fa-download"></i>Télécharger PDF
-            </a>
+            <button type="button" class="bouton-download" data-fichier="FICHIERS/COURS/TechnologieWeb/Liste-des-propriétés-CSS-Support-PDF-Pierre-Giraud.pdf"><i class="fas fa-download"></i>Télécharger PDF</button>
         </div>
         
         <div class="card">
             <div class="card-icon"><i class="fas fa-microchip"></i></div>
             <h4>Les Structures Conditionnelles en JavaScript</h4>
             <p>Un guide pratique pour maîtriser les structures conditionnelles et les opérateurs en JavaScript</p>
-            <a href="FICHIERS/COURS/TechnologieWeb/Support_Cours_JS_Conditions_ISI.pdf" 
-            class="bouton-download"
-            download="Support_Cours_JS_Conditions_ISI.pdf" 
-            target="_blank">
-                <i class="fas fa-download"></i>Télécharger PDF
-            </a>
+            <button type="button" class="bouton-download" data-fichier="FICHIERS/COURS/TechnologieWeb/Support_Cours_JS_Conditions_ISI.pdf"><i class="fas fa-download"></i>Télécharger PDF</button>
         </div>
 
         <div class="card">
             <div class="card-icon"><i class="fas fa-microchip"></i></div>
             <h4>Le DOM en JavaScript</h4>
             <p>Une introduction essentielle au DOM en JavaScript, expliquant le cycle en trois étapes : sélectionner, modifier et écouter les événements à travers des commandes pratiques</p>
-            <a href="FICHIERS/COURS/TechnologieWeb/Le-DOM-en-JavaScript-Essentiel L1GL.pptx" 
-            class="bouton-download"
-            download="Le-DOM-en-JavaScript-Essentiel L1GL.pptx" 
-            target="_blank">
-                <i class="fas fa-download"></i>Télécharger PPTX
-            </a>
+            <button type="button" class="bouton-download" data-fichier="FICHIERS/COURS/TechnologieWeb/Le-DOM-en-JavaScript-Essentiel L1GL.pptx"><i class="fas fa-download"></i>Télécharger PPTX</button>
         </div>
 
         <div class="card">
             <div class="card-icon"><i class="fas fa-microchip"></i></div>
             <h4>JavaScript : Web Storage & Manipulation de classes (classList)</h4>
             <p>Un guide pratique pour maîtriser le stockage Web (localStorage, sessionStorage) et la manipulation dynamique des classes CSS avec classList en JavaScript, enrichi d'exercices concrets d'application</p>
-            <a href="FICHIERS/COURS/TechnologieWeb/Support_Cours_JS_WebStorage_classList.pdf" 
-            class="bouton-download"
-            download="Support_Cours_JS_WebStorage_classList.pdf" 
-            target="_blank">
-                <i class="fas fa-download"></i>Télécharger PDF
-            </a>
+            <button type="button" class="bouton-download" data-fichier="FICHIERS/COURS/TechnologieWeb/Support_Cours_JS_WebStorage_classList.pdf"><i class="fas fa-download"></i>Télécharger PDF</button>
         </div>
         <div class="card">
             <div class="card-icon"><i class="fas fa-microchip"></i></div>
             <h4>JavaScript : Le Stockage de Tableaux dans localStorage</h4>
             <p>Un guide pratique pour apprendre à stocker et récupérer des tableaux dans localStorage grâce à JSON.stringify() et JSON.parse(), illustré par des exemples concrets de persistance de données</p>
-            <a href="FICHIERS/COURS/TechnologieWeb/Support_Cours_LocalStorage_Tableaux.pdf" 
-            class="bouton-download"
-            download="Support_Cours_LocalStorage_Tableaux.pdf" 
-            target="_blank">
-                <i class="fas fa-download"></i>Télécharger PDF
-            </a>
+            <button type="button" class="bouton-download" data-fichier="FICHIERS/COURS/TechnologieWeb/Support_Cours_LocalStorage_Tableaux.pdf"><i class="fas fa-download"></i>Télécharger PDF</button>
         </div>
 
     </section>
@@ -196,42 +196,26 @@
         <div class="card">
             <h4>TD 1 : Liste</h4>
             <p>Les listes dans le langage HTML</p>
-            <a href="FICHIERS/TD/TD-TW/TD-LISTE.png" 
-            class="bouton-download"
-            download="TD-LISTE.png">
-                <i class="fas fa-download"></i>Télécharger Image
-            </a>
+            <button type="button" class="bouton-download" data-fichier="FICHIERS/TD/TD-TW/TD-LISTE.png"><i class="fas fa-download"></i>Télécharger Image</button>
         </div>
 
         <!-- Carte TD 2 -->
         <div class="card">
             <h4>TD 2 : Liste & insertion de Médias</h4>
             <p>Insertion et gestion des médias dans les pages web</p>
-            <a href="FICHIERS/TD/TD-TW/TD-Liste-&-insertion-de-Médias.png" 
-            class="bouton-download"
-            download="TD-Liste-&-insertion-de-Médias.png">
-                <i class="fas fa-download"></i>Télécharger Image
-            </a>
+            <button type="button" class="bouton-download" data-fichier="FICHIERS/TD/TD-TW/TD-Liste-&-insertion-de-Médias.png"><i class="fas fa-download"></i>Télécharger Image</button>
         </div>
 
         <div class="card">
             <h4>TD 3 : Tableaux</h4>
             <p>Production de tableaux HTML</p>
-            <a href="FICHIERS/TD/TD-TW/TP-TABLEAU.pdf" 
-            class="bouton-download"
-            download="TP-TABLEAU.pdf">
-                <i class="fas fa-download"></i>Télécharger PDF
-            </a>
+            <button type="button" class="bouton-download" data-fichier="FICHIERS/TD/TD-TW/TP-TABLEAU.pdf"><i class="fas fa-download"></i>Télécharger PDF</button>
         </div>
 
         <div class="card">
             <h4>TD 4 : Tableau & Formulaire</h4>
             <p>Production de tableaux HTML et de formulaires</p>
-            <a href="FICHIERS/TD/TD-TW/TD-Tableau-&-Formulaire.jpg" 
-            class="bouton-download"
-            download="TD-Tableau-&-Formulaire.jpg">
-                <i class="fas fa-download"></i>Télécharger Image
-            </a>
+            <button type="button" class="bouton-download" data-fichier="FICHIERS/TD/TD-TW/TD-Tableau-&-Formulaire.jpg"><i class="fas fa-download"></i>Télécharger Image</button>
         </div>
     </section>
 
@@ -241,5 +225,7 @@
     <p>&copy; 2026 - GL HUB | Département Informatique</p>
 </footer>
 <script src="theme.js"></script>
+<script src="auth.js"></script>
+<script src="paywall.js"></script>
 </body>
 </html>
