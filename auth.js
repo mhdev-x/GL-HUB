@@ -133,6 +133,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
     verifierSession();
 
+    // ---------- Revérifier un paiement au retour de PayDunya ----------
+    // (succès ou annulation, PayDunya n'appelle pas toujours le webhook dans ce dernier cas)
+    let parametresUrl = new URLSearchParams(window.location.search);
+    let tokenPaiement = parametresUrl.get("token");
+    if (tokenPaiement) {
+        supabaseClient.functions.invoke("verifier-paiement", { body: { token: tokenPaiement } })
+            .finally(() => {
+                // On nettoie l'URL pour éviter de revérifier à chaque rechargement
+                let urlPropre = window.location.pathname;
+                window.history.replaceState({}, document.title, urlPropre);
+            });
+    }
+
     // Réagit en direct si l'utilisateur se connecte/déconnecte (autre onglet, expiration...)
     supabaseClient.auth.onAuthStateChange((_evenement, session) => {
         if (session) {
