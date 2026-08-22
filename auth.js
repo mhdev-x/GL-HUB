@@ -1,5 +1,13 @@
 document.addEventListener("DOMContentLoaded", () => {
 
+    // Si le navigateur restaure une page "gelée" (retour en arrière depuis PayDunya
+    // par exemple), on force un vrai rechargement pour repartir sur un état propre
+    window.addEventListener("pageshow", (evenement) => {
+        if (evenement.persisted) {
+            window.location.reload();
+        }
+    });
+
     // ===== Éléments de la modale Connexion/Inscription =====
     let boutonConnexionDepuisPanneau = document.querySelector("#boutonConnexionDepuisPanneau");
     let voileAuth = document.querySelector("#voileAuth");

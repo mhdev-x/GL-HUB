@@ -98,9 +98,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
         if (statut === "en_attente") {
-            bouton.innerHTML = `<i class="fa-solid fa-hourglass-half"></i>En attente de validation`;
+            bouton.innerHTML = `<i class="fa-solid fa-hourglass-half"></i>Vérifier / Réessayer le paiement`;
             bouton.classList.add("bouton-verrouille");
-            bouton.disabled = true;
+            bouton.addEventListener("click", () => verifierOuRelancer(ressource, bouton));
             return;
         }
 
@@ -109,6 +109,31 @@ document.addEventListener("DOMContentLoaded", async () => {
         bouton.classList.add("bouton-verrouille");
         bouton.addEventListener("click", () => ouvrirModalePaiement(ressource));
     });
+
+    // ---------- Vérifier le vrai statut d'un paiement en attente, ou le relancer ----------
+    let verifierOuRelancer = async (ressource, bouton) => {
+        let paiementInfo = (paiementsEtudiant || []).find(p => p.ressource_id === ressource.id);
+        let texteOriginal = bouton.innerHTML;
+        bouton.disabled = true;
+        bouton.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>Vérification...`;
+
+        if (paiementInfo && paiementInfo.reference_paiement) {
+            let { data } = await supabaseClient.functions.invoke("verifier-paiement", {
+                body: { token: paiementInfo.reference_paiement }
+            });
+
+            if (data && data.statut === "valide") {
+                location.reload(); // le paiement est en fait passé, on rafraîchit pour débloquer
+                return;
+            }
+        }
+
+        bouton.disabled = false;
+        bouton.innerHTML = texteOriginal;
+
+        // Toujours en attente (ou annulé) : on propose de relancer un nouveau paiement
+        ouvrirModalePaiement(ressource);
+    };
 
     // ---------- Modale de paiement PayDunya ----------
     let ouvrirModalePaiement = (ressource) => {
