@@ -111,7 +111,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (zoneAuthNav) {
             let nom = (utilisateur.user_metadata && utilisateur.user_metadata.nom) || utilisateur.email;
-            zoneAuthNav.innerHTML = `${lienAdmin}<button id="boutonDeconnexion" class="lien-menu-bouton"><i class="fa-solid fa-right-from-bracket"></i>${nom}</button>`;
+
+            zoneAuthNav.innerHTML = `${lienAdmin}<button id="boutonDeconnexion" class="lien-menu-bouton"><i class="fa-solid fa-right-from-bracket"></i></button>`;
+            // Le nom est ajouté via textContent (jamais innerHTML) pour empêcher
+            // qu'un nom contenant du code HTML/JS ne s'exécute dans la page
+            document.querySelector("#boutonDeconnexion").append(nom);
+
             document.querySelector("#boutonDeconnexion").addEventListener("click", async () => {
                 await supabaseClient.auth.signOut();
                 window.location.href = "index.html";

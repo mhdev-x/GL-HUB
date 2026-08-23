@@ -23,9 +23,30 @@ document.addEventListener("DOMContentLoaded", async () => {
         let carte = document.createElement("div");
         carte.className = "carte-paiement";
 
-        let badgeOuActions = "";
+        // ---------- Bloc infos : construit avec textContent (jamais innerHTML) ----------
+        // pour empêcher qu'un nom d'étudiant contenant du code HTML/JS ne s'exécute
+        let blocInfos = document.createElement("div");
+        blocInfos.className = "infos-paiement";
+
+        let titreEtudiant = document.createElement("h4");
+        titreEtudiant.textContent = nomEtudiant;
+
+        let ligneRessource = document.createElement("p");
+        ligneRessource.textContent = titreRessource;
+
+        let ligneMontant = document.createElement("p");
+        let spanMontant = document.createElement("span");
+        spanMontant.className = "montant";
+        spanMontant.textContent = `${paiement.montant} FCFA`;
+        ligneMontant.appendChild(spanMontant);
+        ligneMontant.append(` — ${dateFormatee}`);
+
+        blocInfos.append(titreEtudiant, ligneRessource, ligneMontant);
+
+        // ---------- Bloc badge/actions : pas de données utilisateur ici, innerHTML sans risque ----------
+        let blocDroite = document.createElement("div");
         if (avecActions) {
-            badgeOuActions = `
+            blocDroite.innerHTML = `
                 <div class="actions-paiement">
                     <button class="bouton-valider" data-id="${paiement.id}">
                         <i class="fa-solid fa-check"></i>Valider
@@ -37,18 +58,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         } else {
             let classeBadge = paiement.statut === "valide" ? "badge-valide" : "badge-echoue";
             let texteBadge = paiement.statut === "valide" ? "Validé" : "Refusé";
-            badgeOuActions = `<span class="badge-statut ${classeBadge}">${texteBadge}</span>`;
+            blocDroite.innerHTML = `<span class="badge-statut ${classeBadge}">${texteBadge}</span>`;
         }
 
-        carte.innerHTML = `
-            <div class="infos-paiement">
-                <h4>${nomEtudiant}</h4>
-                <p>${titreRessource}</p>
-                <p><span class="montant">${paiement.montant} FCFA</span> — ${dateFormatee}</p>
-            </div>
-            ${badgeOuActions}
-        `;
-
+        carte.append(blocInfos, ...blocDroite.children);
         return carte;
     };
 
