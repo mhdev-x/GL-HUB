@@ -80,6 +80,27 @@ document.addEventListener("DOMContentLoaded", () => {
     if (ongletConnexion) ongletConnexion.addEventListener("click", afficherConnexion);
     if (ongletInscription) ongletInscription.addEventListener("click", afficherInscription);
 
+    // ---------- Valider avec la touche Entrée ----------
+    // Sur les champs du formulaire de connexion → déclenche le bouton de connexion
+    formConnexion.querySelectorAll("input").forEach(champ => {
+        champ.addEventListener("keydown", (evenement) => {
+            if (evenement.key === "Enter") {
+                evenement.preventDefault();
+                boutonValiderConnexion.click();
+            }
+        });
+    });
+
+    // Sur les champs du formulaire d'inscription → déclenche le bouton d'inscription
+    formInscription.querySelectorAll("input").forEach(champ => {
+        champ.addEventListener("keydown", (evenement) => {
+            if (evenement.key === "Enter") {
+                evenement.preventDefault();
+                boutonValiderInscription.click();
+            }
+        });
+    });
+
     // ---------- Ouvrir / fermer le panneau Matières ----------
     let ouvrirLePanneauMatieres = () => {
         voileMatieres.classList.add("visible");
