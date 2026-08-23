@@ -2,6 +2,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     let listeEnAttente = document.querySelector("#listeEnAttente");
     let listeHistorique = document.querySelector("#listeHistorique");
+    let listeEnLigne = document.querySelector("#listeEnLigne");
+    let listeEtudiants = document.querySelector("#listeEtudiants");
     let statEnAttente = document.querySelector("#statEnAttente");
     let statValides = document.querySelector("#statValides");
     let statRevenus = document.querySelector("#statRevenus");
@@ -12,12 +14,50 @@ document.addEventListener("DOMContentLoaded", async () => {
         window.location.href = "index.html";
     });
 
+    // ---------- Qui est en ligne maintenant (temps réel) ----------
+    let canalPresence = supabaseClient.channel("presence-etudiants");
+
+    let afficherEtudiantsEnLigne = () => {
+        let etat = canalPresence.presenceState();
+        let etudiantsConnectes = Object.values(etat).flat();
+
+        listeEnLigne.innerHTML = "";
+
+        if (etudiantsConnectes.length === 0) {
+            listeEnLigne.innerHTML = `<p class="message-chargement">Aucun étudiant en ligne pour le moment.</p>`;
+            return;
+        }
+
+        etudiantsConnectes.forEach(etudiant => {
+            let carte = document.createElement("div");
+            carte.className = "carte-etudiant carte-en-ligne";
+
+            let puce = document.createElement("span");
+            puce.className = "puce-en-ligne";
+
+            let infos = document.createElement("div");
+            let nomEl = document.createElement("strong");
+            nomEl.textContent = etudiant.nom || "Étudiant";
+            let pageEl = document.createElement("p");
+            pageEl.textContent = etudiant.page || "";
+
+            infos.append(nomEl, pageEl);
+            carte.append(puce, infos);
+            listeEnLigne.appendChild(carte);
+        });
+    };
+
+    canalPresence
+        .on("presence", { event: "sync" }, afficherEtudiantsEnLigne)
+        .subscribe();
+
     // ---------- Formater une carte de paiement ----------
     let creerCartePaiement = (paiement, avecActions) => {
         let nomEtudiant = (paiement.profils && paiement.profils.nom) || (paiement.profils && paiement.profils.email) || "Étudiant inconnu";
         let titreRessource = (paiement.ressources && paiement.ressources.titre) || "Ressource supprimée";
         let dateFormatee = new Date(paiement.cree_le).toLocaleDateString("fr-FR", {
             day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit"
+
         });
 
         let carte = document.createElement("div");
@@ -142,5 +182,64 @@ document.addEventListener("DOMContentLoaded", async () => {
         chargerPaiements();
     };
 
+    // ---------- Charger la liste complète des étudiants inscrits ----------
+    let chargerEtudiants = async () => {
+        let { data: profils, error } = await supabaseClient
+            .from("profils")
+            .select("user_id, nom, email, cree_le")
+            .order("cree_le", { ascending: false });
+
+        if (error) {
+            listeEtudiants.innerHTML = `<p class="message-chargement">Erreur de chargement : ${error.message}</p>`;
+            return;
+        }
+
+        let { data: paiementsValides } = await supabaseClient
+            .from("paiements")
+            .select("user_id, montant")
+            .eq("statut", "valide");
+
+        let totalParEtudiant = {};
+        (paiementsValides || []).forEach(p => {
+            totalParEtudiant[p.user_id] = (totalParEtudiant[p.user_id] || 0) + p.montant;
+        });
+
+        listeEtudiants.innerHTML = "";
+
+        if (profils.length === 0) {
+            listeEtudiants.innerHTML = `<p class="message-chargement">Aucun étudiant inscrit pour le moment.</p>`;
+            return;
+        }
+
+        profils.forEach(etudiant => {
+            let carte = document.createElement("div");
+            carte.className = "carte-etudiant";
+
+            let infos = document.createElement("div");
+
+            let nomEl = document.createElement("strong");
+            nomEl.textContent = etudiant.nom || "Nom non renseigné";
+
+            let emailEl = document.createElement("p");
+            emailEl.textContent = etudiant.email || "";
+
+            let dateEl = document.createElement("p");
+            let dateFormatee = new Date(etudiant.cree_le).toLocaleDateString("fr-FR", {
+                day: "2-digit", month: "2-digit", year: "numeric"
+            });
+            dateEl.textContent = `Inscrit le ${dateFormatee}`;
+
+            infos.append(nomEl, emailEl, dateEl);
+
+            let total = document.createElement("span");
+            total.className = "montant-total-etudiant";
+            total.textContent = `${totalParEtudiant[etudiant.user_id] || 0} FCFA dépensés`;
+
+            carte.append(infos, total);
+            listeEtudiants.appendChild(carte);
+        });
+    };
+
+    chargerEtudiants();
     chargerPaiements();
 });

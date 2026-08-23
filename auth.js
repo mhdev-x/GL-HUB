@@ -143,6 +143,26 @@ document.addEventListener("DOMContentLoaded", () => {
                 window.location.href = "index.html";
             });
         }
+
+        // ---------- Signaler sa présence en temps réel (pour l'admin) ----------
+        // Un seul canal de présence pour tout le site : quiconque le rejoint apparaît
+        // "en ligne" pour l'admin, et disparaît automatiquement en fermant l'onglet
+        if (!admin) {
+            let nomAffiche = (utilisateur.user_metadata && utilisateur.user_metadata.nom) || utilisateur.email;
+            let canalPresence = supabaseClient.channel("presence-etudiants", {
+                config: { presence: { key: utilisateur.id } }
+            });
+
+            canalPresence.subscribe(async (statut) => {
+                if (statut === "SUBSCRIBED") {
+                    await canalPresence.track({
+                        nom: nomAffiche,
+                        page: document.title || window.location.pathname,
+                        depuis: new Date().toISOString()
+                    });
+                }
+            });
+        }
     };
 
     let afficherEtatDeconnecte = () => {

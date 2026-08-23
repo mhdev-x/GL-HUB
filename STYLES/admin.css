@@ -228,3 +228,54 @@ footer {
         flex-direction: column;
     }
 }
+
+/* --- Étudiants (liste + en ligne) --- */
+.liste-etudiants {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.carte-etudiant {
+    background: var(--color-card-bg);
+    border: 1px solid var(--color-card-border);
+    border-radius: 12px;
+    padding: 14px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.carte-etudiant strong {
+    color: var(--color-text-tertiary);
+    display: block;
+    margin-bottom: 2px;
+}
+
+.carte-etudiant p {
+    color: var(--color-text-secondary);
+    font-size: 0.85rem;
+}
+
+.montant-total-etudiant {
+    font-weight: 700;
+    color: var(--color-accent);
+    white-space: nowrap;
+}
+
+.carte-en-ligne {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.puce-en-ligne {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.2);
+    flex-shrink: 0;
+}
