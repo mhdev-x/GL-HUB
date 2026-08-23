@@ -267,6 +267,18 @@ document.addEventListener("DOMContentLoaded", () => {
         erreurConnexion.textContent = "";
         fermerLaModaleAuth();
         afficherEtatConnecte(data.user);
+
+        // Si c'est un compte admin, on le redirige directement vers l'interface admin
+        // (uniquement au moment de la connexion, pas à chaque page visitée ensuite)
+        let { data: adminConnecte } = await supabaseClient
+            .from("admins")
+            .select("user_id")
+            .eq("user_id", data.user.id)
+            .maybeSingle();
+
+        if (adminConnecte && !window.location.pathname.endsWith("admin.html")) {
+            window.location.href = "admin.html";
+        }
     });
 
     // ---------- Inscription ----------

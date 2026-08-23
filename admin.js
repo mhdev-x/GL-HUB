@@ -194,6 +194,11 @@ document.addEventListener("DOMContentLoaded", async () => {
             return;
         }
 
+        // On récupère les comptes admin pour les exclure de la liste des étudiants
+        let { data: listeAdmins } = await supabaseClient.from("admins").select("user_id");
+        let idsAdmins = new Set((listeAdmins || []).map(a => a.user_id));
+        let profilsEtudiants = profils.filter(p => !idsAdmins.has(p.user_id));
+
         let { data: paiementsValides } = await supabaseClient
             .from("paiements")
             .select("user_id, montant")
@@ -206,12 +211,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         listeEtudiants.innerHTML = "";
 
-        if (profils.length === 0) {
+        if (profilsEtudiants.length === 0) {
             listeEtudiants.innerHTML = `<p class="message-chargement">Aucun étudiant inscrit pour le moment.</p>`;
             return;
         }
 
-        profils.forEach(etudiant => {
+        profilsEtudiants.forEach(etudiant => {
             let carte = document.createElement("div");
             carte.className = "carte-etudiant";
 
