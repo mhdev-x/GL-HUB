@@ -168,6 +168,36 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    // ---------- Traduire une erreur Supabase en message compréhensible ----------
+    // Le détail technique part toujours dans la console (F12) pour le débogage,
+    // sans jamais perturber l'étudiant avec du jargon.
+    let traduireErreurAuth = (error, contexte) => {
+        console.error(`Erreur Supabase (${contexte}) :`, error);
+
+        let message = error.message || "";
+
+        if (message.includes("already registered") || message.includes("already been registered")) {
+            return "Cet email est déjà utilisé.";
+        }
+        if (message.includes("Invalid login credentials")) {
+            return "Email ou mot de passe incorrect.";
+        }
+        if (message.includes("Email not confirmed")) {
+            return "Confirme ton email avant de te connecter (vérifie ta boîte mail).";
+        }
+        if (message.includes("For security purposes") || message.includes("rate limit")) {
+            return "Trop de tentatives. Réessaie dans quelques minutes.";
+        }
+        if (message.includes("Password should be at least")) {
+            return "Le mot de passe doit contenir au moins 6 caractères.";
+        }
+        if (message.includes("Failed to fetch") || message.includes("NetworkError")) {
+            return "Problème de connexion internet. Vérifie ta connexion et réessaie.";
+        }
+
+        return "Une erreur est survenue. Contacte-nous sur WhatsApp si ça persiste.";
+    };
+
     // ---------- Connexion ----------
     boutonValiderConnexion.addEventListener("click", async () => {
         let email = document.querySelector("#emailConnexion").value.trim();
@@ -189,7 +219,7 @@ document.addEventListener("DOMContentLoaded", () => {
         boutonValiderConnexion.disabled = false;
 
         if (error) {
-            erreurConnexion.textContent = "Email ou mot de passe incorrect.";
+            erreurConnexion.textContent = traduireErreurAuth(error, "connexion");
             return;
         }
 
@@ -228,9 +258,7 @@ document.addEventListener("DOMContentLoaded", () => {
         boutonValiderInscription.disabled = false;
 
         if (error) {
-            erreurInscription.textContent = error.message.includes("already registered")
-                ? "Cet email est déjà utilisé."
-                : "Une erreur est survenue. Réessaie.";
+            erreurInscription.textContent = traduireErreurAuth(error, "inscription");
             return;
         }
 
