@@ -238,6 +238,18 @@
     .modale {
         padding: 25px 20px;
     }
+    .lien-menu-bouton {
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+        padding: 12px;
+        border-bottom: none;
+        border-left: 4px solid transparent;
+    }
+    #zoneAuthNav {
+        flex-direction: column;
+        width: 100%;
+    }
 }
 
 /* ========================================================
