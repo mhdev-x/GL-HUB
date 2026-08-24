@@ -1,5 +1,22 @@
 document.addEventListener("DOMContentLoaded", () => {
 
+    // ---------- Petite notification stylisée (remplace alert() pour un rendu propre) ----------
+    let afficherToast = (message, icone = "fa-solid fa-circle-check") => {
+        let toast = document.createElement("div");
+        toast.className = "toast-notification";
+        toast.innerHTML = `<i class="${icone}"></i>`;
+        toast.append(message); // le texte est ajouté via append (jamais innerHTML) par sécurité
+
+        document.body.appendChild(toast);
+
+        // Petite animation d'entrée, puis disparition automatique après quelques secondes
+        requestAnimationFrame(() => toast.classList.add("toast-visible"));
+        setTimeout(() => {
+            toast.classList.remove("toast-visible");
+            setTimeout(() => toast.remove(), 400);
+        }, 4000);
+    };
+
     // On note tout de suite si l'URL indique une confirmation d'email qui vient
     // d'avoir lieu (avant que Supabase ne nettoie l'URL automatiquement)
     let vientDeConfirmerSonEmail = window.location.hash.includes("type=signup");
@@ -153,7 +170,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (vientDeConfirmerSonEmail) {
             vientDeConfirmerSonEmail = false; // évite de le réafficher si la fonction est rappelée
             let nomBienvenue = (utilisateur.user_metadata && utilisateur.user_metadata.nom) || "";
-            alert(`✅ Email confirmé ! Bienvenue sur GL HUB${nomBienvenue ? ", " + nomBienvenue : ""}.`);
+            afficherToast(`Email confirmé ! Bienvenue sur GL HUB${nomBienvenue ? ", " + nomBienvenue : ""}.`);
             // On nettoie l'adresse au cas où Supabase ne l'aurait pas déjà fait
             window.history.replaceState({}, document.title, window.location.pathname);
         }

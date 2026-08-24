@@ -294,3 +294,36 @@
     line-height: 1.6;
     margin-bottom: 20px;
 }
+
+/* ========================================================
+   TOAST — petite notification (remplace alert() natif)
+   ======================================================== */
+.toast-notification {
+    position: fixed;
+    top: -80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--color-card-bg);
+    color: var(--color-text);
+    border: 1px solid var(--color-card-border);
+    border-left: 4px solid #16a34a;
+    padding: 16px 24px;
+    border-radius: 10px;
+    box-shadow: 0 8px 25px var(--shadow-medium);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 600;
+    z-index: 500;
+    max-width: 90%;
+    transition: top 0.4s ease;
+}
+
+.toast-notification i {
+    color: #16a34a;
+    font-size: 1.3rem;
+}
+
+.toast-notification.toast-visible {
+    top: 20px;
+}
