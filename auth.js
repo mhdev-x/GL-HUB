@@ -1,5 +1,9 @@
 document.addEventListener("DOMContentLoaded", () => {
 
+    // On note tout de suite si l'URL indique une confirmation d'email qui vient
+    // d'avoir lieu (avant que Supabase ne nettoie l'URL automatiquement)
+    let vientDeConfirmerSonEmail = window.location.hash.includes("type=signup");
+
     // Si le navigateur restaure une page "gelée" (retour en arrière depuis PayDunya
     // par exemple), on force un vrai rechargement pour repartir sur un état propre
     window.addEventListener("pageshow", (evenement) => {
@@ -142,6 +146,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 await supabaseClient.auth.signOut();
                 window.location.href = "index.html";
             });
+        }
+
+        // ---------- Message de bienvenue après confirmation d'email ----------
+        // On ne l'affiche qu'une seule fois, juste après le clic sur le lien reçu par mail
+        if (vientDeConfirmerSonEmail) {
+            vientDeConfirmerSonEmail = false; // évite de le réafficher si la fonction est rappelée
+            let nomBienvenue = (utilisateur.user_metadata && utilisateur.user_metadata.nom) || "";
+            alert(`✅ Email confirmé ! Bienvenue sur GL HUB${nomBienvenue ? ", " + nomBienvenue : ""}.`);
+            // On nettoie l'adresse au cas où Supabase ne l'aurait pas déjà fait
+            window.history.replaceState({}, document.title, window.location.pathname);
         }
 
         // ---------- Signaler sa présence en temps réel (pour l'admin) ----------
