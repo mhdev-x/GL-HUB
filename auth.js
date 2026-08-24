@@ -304,7 +304,13 @@ document.addEventListener("DOMContentLoaded", () => {
             email: email,
             password: motDePasse,
             options: {
-                data: { nom: nom }
+                data: { nom: nom },
+                // On force explicitement la bonne adresse de redirection ici,
+                // plutôt que de dépendre uniquement du réglage "Site URL" sur
+                // le dashboard Supabase — ça garantit que le lien de
+                // confirmation pointe toujours vers la bonne page, peu importe
+                // depuis quelle page du site l'étudiant s'est inscrit.
+                emailRedirectTo: window.location.origin + window.location.pathname
             }
         });
 
