@@ -15,7 +15,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     // ---------- Qui est en ligne maintenant (temps réel) ----------
-    let canalPresence = supabaseClient.channel("presence-etudiants");
+    let canalPresence = supabaseClient.channel("presence-etudiants", {
+        config: { private: true }
+    });
 
     let afficherEtudiantsEnLigne = () => {
         let etat = canalPresence.presenceState();

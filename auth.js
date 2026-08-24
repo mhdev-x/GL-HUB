@@ -181,7 +181,10 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!admin) {
             let nomAffiche = (utilisateur.user_metadata && utilisateur.user_metadata.nom) || utilisateur.email;
             let canalPresence = supabaseClient.channel("presence-etudiants", {
-                config: { presence: { key: utilisateur.id } }
+                config: {
+                    private: true,
+                    presence: { key: utilisateur.id }
+                }
             });
 
             canalPresence.subscribe(async (statut) => {
