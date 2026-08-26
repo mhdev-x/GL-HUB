@@ -20,6 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // On note tout de suite si l'URL indique une confirmation d'email qui vient
     // d'avoir lieu (avant que Supabase ne nettoie l'URL automatiquement)
     let vientDeConfirmerSonEmail = window.location.hash.includes("type=signup");
+    let vientDeReinitialiserSonMdp = window.location.hash.includes("type=recovery");
 
     // Si le navigateur restaure une page "gelée" (retour en arrière depuis PayDunya
     // par exemple), on force un vrai rechargement pour repartir sur un état propre
@@ -101,6 +102,85 @@ document.addEventListener("DOMContentLoaded", () => {
     if (ongletConnexion) ongletConnexion.addEventListener("click", afficherConnexion);
     if (ongletInscription) ongletInscription.addEventListener("click", afficherInscription);
 
+    // ---------- Mot de passe oublié ----------
+    let lienMotDePasseOublie = document.querySelector("#lienMotDePasseOublie");
+    if (lienMotDePasseOublie) {
+        lienMotDePasseOublie.addEventListener("click", async () => {
+            let email = document.querySelector("#emailConnexion").value.trim();
+
+            if (!email) {
+                erreurConnexion.textContent = "Renseigne d'abord ton email ci-dessus, puis clique à nouveau.";
+                return;
+            }
+
+            lienMotDePasseOublie.disabled = true;
+            lienMotDePasseOublie.textContent = "Envoi en cours...";
+
+            let { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+                redirectTo: window.location.origin + window.location.pathname
+            });
+
+            lienMotDePasseOublie.disabled = false;
+            lienMotDePasseOublie.textContent = "Mot de passe oublié ?";
+
+            if (error) {
+                erreurConnexion.textContent = "Une erreur est survenue. Réessaie.";
+                return;
+            }
+
+            erreurConnexion.textContent = "";
+            afficherToast("Email envoyé ! Vérifie ta boîte mail pour réinitialiser ton mot de passe.");
+        });
+    }
+
+    // ---------- Traiter le retour après clic sur le lien de réinitialisation ----------
+    if (vientDeReinitialiserSonMdp) {
+        let voile = document.createElement("div");
+        voile.className = "voile visible";
+
+        let modale = document.createElement("div");
+        modale.className = "modale visible";
+        modale.innerHTML = `
+            <h3 style="margin-bottom:20px;color:var(--color-text);"><i class="fa-solid fa-key"></i> Choisis un nouveau mot de passe</h3>
+            <div class="formulaire-auth">
+                <label for="nouveauMdpRecuperation">Nouveau mot de passe</label>
+                <input type="password" id="nouveauMdpRecuperation" placeholder="6 caractères minimum">
+                <p id="erreurRecuperation" class="message-erreur"></p>
+                <button id="boutonValiderRecuperation" class="bouton-accent bouton-pleine-largeur">Valider le nouveau mot de passe</button>
+            </div>
+        `;
+
+        document.body.appendChild(voile);
+        document.body.appendChild(modale);
+
+        modale.querySelector("#boutonValiderRecuperation").addEventListener("click", async (e) => {
+            let nouveauMdp = modale.querySelector("#nouveauMdpRecuperation").value.trim();
+            let erreurRecup = modale.querySelector("#erreurRecuperation");
+
+            if (nouveauMdp.length < 6) {
+                erreurRecup.textContent = "Le mot de passe doit contenir au moins 6 caractères.";
+                return;
+            }
+
+            e.target.disabled = true;
+            e.target.textContent = "Validation...";
+
+            let { error } = await supabaseClient.auth.updateUser({ password: nouveauMdp });
+
+            if (error) {
+                erreurRecup.textContent = "Une erreur est survenue. Réessaie.";
+                e.target.disabled = false;
+                e.target.textContent = "Valider le nouveau mot de passe";
+                return;
+            }
+
+            voile.remove();
+            modale.remove();
+            window.history.replaceState({}, document.title, window.location.pathname);
+            afficherToast("Mot de passe changé avec succès !");
+        });
+    }
+
     // ---------- Valider avec la touche Entrée ----------
     // Sur les champs du formulaire de connexion → déclenche le bouton de connexion
     formConnexion.querySelectorAll("input").forEach(champ => {
@@ -137,6 +217,75 @@ document.addEventListener("DOMContentLoaded", () => {
     if (fermerPanneauMatieres) fermerPanneauMatieres.addEventListener("click", fermerLePanneauMatieres);
     if (voileMatieres) voileMatieres.addEventListener("click", fermerLePanneauMatieres);
 
+    // ---------- Recherche de cours dans la nav ----------
+    let champRecherche = document.querySelector("#rechercheCours");
+    let resultatsRecherche = document.querySelector("#resultatsRecherche");
+
+    if (champRecherche && resultatsRecherche) {
+        let delaiRecherche = null;
+
+        champRecherche.addEventListener("input", () => {
+            clearTimeout(delaiRecherche);
+            let terme = champRecherche.value.trim();
+
+            if (!terme) {
+                resultatsRecherche.classList.remove("visible");
+                return;
+            }
+
+            delaiRecherche = setTimeout(() => lancerRecherche(terme), 300);
+        });
+
+        document.addEventListener("click", (e) => {
+            if (!e.target.closest(".item-recherche")) {
+                resultatsRecherche.classList.remove("visible");
+            }
+        });
+    }
+
+    let lancerRecherche = async (terme) => {
+        let { data: sessionData } = await supabaseClient.auth.getSession();
+
+        if (!sessionData.session) {
+            resultatsRecherche.innerHTML = `<p class="message-recherche">Connecte-toi pour voir les cours.</p>`;
+            resultatsRecherche.classList.add("visible");
+            return;
+        }
+
+        let { data: resultats, error } = await supabaseClient
+            .from("ressources")
+            .select("id, titre, matieres ( nom, slug )")
+            .ilike("titre", `%${terme}%`)
+            .limit(8);
+
+        resultatsRecherche.innerHTML = "";
+
+        if (error || !resultats || resultats.length === 0) {
+            resultatsRecherche.innerHTML = `<p class="message-recherche">Aucun résultat pour "${terme}".</p>`;
+            resultatsRecherche.classList.add("visible");
+            return;
+        }
+
+        resultats.forEach(r => {
+            if (!r.matieres) return;
+            let lien = document.createElement("a");
+            lien.href = `${r.matieres.slug}.html`;
+
+            let titreEl = document.createElement("span");
+            titreEl.textContent = r.titre;
+
+            let matiereEl = document.createElement("span");
+            matiereEl.className = "matiere-resultat";
+            matiereEl.textContent = r.matieres.nom;
+
+            lien.append(titreEl, matiereEl);
+            resultatsRecherche.appendChild(lien);
+        });
+
+        resultatsRecherche.classList.add("visible");
+    };
+
+
     // ---------- Mettre à jour l'interface selon l'état de connexion ----------
     let afficherEtatConnecte = async (utilisateur) => {
         if (matieresVerrouillees) matieresVerrouillees.style.display = "none";
@@ -154,12 +303,13 @@ document.addEventListener("DOMContentLoaded", () => {
         if (zoneAuthNav) {
             let nom = (utilisateur.user_metadata && utilisateur.user_metadata.nom) || utilisateur.email;
 
-            zoneAuthNav.innerHTML = `${lienAdmin}<button id="boutonDeconnexion" class="lien-menu-bouton"><i class="fa-solid fa-right-from-bracket"></i></button>`;
+            zoneAuthNav.innerHTML = `${lienAdmin}<a href="profil.html" class="lien-menu-bouton" id="lienProfil"><i class="fa-solid fa-user"></i></a><button id="boutonDeconnexion" class="lien-menu-bouton" title="Se déconnecter"><i class="fa-solid fa-right-from-bracket"></i></button>`;
             // Le nom est ajouté via textContent (jamais innerHTML) pour empêcher
             // qu'un nom contenant du code HTML/JS ne s'exécute dans la page
-            document.querySelector("#boutonDeconnexion").append(nom);
+            document.querySelector("#lienProfil").append(nom);
 
-            document.querySelector("#boutonDeconnexion").addEventListener("click", async () => {
+            document.querySelector("#boutonDeconnexion").addEventListener("click", async (e) => {
+                e.preventDefault();
                 await supabaseClient.auth.signOut();
                 window.location.href = "index.html";
             });

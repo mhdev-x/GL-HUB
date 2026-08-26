@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="STYLES/theme.css">
+    <link rel="stylesheet" href="STYLES/auth.css">
+    <link rel="stylesheet" href="STYLES/profil.css">
+    <title>GL HUB — Mon profil</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabaseClient.js"></script>
+    <script>
+        // 🔒 GARDE D'ACCÈS — il faut simplement être connecté (étudiant ou admin)
+        document.documentElement.style.visibility = "hidden";
+        (async () => {
+            let { data } = await supabaseClient.auth.getSession();
+            if (!data.session) {
+                window.location.replace("index.html");
+            } else {
+                document.documentElement.style.visibility = "visible";
+            }
+        })();
+    </script>
+</head>
+<body>
+    <button id="themeToggle" class="theme-toggle" aria-label="Changer de thème">🌚</button>
+
+    <header class="site-header">
+        <img class="logo-img" src="MEDIAS/LOGO-GL-HUB.png" alt="logo de GL HUB">
+        <div class="logo-text">
+            <i class="fa-solid fa-user-graduate fa-bounce" style="color: rgb(255, 255, 255);"></i>GL HUB
+        </div>
+        <p class="slogan" style="font-size: 1.2rem; font-weight: bold;">Mon profil</p>
+    </header>
+
+    <nav>
+        <ul class="menu">
+            <li><a href="index.html"><i class="fa-solid fa-house fa-bounce" style="color: rgb(4, 51, 131);"></i>Accueil</a></li>
+        </ul>
+    </nav>
+
+    <main class="container">
+
+        <h2 class="section-title"><i class="fa-solid fa-id-card"></i>Mes informations</h2>
+        <section class="carte-profil">
+            <label for="champNom">Nom complet</label>
+            <input type="text" id="champNom" placeholder="Ton nom complet">
+            <p class="message-erreur" id="erreurNom"></p>
+            <button id="boutonEnregistrerNom" class="bouton-accent">Enregistrer les modifications</button>
+        </section>
+
+        <hr>
+
+        <h2 class="section-title"><i class="fa-solid fa-lock"></i>Changer mon mot de passe</h2>
+        <section class="carte-profil">
+            <label for="champNouveauMdp">Nouveau mot de passe</label>
+            <input type="password" id="champNouveauMdp" placeholder="6 caractères minimum">
+            <label for="champConfirmationMdp">Confirmer le nouveau mot de passe</label>
+            <input type="password" id="champConfirmationMdp" placeholder="Retape le même mot de passe">
+            <p class="message-erreur" id="erreurMdp"></p>
+            <button id="boutonChangerMdp" class="bouton-accent">Changer le mot de passe</button>
+        </section>
+
+        <hr>
+
+        <h2 class="section-title"><i class="fa-solid fa-download"></i>Mes ressources téléchargées</h2>
+        <div id="listeMesRessources" class="liste-mes-ressources">
+            <p class="message-chargement">Chargement...</p>
+        </div>
+
+        <hr>
+
+        <h2 class="section-title" style="color:#dc2626;"><i class="fa-solid fa-triangle-exclamation"></i>Zone de danger</h2>
+        <section class="carte-profil carte-danger">
+            <p>Supprimer ton compte est <strong>définitif et irréversible</strong>. Toutes tes données (profil, historique de paiements) seront effacées. Les ressources déjà téléchargées sur ton appareil ne sont pas concernées.</p>
+            <button id="boutonSupprimerCompte" class="bouton-danger">Supprimer mon compte définitivement</button>
+        </section>
+
+    </main>
+
+    <footer>
+        <p>&copy; 2026 - GL HUB | Département Informatique</p>
+    </footer>
+
+    <script src="theme.js"></script>
+    <script src="auth.js"></script>
+    <script src="profil.js"></script>
+</body>
+</html>

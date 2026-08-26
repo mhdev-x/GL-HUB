@@ -42,6 +42,14 @@
     <ul class="menu">
         <li><a href="index.html"><i class="fa-solid fa-house fa-bounce" style="color: rgb(4, 51, 131);"></i>Accueil</a></li>
         <li><a href="contact.html"><i class="fa-solid fa-envelope fa-bounce" style="color: rgb(4, 51, 131);"></i>Contact</a></li>
+        <li class="item-recherche">
+            <div class="barre-recherche">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="rechercheCours" placeholder="Rechercher un cours..." autocomplete="off">
+            </div>
+            <div id="resultatsRecherche" class="resultats-recherche"></div>
+        </li>
+        
         <li><button id="boutonMatieres" class="lien-menu-bouton"><i class="fa-solid fa-bars"></i>Matières</button></li>
         <li id="zoneAuthNav"><button id="boutonAuth" class="lien-menu-bouton"><i class="fa-solid fa-user"></i>Se connecter</button></li>
     </ul>
@@ -81,6 +89,8 @@
         <input type="email" id="emailConnexion" placeholder="toi@exemple.com" required>
         <label for="motDePasseConnexion">Mot de passe</label>
         <input type="password" id="motDePasseConnexion" placeholder="••••••••" required>
+        <button type="button" id="lienMotDePasseOublie" class="lien-mot-de-passe-oublie">Mot de passe oublié ?</button>
+
         <p id="erreurConnexion" class="message-erreur"></p>
         <button id="boutonValiderConnexion" class="bouton-accent bouton-pleine-largeur">Se connecter</button>
     </div>
@@ -106,7 +116,7 @@
             <div class="card-icon"><i class="fas fa-file-code"></i></div>
             <h4>Chapitre 1 : Généralités</h4>
             <p>Introduction à la Programmation en C</p>
-            <button type="button" class="bouton-download" data-fichier="FICHIERS/COURS/LangageC/Chapitre.1-Generalites.pdf"><i class="fas fa-download"></i>Télécharger PDF</button>
+            <button type="button" class="bouton-download" data-fichier="FICHIERS/COURS/LangageC/Chapitre.1-Généralités.pdf"><i class="fas fa-download"></i>Télécharger PDF</button>
         </div>
 
         <!-- Carte Cours 2 -->
@@ -135,7 +145,7 @@
             <div class="card-icon"><i class="fas fa-id-card"></i></div>
             <h4>Complément Chapitre 5 : Les Chaines de Caractères</h4>
             <p>Manipulation de Textes et Regroupement de Données : Maîtriser les Chaînes et les Structures</p>
-            <button type="button" class="bouton-download" data-fichier="FICHIERS/COURS/LangageC/Complement-Chapitre.5-les-fonctions-chaines-de-caracteres.pdf"><i class="fas fa-download"></i> Télécharger PDF</button>
+            <button type="button" class="bouton-download" data-fichier="FICHIERS/COURS/LangageC/Complément-Chapitre.5-les-fonctions-chaines-de-caracteres.pdf"><i class="fas fa-download"></i> Télécharger PDF</button>
         </div>
 
         <div class="card">

@@ -26,6 +26,14 @@
     <ul class="menu">
         <li><a href="index.html"><i class="fa-solid fa-house fa-bounce" style="color: rgb(4, 51, 131);"></i>Accueil</a></li>
         <li><a href="contact.html" class="active"><i class="fa-solid fa-envelope fa-bounce" style="color: rgb(4, 51, 131);"></i>Contact</a></li>
+        <li class="item-recherche">
+            <div class="barre-recherche">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="rechercheCours" placeholder="Rechercher un cours..." autocomplete="off">
+            </div>
+            <div id="resultatsRecherche" class="resultats-recherche"></div>
+        </li>
+        
         <li><button id="boutonMatieres" class="lien-menu-bouton"><i class="fa-solid fa-bars"></i>Matières</button></li>
         <li id="zoneAuthNav"><button id="boutonAuth" class="lien-menu-bouton"><i class="fa-solid fa-user"></i>Se connecter</button></li>
     </ul>
@@ -65,12 +73,14 @@
         <input type="email" id="emailConnexion" placeholder="toi@exemple.com" required>
         <label for="motDePasseConnexion">Mot de passe</label>
         <input type="password" id="motDePasseConnexion" placeholder="••••••••" required>
+        <button type="button" id="lienMotDePasseOublie" class="lien-mot-de-passe-oublie">Mot de passe oublié ?</button>
+
         <p id="erreurConnexion" class="message-erreur"></p>
         <button id="boutonValiderConnexion" class="bouton-accent bouton-pleine-largeur">Se connecter</button>
     </div>
     <div id="formInscription" class="formulaire-auth" style="display: none;">
         <label for="nomInscription">Nom complet</label>
-        <input type="text" id="nomInscription" placeholder="Ton prénom et nom" required>
+        <input type="text" id="nomInscription" placeholder="Ton nom et prénom" required>
         <label for="emailInscription">Adresse e-mail</label>
         <input type="email" id="emailInscription" placeholder="toi@exemple.com" required>
         <label for="motDePasseInscription">Mot de passe</label>

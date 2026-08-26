@@ -1,0 +1,104 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--color-body-bg, #f8fafc);
+    color: var(--color-text);
+    line-height: 1.6;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+hr { border-top: 6px solid var(--color-hr); border-radius: 5px; margin: 40px auto; width: 80%; }
+
+.site-header {
+    background: var(--color-header-bg);
+    color: var(--color-header-text);
+    padding: 20px 20px;
+    text-align: center;
+    box-shadow: 0 4px 12px var(--shadow-medium);
+}
+.logo-img { width: 175px; }
+.logo-text { font-size: 2.8rem; font-weight: 800; display: flex; justify-content: center; align-items: center; gap: 15px; }
+
+nav { background-color: var(--color-nav-bg); border-bottom: 1px solid var(--color-nav-border); position: sticky; top: 0; z-index: 100; }
+.menu { list-style: none; display: flex; justify-content: center; max-width: 1200px; margin: 0 auto; }
+.menu li a { display: block; padding: 18px 25px; text-decoration: none; color: var(--color-nav-link); font-weight: 600; font-size: 0.95rem; }
+.menu li a:hover { color: var(--color-accent); background-color: var(--color-nav-link-hover-bg); }
+
+.container { flex: 1; width: 100%; max-width: 800px; margin: 40px auto; padding: 0 20px; }
+
+.section-title { margin: 10px 0 20px; color: var(--color-text); display: flex; align-items: center; gap: 10px; }
+
+.carte-profil {
+    background: var(--color-card-bg);
+    border: 1px solid var(--color-card-border);
+    border-radius: 15px;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+}
+
+.carte-profil label { font-size: 0.9rem; font-weight: 600; color: var(--color-text); margin: 12px 0 6px; }
+.carte-profil label:first-child { margin-top: 0; }
+
+.carte-profil input {
+    padding: 12px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--color-card-border);
+    background-color: var(--color-body-bg);
+    color: var(--color-text);
+    font-size: 0.95rem;
+}
+.carte-profil input:focus { outline: none; border-color: var(--color-accent); }
+
+.bouton-accent {
+    background-color: var(--color-button-bg);
+    color: var(--color-accent-text);
+    border: none;
+    padding: 13px;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: background 0.3s ease;
+}
+.bouton-accent:hover { background-color: var(--color-button-hover); }
+.bouton-accent:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.bouton-danger {
+    background-color: #dc2626;
+    color: white;
+    border: none;
+    padding: 13px;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 16px;
+    transition: background 0.3s ease;
+}
+.bouton-danger:hover { background-color: #b91c1c; }
+.bouton-pleine-largeur { width: 100%; }
+
+.carte-danger { border-color: #fecaca; }
+.carte-danger p { color: var(--color-text-secondary); font-size: 0.9rem; }
+
+.liste-mes-ressources { display: flex; flex-direction: column; gap: 12px; }
+.carte-ressource-perso {
+    background: var(--color-card-bg);
+    border: 1px solid var(--color-card-border);
+    border-radius: 12px;
+    padding: 16px 20px;
+}
+.carte-ressource-perso strong { display: block; color: var(--color-text-tertiary); margin-bottom: 4px; }
+.carte-ressource-perso p { color: var(--color-text-secondary); font-size: 0.85rem; }
+
+.message-chargement { color: var(--color-text-secondary); font-style: italic; }
+.message-erreur { color: #dc2626; font-size: 0.85rem; min-height: 18px; margin-top: 8px; }
+
+footer { background-color: var(--color-footer-bg); color: var(--color-footer-text); text-align: center; padding: 20px; margin-top: 60px; }
+
+@media (max-width: 768px) {
+    .menu { flex-direction: column; }
+}
