@@ -60,6 +60,22 @@ nav {
     margin: 0 auto;
 }
 
+.menu li a {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 18px 25px;
+    text-decoration: none;
+    color: var(--color-nav-link);
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.menu li a:hover {
+    color: var(--color-accent);
+    background-color: var(--color-nav-link-hover-bg);
+}
+
 .container {
     flex: 1;
     width: 100%;
