@@ -271,6 +271,9 @@ document.addEventListener("DOMContentLoaded", () => {
             let lien = document.createElement("a");
             lien.href = `${r.matieres.slug}.html`;
 
+            let contenu = document.createElement("span");
+            contenu.className = "contenu-resultat";
+
             let titreEl = document.createElement("span");
             titreEl.textContent = r.titre;
 
@@ -278,7 +281,8 @@ document.addEventListener("DOMContentLoaded", () => {
             matiereEl.className = "matiere-resultat";
             matiereEl.textContent = r.matieres.nom;
 
-            lien.append(titreEl, matiereEl);
+            contenu.append(titreEl, matiereEl);
+            lien.appendChild(contenu);
             resultatsRecherche.appendChild(lien);
         });
 
