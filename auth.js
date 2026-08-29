@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
 
     // ---------- Petite notification stylisée (remplace alert() pour un rendu propre) ----------
-    let afficherToast = (message, icone = "fa-solid fa-circle-check") => {
+    window.afficherToast = (message, icone = "fa-solid fa-circle-check") => {
         let toast = document.createElement("div");
         toast.className = "toast-notification";
         toast.innerHTML = `<i class="${icone}"></i>`;
@@ -534,15 +534,39 @@ document.addEventListener("DOMContentLoaded", () => {
         modale.innerHTML = `
             <h3 style="margin-bottom:16px;color:var(--color-text);"><i class="fa-solid fa-graduation-cap"></i> Ton adresse institutionnelle</h3>
             <p style="color:var(--color-text-secondary);margin-bottom:16px;">
-                Voici ton adresse GL HUB officielle. Utilise-la désormais (avec ton mot de passe habituel)
-                pour te connecter — ton ancien email personnel ne fonctionnera plus.
+                Voici ton adresse GL HUB officielle, générée définitivement pour ton compte.
             </p>
-            <p class="prix-a-payer" style="font-size:1.4rem;word-break:break-all;">${adresse}</p>
-            <button class="bouton-accent bouton-pleine-largeur" id="boutonJaiNoteAdresse">J'ai bien noté mon adresse</button>
+            <p class="prix-a-payer" id="texteAdresseInstitutionnelle" style="font-size:1.3rem;word-break:break-all;">${adresse}</p>
+            <button class="bouton-accent bouton-pleine-largeur" id="boutonCopierAdresse" style="margin-bottom:10px;">
+                <i class="fa-solid fa-copy"></i> Copier l'adresse
+            </button>
+            <div style="background:#fff3cd;border:1px solid #ffe08a;border-radius:10px;padding:14px 16px;margin-bottom:18px;">
+                <p style="color:#7a5c00;font-weight:700;font-size:0.9rem;margin-bottom:4px;">
+                    <i class="fa-solid fa-triangle-exclamation"></i> Important — garde-la précieusement
+                </p>
+                <p style="color:#7a5c00;font-size:0.85rem;line-height:1.5;">
+                    C'est désormais ta SEULE adresse de connexion à GL HUB, avec le même mot de passe qu'à
+                    l'inscription. Ton email personnel ne fonctionnera plus. Cette adresse ne peut recevoir aucun
+                    email — si tu l'oublies, seul l'administrateur pourra te la redonner (contact WhatsApp).
+                </p>
+            </div>
+            <button class="bouton-accent bouton-pleine-largeur" id="boutonJaiNoteAdresse">J'ai bien noté et sauvegardé mon adresse</button>
         `;
 
         document.body.appendChild(voile);
         document.body.appendChild(modale);
+
+        modale.querySelector("#boutonCopierAdresse").addEventListener("click", async (e) => {
+            try {
+                await navigator.clipboard.writeText(adresse);
+                let texteOriginal = e.target.innerHTML;
+                e.target.innerHTML = `<i class="fa-solid fa-check"></i> Copié !`;
+                setTimeout(() => { e.target.innerHTML = texteOriginal; }, 2000);
+            } catch (_) {
+                // Le presse-papier peut être indisponible sur certains navigateurs : pas grave,
+                // l'adresse reste visible et sélectionnable à la main.
+            }
+        });
 
         modale.querySelector("#boutonJaiNoteAdresse").addEventListener("click", () => {
             voile.remove();
