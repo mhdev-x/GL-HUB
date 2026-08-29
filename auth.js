@@ -105,31 +105,18 @@ document.addEventListener("DOMContentLoaded", () => {
     // ---------- Mot de passe oublié ----------
     let lienMotDePasseOublie = document.querySelector("#lienMotDePasseOublie");
     if (lienMotDePasseOublie) {
-        lienMotDePasseOublie.addEventListener("click", async () => {
-            let email = document.querySelector("#emailConnexion").value.trim();
-
-            if (!email) {
-                erreurConnexion.textContent = "Renseigne d'abord ton email ci-dessus, puis clique à nouveau.";
-                return;
-            }
-
-            lienMotDePasseOublie.disabled = true;
-            lienMotDePasseOublie.textContent = "Envoi en cours...";
-
-            let { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
-                redirectTo: window.location.origin + window.location.pathname
-            });
-
-            lienMotDePasseOublie.disabled = false;
-            lienMotDePasseOublie.textContent = "Mot de passe oublié ?";
-
-            if (error) {
-                erreurConnexion.textContent = "Une erreur est survenue. Réessaie.";
-                return;
-            }
-
-            erreurConnexion.textContent = "";
-            afficherToast("Email envoyé ! Vérifie ta boîte mail pour réinitialiser ton mot de passe.");
+        lienMotDePasseOublie.addEventListener("click", (e) => {
+            e.preventDefault();
+            erreurConnexion.innerHTML = "";
+            let message = document.createElement("span");
+            message.textContent = "Une adresse @gl.com ne peut pas recevoir d'email. Contacte l'administrateur sur WhatsApp avec ton nom complet pour réinitialiser ton mot de passe : ";
+            let lienWhatsapp = document.createElement("a");
+            lienWhatsapp.href = "https://wa.me/221771216386";
+            lienWhatsapp.target = "_blank";
+            lienWhatsapp.textContent = "Ouvrir WhatsApp";
+            lienWhatsapp.style.color = "var(--color-accent)";
+            lienWhatsapp.style.fontWeight = "700";
+            erreurConnexion.append(message, lienWhatsapp);
         });
     }
 
@@ -471,11 +458,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // ---------- Inscription ----------
     boutonValiderInscription.addEventListener("click", async () => {
-        let nom = document.querySelector("#nomInscription").value.trim();
+        let prenom = document.querySelector("#prenomInscription").value.trim();
+        let nomFamille = document.querySelector("#nomInscription").value.trim();
+        let dateNaissance = document.querySelector("#dateNaissanceInscription").value;
         let email = document.querySelector("#emailInscription").value.trim();
         let motDePasse = document.querySelector("#motDePasseInscription").value.trim();
 
-        if (!nom || !email || !motDePasse) {
+        if (!prenom || !nomFamille || !dateNaissance || !email || !motDePasse) {
             erreurInscription.textContent = "Merci de remplir tous les champs.";
             return;
         }
@@ -492,7 +481,12 @@ document.addEventListener("DOMContentLoaded", () => {
             email: email,
             password: motDePasse,
             options: {
-                data: { nom: nom },
+                data: {
+                    prenom: prenom,
+                    nom_famille: nomFamille,
+                    nom: `${prenom} ${nomFamille}`, // nom complet composé, utilisé pour l'affichage
+                    date_naissance: dateNaissance
+                },
                 // On force explicitement la bonne adresse de redirection ici,
                 // plutôt que de dépendre uniquement du réglage "Site URL" sur
                 // le dashboard Supabase — ça garantit que le lien de
@@ -519,4 +513,44 @@ document.addEventListener("DOMContentLoaded", () => {
             erreurInscription.textContent = "Compte créé ! Vérifie ta boîte mail pour confirmer.";
         }
     });
+
+    // ---------- Générer l'adresse institutionnelle après confirmation d'email ----------
+    let genererAdresseInstitutionnelleSiBesoin = async () => {
+        let { data } = await supabaseClient.functions.invoke("generer-email-institutionnel");
+
+        if (!data || !data.email_institutionnel || data.deja_genere) {
+            return; // déjà fait, ou échec silencieux (l'étudiant garde son email personnel en secours)
+        }
+
+        afficherModaleAdresseInstitutionnelle(data.email_institutionnel);
+    };
+
+    let afficherModaleAdresseInstitutionnelle = (adresse) => {
+        let voile = document.createElement("div");
+        voile.className = "voile visible";
+
+        let modale = document.createElement("div");
+        modale.className = "modale visible";
+        modale.innerHTML = `
+            <h3 style="margin-bottom:16px;color:var(--color-text);"><i class="fa-solid fa-graduation-cap"></i> Ton adresse institutionnelle</h3>
+            <p style="color:var(--color-text-secondary);margin-bottom:16px;">
+                Voici ton adresse GL HUB officielle. Utilise-la désormais (avec ton mot de passe habituel)
+                pour te connecter — ton ancien email personnel ne fonctionnera plus.
+            </p>
+            <p class="prix-a-payer" style="font-size:1.4rem;word-break:break-all;">${adresse}</p>
+            <button class="bouton-accent bouton-pleine-largeur" id="boutonJaiNoteAdresse">J'ai bien noté mon adresse</button>
+        `;
+
+        document.body.appendChild(voile);
+        document.body.appendChild(modale);
+
+        modale.querySelector("#boutonJaiNoteAdresse").addEventListener("click", () => {
+            voile.remove();
+            modale.remove();
+        });
+    };
+
+    if (vientDeConfirmerSonEmail) {
+        genererAdresseInstitutionnelleSiBesoin();
+    }
 });

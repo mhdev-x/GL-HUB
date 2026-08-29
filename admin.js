@@ -242,9 +242,42 @@ document.addEventListener("DOMContentLoaded", async () => {
             total.className = "montant-total-etudiant";
             total.textContent = `${totalParEtudiant[etudiant.user_id] || 0} FCFA dépensés`;
 
-            carte.append(infos, total);
+            let boutonReinitialiser = document.createElement("button");
+            boutonReinitialiser.className = "bouton-refuser";
+            boutonReinitialiser.style.marginLeft = "10px";
+            boutonReinitialiser.innerHTML = `<i class="fa-solid fa-key"></i> Réinitialiser mot de passe`;
+            boutonReinitialiser.addEventListener("click", () => reinitialiserMotDePasse(etudiant.user_id, etudiant.nom));
+
+            let blocDroite = document.createElement("div");
+            blocDroite.style.display = "flex";
+            blocDroite.style.alignItems = "center";
+            blocDroite.append(total, boutonReinitialiser);
+
+            carte.append(infos, blocDroite);
             listeEtudiants.appendChild(carte);
         });
+    };
+
+    // ---------- Réinitialiser le mot de passe d'un étudiant ----------
+    let reinitialiserMotDePasse = async (userIdEtudiant, nomEtudiant) => {
+        let nouveauMdp = prompt(`Nouveau mot de passe pour ${nomEtudiant || "cet étudiant"} (6 caractères minimum) :`);
+        if (!nouveauMdp) return;
+
+        if (nouveauMdp.length < 6) {
+            alert("Le mot de passe doit contenir au moins 6 caractères.");
+            return;
+        }
+
+        let { data, error } = await supabaseClient.functions.invoke("reinitialiser-mot-de-passe-etudiant", {
+            body: { user_id_etudiant: userIdEtudiant, nouveau_mot_de_passe: nouveauMdp }
+        });
+
+        if (error || !data || !data.succes) {
+            alert("Erreur lors de la réinitialisation.");
+            return;
+        }
+
+        alert(`Mot de passe réinitialisé. Communique-le à ${nomEtudiant || "l'étudiant"} de façon sécurisée.`);
     };
 
     chargerEtudiants();

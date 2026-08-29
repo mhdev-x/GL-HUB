@@ -86,7 +86,7 @@
     </div>
     <div id="formConnexion" class="formulaire-auth">
         <label for="emailConnexion">Adresse e-mail</label>
-        <input type="email" id="emailConnexion" placeholder="toi@exemple.com" required>
+        <input type="email" id="emailConnexion" placeholder="prenom.nom@gl.com" required>
         <label for="motDePasseConnexion">Mot de passe</label>
         <input type="password" id="motDePasseConnexion" placeholder="••••••••" required>
         <button type="button" id="lienMotDePasseOublie" class="lien-mot-de-passe-oublie">Mot de passe oublié ?</button>
@@ -95,8 +95,14 @@
         <button id="boutonValiderConnexion" class="bouton-accent bouton-pleine-largeur">Se connecter</button>
     </div>
     <div id="formInscription" class="formulaire-auth" style="display: none;">
-        <label for="nomInscription">Nom complet</label>
-        <input type="text" id="nomInscription" placeholder="Ton nom et prénom" required>
+        <label for="prenomInscription">Prénom</label>
+            <input type="text" id="prenomInscription" placeholder="Ton prénom" required>
+
+            <label for="nomInscription">Nom</label>
+            <input type="text" id="nomInscription" placeholder="Ton nom de famille" required>
+
+            <label for="dateNaissanceInscription">Date de naissance</label>
+            <input type="date" id="dateNaissanceInscription" required>
         <label for="emailInscription">Adresse e-mail</label>
         <input type="email" id="emailInscription" placeholder="toi@exemple.com" required>
         <label for="motDePasseInscription">Mot de passe</label>
