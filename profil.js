@@ -19,6 +19,36 @@ document.addEventListener("DOMContentLoaded", async () => {
     // ---------- Pré-remplir le nom actuel ----------
     champNom.value = (utilisateur.user_metadata && utilisateur.user_metadata.nom) || "";
 
+    // ---------- Un admin ne voit jamais l'option de suppression de compte ----------
+    let { data: adminData } = await supabaseClient
+        .from("admins")
+        .select("user_id")
+        .eq("user_id", utilisateur.id)
+        .maybeSingle();
+
+    if (adminData) {
+        let zoneDanger = document.querySelector("#boutonSupprimerCompte").closest("section");
+        let titreZoneDanger = zoneDanger.previousElementSibling; // le <h2> juste avant
+        zoneDanger.remove();
+        if (titreZoneDanger && titreZoneDanger.classList.contains("section-title")) {
+            titreZoneDanger.remove();
+        }
+    }
+
+    // ---------- Afficher l'adresse de connexion actuelle (copiable) ----------
+    let champEmailInstitutionnel = document.querySelector("#champEmailInstitutionnel");
+    let boutonCopierEmail = document.querySelector("#boutonCopierEmail");
+    champEmailInstitutionnel.value = utilisateur.email || "";
+
+    boutonCopierEmail.addEventListener("click", async () => {
+        try {
+            await navigator.clipboard.writeText(utilisateur.email || "");
+            afficherToast("Adresse copiée dans le presse-papiers.");
+        } catch (_) {
+            champEmailInstitutionnel.select();
+        }
+    });
+
     // ---------- Enregistrer le nouveau nom ----------
     boutonEnregistrerNom.addEventListener("click", async () => {
         let nouveauNom = champNom.value.trim();
