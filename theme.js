@@ -28,4 +28,21 @@ document.addEventListener("DOMContentLoaded",
             mettreAJourIcone(nouveauTheme);
         });
     }
+
+    // ---------- Effet transparent au scroll (nav) ----------
+    let elementNav = document.querySelector("nav");
+    if (elementNav) {
+        window.addEventListener("scroll", () => {
+            elementNav.classList.toggle("nav-scrolled", window.scrollY > 20);
+        });
+    }
+
+    // ---------- Menu hamburger général (mobile) ----------
+    let boutonMenuMobile = document.querySelector("#boutonMenuMobile");
+    let menuNav = document.querySelector("nav .menu");
+    if (boutonMenuMobile && menuNav) {
+        boutonMenuMobile.addEventListener("click", () => {
+            menuNav.classList.toggle("menu-mobile-ouvert");
+        });
+    }
 });

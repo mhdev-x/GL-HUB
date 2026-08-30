@@ -494,3 +494,45 @@
 .toast-notification.toast-visible {
     top: 20px;
 }
+
+/* ========================================================
+   NAV — effet transparent au scroll + menu hamburger mobile
+   ======================================================== */
+nav {
+    transition: background-color 0.35s ease, backdrop-filter 0.35s ease;
+}
+
+nav.nav-scrolled {
+    background-color: var(--color-nav-bg-transparent);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.bouton-menu-mobile {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--color-text);
+    font-size: 1.4rem;
+    cursor: pointer;
+    padding: 16px 20px;
+}
+
+@media (max-width: 768px) {
+    .bouton-menu-mobile {
+        display: block;
+        width: 100%;
+        text-align: left;
+    }
+
+    nav .menu {
+        display: none;
+        flex-direction: column;
+        background-color: var(--color-nav-bg);
+        border-top: 1px solid var(--color-nav-border);
+    }
+
+    nav .menu.menu-mobile-ouvert {
+        display: flex;
+    }
+}

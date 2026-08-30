@@ -8,6 +8,7 @@
     --color-header-text: #ffffff;
 
     --color-nav-bg: #ffffff;
+    --color-nav-bg-transparent: rgba(255, 255, 255, 0.75);
     --color-nav-border: #e2e8f0;
     --color-nav-link: #475569;
     --color-nav-link-hover-bg: #f1f5f9;
@@ -43,6 +44,7 @@ body.dark-theme {
     --color-header-text: #e2e8f0;
 
     --color-nav-bg: #111827;
+    --color-nav-bg-transparent: rgba(17, 24, 39, 0.75);
     --color-nav-border: #1f2937;
     --color-nav-link: #94a3b8;
     --color-nav-link-hover-bg: #1e293b;
