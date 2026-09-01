@@ -36,6 +36,9 @@
     </header>
 
     <nav>
+        <button id="boutonMenuMobile" class="bouton-menu-mobile" aria-label="Menu">
+            <i class="fa-solid fa-bars"></i>
+        </button>
         <ul class="menu">
             <li><a href="index.html"><i class="fa-solid fa-house fa-bounce" style="color: rgb(4, 51, 131);"></i>Accueil</a></li>
         </ul>
@@ -45,6 +48,12 @@
 
         <h2 class="section-title"><i class="fa-solid fa-id-card"></i>Mes informations</h2>
         <section class="carte-profil">
+            <label for="champEmailInstitutionnel">Mon adresse de connexion</label>
+            <input type="text" id="champEmailInstitutionnel" readonly>
+            <button type="button" id="boutonCopierEmail" class="lien-mot-de-passe-oublie" style="text-align:left;">
+                <i class="fa-solid fa-copy"></i> Copier l'adresse
+            </button>
+
             <label for="champNom">Nom complet</label>
             <input type="text" id="champNom" placeholder="Ton nom complet">
             <p class="message-erreur" id="erreurNom"></p>
