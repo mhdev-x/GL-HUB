@@ -223,6 +223,9 @@ footer {
     .menu {
         flex-direction: column;
     }
+    .menu li a {
+        justify-content: center;
+    }
 }
 
 /* --- Étudiants (liste + en ligne) --- */
