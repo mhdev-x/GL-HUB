@@ -100,5 +100,17 @@ nav { background-color: var(--color-nav-bg); border-bottom: 1px solid var(--colo
 footer { background-color: var(--color-footer-bg); color: var(--color-footer-text); text-align: center; padding: 20px; margin-top: 60px; }
 
 @media (max-width: 768px) {
-    .menu { flex-direction: column; }
+    .menu {
+        flex-direction: column;
+    }
+    .menu li a {
+        text-align: center;
+        justify-content: center;
+        padding: 12px;
+        border-bottom: none;
+        border-left: 4px solid transparent;
+    }
+    .carte-profil {
+        padding: 20px;
+    }
 }
