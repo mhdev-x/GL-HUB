@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="STYLES/profil.css">
     <link rel="stylesheet" href="STYLES/theme.css">
     <link rel="stylesheet" href="STYLES/auth.css">
-    <link rel="stylesheet" href="STYLES/profil.css">
-    <title>GL HUB — Mon profil</title>
+    <title>GL HUB - Mon Profil</title>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabaseClient.js"></script>
@@ -25,25 +25,109 @@
     </script>
 </head>
 <body>
-    <button id="themeToggle" class="theme-toggle" aria-label="Changer de thème">🌚</button>
 
-    <header class="site-header">
-        <img class="logo-img" src="MEDIAS/LOGO-GL-HUB.png" alt="logo de GL HUB">
-        <div class="logo-text">
-            <i class="fa-solid fa-user-graduate fa-bounce" style="color: rgb(255, 255, 255);"></i>GL HUB
-        </div>
-        <p class="slogan" style="font-size: 1.2rem; font-weight: bold;">Mon profil</p>
-    </header>
-
+    <!-- ===================== BARRE DE NAVIGATION ===================== -->
     <nav>
-        <button id="boutonMenuMobile" class="bouton-menu-mobile" aria-label="Menu">
-            <i class="fa-solid fa-bars"></i>
-        </button>
-        <ul class="menu">
-            <li><a href="index.html"><i class="fa-solid fa-house fa-bounce" style="color: rgb(4, 51, 131);"></i>Accueil</a></li>
-        </ul>
+        <div class="nav-interieur">
+            <!-- 1. Bouton Menu Mobile (Placé à gauche) -->
+            <button id="boutonMenuMobile" class="bouton-menu-mobile" aria-label="Menu">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+
+            <!-- 2. Logo de la barre (Centre sur mobile) -->
+            <a href="index.html" class="nav-logo">
+                <i class="fa-solid fa-user-graduate"></i>GL HUB
+            </a>
+
+            <!-- 3. Menu complet (Desktop) -->
+            <ul class="menu">
+                <li><a href="index.html"><i class="fa-solid fa-house fa-bounce" style="color: rgb(4, 51, 131);"></i>Accueil</a></li>
+                <li><a href="contact.html"><i class="fa-solid fa-envelope fa-bounce" style="color: rgb(4, 51, 131);"></i>Contact</a></li>
+                <li><button id="boutonMatieres" class="lien-menu-bouton"><i class="fa-solid fa-bars"></i>Matières</button></li>
+                <li id="zoneAuthNav"><button id="boutonAuth" class="lien-menu-bouton"><i class="fa-solid fa-user"></i>Se connecter</button></li>
+                <li class="item-recherche">
+                    <div class="barre-recherche">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="rechercheCours" placeholder="Rechercher un cours..." autocomplete="off">
+                    </div>
+                    <div id="resultatsRecherche" class="resultats-recherche"></div>
+                </li>
+            </ul>
+
+            <!-- 4. Bouton Thème (Intégré à droite) -->
+            <button id="themeToggle" class="theme-toggle" aria-label="Changer de thème">
+                <i class="fa-solid fa-moon"></i>
+            </button>
+        </div>
     </nav>
 
+    <!-- ===================== HEADER SITE (Bandeau unifié 21:9) ===================== -->
+    <header class="site-header">
+        <div class="hero-overlay-texte">
+            <div class="logo-text-hero">GL HUB</div>
+            <p class="slogan-hero">
+                <span>Un Hub</span>
+                <span>Une Communauté</span>
+                <span>Une Progression</span>
+            </p>
+        </div>
+    </header>
+
+    <!-- ===================== PANNEAU BURGER : MATIÈRES ===================== -->
+    <div id="voileMatieres" class="voile"></div>
+    <aside id="panneauMatieres" class="panneau-lateral">
+        <div class="panneau-entete">
+            <h3><i class="fa-solid fa-book"></i>Espace Matières</h3>
+            <button id="fermerPanneauMatieres" class="bouton-fermer" aria-label="Fermer">✕</button>
+        </div>
+        <div id="matieresVerrouillees" class="panneau-message">
+            <i class="fa-solid fa-lock fa-2x"></i>
+            <p>Connecte-toi pour accéder aux cours, TD et examens de chaque matière.</p>
+            <button id="boutonConnexionDepuisPanneau" class="bouton-accent">Se connecter</button>
+        </div>
+        <ul id="listeMatieres" class="liste-matieres" style="display: none;">
+            <li><a href="langageC.html"><i class="fa-solid fa-bug" style="color: rgb(4, 51, 131);"></i>Langage C</a></li>
+            <li><a href="systemedExploitation.html"><i class="fa-brands fa-windows" style="color: rgb(6, 58, 147);"></i>Système d'Exploitation</a></li>
+            <li><a href="technologieWeb.html"><i class="fa-solid fa-laptop-code" style="color: rgb(6, 58, 147);"></i>Technologies Web</a></li>
+            <li><a href="basedeDonnees.html"><i class="fa-solid fa-database" style="color: rgb(6, 78, 146);"></i>Base de Données</a></li>
+            <li><a href="algo.html"><i class="fa-solid fa-brain" style="color: rgb(4, 51, 131);"></i>Algorithme</a></li>
+        </ul>
+    </aside>
+
+    <!-- ===================== MODALE : CONNEXION / INSCRIPTION ===================== -->
+    <div id="voileAuth" class="voile"></div>
+    <div id="modaleAuth" class="modale">
+        <button id="fermerModaleAuth" class="bouton-fermer" aria-label="Fermer">✕</button>
+        <div class="onglets-auth">
+            <button id="ongletConnexion" class="onglet-auth actif">Connexion</button>
+            <button id="ongletInscription" class="onglet-auth">Inscription</button>
+        </div>
+        <div id="formConnexion" class="formulaire-auth">
+            <label for="emailConnexion">Adresse e-mail</label>
+            <input type="email" id="emailConnexion" placeholder="prenom.nom@gl.com" required>
+            <label for="motDePasseConnexion">Mot de passe</label>
+            <input type="password" id="motDePasseConnexion" placeholder="••••••••" required>
+            <button type="button" id="lienMotDePasseOublie" class="lien-mot-de-passe-oublie">Mot de passe oublié ?</button>
+            <p id="erreurConnexion" class="message-erreur"></p>
+            <button id="boutonValiderConnexion" class="bouton-accent bouton-pleine-largeur">Se connecter</button>
+        </div>
+        <div id="formInscription" class="formulaire-auth" style="display: none;">
+            <label for="prenomInscription">Prénom</label>
+            <input type="text" id="prenomInscription" placeholder="Ton prénom" required>
+            <label for="nomInscription">Nom</label>
+            <input type="text" id="nomInscription" placeholder="Ton nom de famille" required>
+            <label for="dateNaissanceInscription">Date de naissance</label>
+            <input type="date" id="dateNaissanceInscription" required>
+            <label for="emailInscription">Adresse e-mail</label>
+            <input type="email" id="emailInscription" placeholder="toi@exemple.com" required>
+            <label for="motDePasseInscription">Mot de passe</label>
+            <input type="password" id="motDePasseInscription" placeholder="6 caractères minimum" required>
+            <p id="erreurInscription" class="message-erreur"></p>
+            <button id="boutonValiderInscription" class="bouton-accent bouton-pleine-largeur">Créer mon compte</button>
+        </div>
+    </div>
+
+    <!-- ===================== CONTENU PRINCIPAL ===================== -->
     <main class="container">
 
         <h2 class="section-title"><i class="fa-solid fa-id-card"></i>Mes informations</h2>
@@ -89,6 +173,7 @@
 
     </main>
 
+    <!-- ===================== PIED DE PAGE ===================== -->
     <footer>
         <p>&copy; 2026 - GL HUB | Département Informatique</p>
     </footer>

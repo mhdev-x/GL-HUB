@@ -15,236 +15,263 @@
             }
         })();
     </script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" ...>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="STYLES/technologieWeb.css">
     <link rel="stylesheet" href="STYLES/theme.css">
     <link rel="stylesheet" href="STYLES/auth.css">
-    <title>GL HUB</title>
-    
+    <title>GL HUB - Technologies Web</title>
 </head>
 <body data-matiere="technologieWeb">
-    <button id="themeToggle" class="theme-toggle" aria-label="Changer de thème">🌚</button>
 
-<header class="site-header">
-        <img class="logo-img" src="MEDIAS/LOGO-GL-HUB.png" alt="logo de GL HUB" >
-            <div class="logo-text">
-                <i class="fa-solid fa-user-graduate fa-bounce" 
-                style="color: rgb(255, 255, 255);"></i>GL HUB
-            </div>
-        <p class="slogan" style="font-size: 1.2rem; font-weight: bold;">
-        Un Hub | Une Communauté | Une Progression</p>
-</header>
+    <!-- ===================== BARRE DE NAVIGATION ===================== -->
+    <nav>
+        <div class="nav-interieur">
+            <!-- 1. Bouton Menu Mobile (Placé à gauche) -->
+            <button id="boutonMenuMobile" class="bouton-menu-mobile" aria-label="Menu">
+                <i class="fa-solid fa-bars"></i>
+            </button>
 
-<nav>
-    <button id="boutonMenuMobile" class="bouton-menu-mobile" aria-label="Menu">
-            <i class="fa-solid fa-bars"></i>
-        </button>
-        <ul class="menu">
-        <li><a href="index.html"><i class="fa-solid fa-house fa-bounce" style="color: rgb(4, 51, 131);"></i>Accueil</a></li>
-        <li><a href="contact.html"><i class="fa-solid fa-envelope fa-bounce" style="color: rgb(4, 51, 131);"></i>Contact</a></li>
-        <li><button id="boutonMatieres" class="lien-menu-bouton"><i class="fa-solid fa-bars"></i>Matières</button></li>
-        <li id="zoneAuthNav"><button id="boutonAuth" class="lien-menu-bouton"><i class="fa-solid fa-user"></i>Se connecter</button></li>
-        <li class="item-recherche">
-            <div class="barre-recherche">
-                <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" id="rechercheCours" placeholder="Rechercher un cours..." autocomplete="off">
-            </div>
-            <div id="resultatsRecherche" class="resultats-recherche"></div>
-        </li>
-        
+            <!-- 2. Logo de la barre (Centre sur mobile) -->
+            <a href="index.html" class="nav-logo">
+                <i class="fa-solid fa-user-graduate"></i>GL HUB
+            </a>
+
+            <!-- 3. Menu complet (Desktop) -->
+            <ul class="menu">
+                <li><a href="index.html"><i class="fa-solid fa-house fa-bounce" style="color: rgb(4, 51, 131);"></i>Accueil</a></li>
+                <li><a href="contact.html"><i class="fa-solid fa-envelope fa-bounce" style="color: rgb(4, 51, 131);"></i>Contact</a></li>
+                <li><button id="boutonMatieres" class="lien-menu-bouton"><i class="fa-solid fa-bars"></i>Matières</button></li>
+                <li id="zoneAuthNav"><button id="boutonAuth" class="lien-menu-bouton"><i class="fa-solid fa-user"></i>Se connecter</button></li>
+                <li class="item-recherche">
+                    <div class="barre-recherche">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="rechercheCours" placeholder="Rechercher un cours..." autocomplete="off">
+                    </div>
+                    <div id="resultatsRecherche" class="resultats-recherche"></div>
+                </li>
             </ul>
-</nav>
 
-<!-- ===================== PANNEAU BURGER : MATIÈRES ===================== -->
-<div id="voileMatieres" class="voile"></div>
-<aside id="panneauMatieres" class="panneau-lateral">
-    <div class="panneau-entete">
-        <h3><i class="fa-solid fa-book"></i>Espace Matières</h3>
-        <button id="fermerPanneauMatieres" class="bouton-fermer" aria-label="Fermer">✕</button>
-    </div>
-    <div id="matieresVerrouillees" class="panneau-message">
-        <i class="fa-solid fa-lock fa-2x"></i>
-        <p>Connecte-toi pour accéder aux cours, TD et examens de chaque matière.</p>
-        <button id="boutonConnexionDepuisPanneau" class="bouton-accent">Se connecter</button>
-    </div>
-    <ul id="listeMatieres" class="liste-matieres" style="display: none;">
-        <li><a href="langageC.html"><i class="fa-solid fa-bug" style="color: rgb(4, 51, 131);"></i>Langage C</a></li>
-        <li><a href="systemedExploitation.html"><i class="fa-brands fa-windows" style="color: rgb(6, 58, 147);"></i>Système d'Exploitation</a></li>
-        <li><a href="technologieWeb.html"><i class="fa-solid fa-laptop-code" style="color: rgb(6, 58, 147);"></i>Technologie Web</a></li>
-        <li><a href="basedeDonnees.html"><i class="fa-solid fa-database" style="color: rgb(6, 78, 146);"></i>Base de Données</a></li>
-        <li><a href="algo.html"><i class="fa-solid fa-brain" style="color: rgb(4, 51, 131);"></i>Algorithme</a></li>
-    </ul>
-</aside>
+            <!-- 4. Bouton Thème (Intégré à droite) -->
+            <button id="themeToggle" class="theme-toggle" aria-label="Changer de thème">
+                <i class="fa-solid fa-moon"></i>
+            </button>
+        </div>
+    </nav>
 
-<!-- ===================== MODALE : CONNEXION / INSCRIPTION ===================== -->
-<div id="voileAuth" class="voile"></div>
-<div id="modaleAuth" class="modale">
-    <button id="fermerModaleAuth" class="bouton-fermer" aria-label="Fermer">✕</button>
-    <div class="onglets-auth">
-        <button id="ongletConnexion" class="onglet-auth actif">Connexion</button>
-        <button id="ongletInscription" class="onglet-auth">Inscription</button>
-    </div>
-    <div id="formConnexion" class="formulaire-auth">
-        <label for="emailConnexion">Adresse e-mail</label>
-        <input type="email" id="emailConnexion" placeholder="prenom.nom@gl.com" required>
-        <label for="motDePasseConnexion">Mot de passe</label>
-        <input type="password" id="motDePasseConnexion" placeholder="••••••••" required>
-        <button type="button" id="lienMotDePasseOublie" class="lien-mot-de-passe-oublie">Mot de passe oublié ?</button>
+    <!-- ===================== HEADER SITE (Bandeau unifié 21:9) ===================== -->
+    <header class="site-header">
+        <div class="hero-overlay-texte">
+            <div class="logo-text-hero">GL HUB</div>
+            <p class="slogan-hero">
+                <span>Un Hub</span>
+                <span>Une Communauté</span>
+                <span>Une Progression</span>
+            </p>
+        </div>
+    </header>
 
-        <p id="erreurConnexion" class="message-erreur"></p>
-        <button id="boutonValiderConnexion" class="bouton-accent bouton-pleine-largeur">Se connecter</button>
-    </div>
-    <div id="formInscription" class="formulaire-auth" style="display: none;">
-        <label for="prenomInscription">Prénom</label>
+    <!-- ===================== PANNEAU BURGER : MATIÈRES ===================== -->
+    <div id="voileMatieres" class="voile"></div>
+    <aside id="panneauMatieres" class="panneau-lateral">
+        <div class="panneau-entete">
+            <h3><i class="fa-solid fa-book"></i>Espace Matières</h3>
+            <button id="fermerPanneauMatieres" class="bouton-fermer" aria-label="Fermer">✕</button>
+        </div>
+        <div id="matieresVerrouillees" class="panneau-message">
+            <i class="fa-solid fa-lock fa-2x"></i>
+            <p>Connecte-toi pour accéder aux cours, TD et examens de chaque matière.</p>
+            <button id="boutonConnexionDepuisPanneau" class="bouton-accent">Se connecter</button>
+        </div>
+        <ul id="listeMatieres" class="liste-matieres" style="display: none;">
+            <li><a href="langageC.html"><i class="fa-solid fa-bug" style="color: rgb(4, 51, 131);"></i>Langage C</a></li>
+            <li><a href="systemedExploitation.html"><i class="fa-brands fa-windows" style="color: rgb(6, 58, 147);"></i>Système d'Exploitation</a></li>
+            <li><a href="technologieWeb.html"><i class="fa-solid fa-laptop-code" style="color: rgb(6, 58, 147);"></i>Technologie Web</a></li>
+            <li><a href="basedeDonnees.html"><i class="fa-solid fa-database" style="color: rgb(6, 78, 146);"></i>Base de Données</a></li>
+            <li><a href="algo.html"><i class="fa-solid fa-brain" style="color: rgb(4, 51, 131);"></i>Algorithme</a></li>
+        </ul>
+    </aside>
+
+    <!-- ===================== MODALE : CONNEXION / INSCRIPTION ===================== -->
+    <div id="voileAuth" class="voile"></div>
+    <div id="modaleAuth" class="modale">
+        <button id="fermerModaleAuth" class="bouton-fermer" aria-label="Fermer">✕</button>
+        <div class="onglets-auth">
+            <button id="ongletConnexion" class="onglet-auth actif">Connexion</button>
+            <button id="ongletInscription" class="onglet-auth">Inscription</button>
+        </div>
+        <div id="formConnexion" class="formulaire-auth">
+            <label for="emailConnexion">Adresse e-mail</label>
+            <input type="email" id="emailConnexion" placeholder="prenom.nom@gl.com" required>
+            <label for="motDePasseConnexion">Mot de passe</label>
+            <input type="password" id="motDePasseConnexion" placeholder="••••••••" required>
+            <button type="button" id="lienMotDePasseOublie" class="lien-mot-de-passe-oublie">Mot de passe oublié ?</button>
+            <p id="erreurConnexion" class="message-erreur"></p>
+            <button id="boutonValiderConnexion" class="bouton-accent bouton-pleine-largeur">Se connecter</button>
+        </div>
+        <div id="formInscription" class="formulaire-auth" style="display: none;">
+            <label for="prenomInscription">Prénom</label>
             <input type="text" id="prenomInscription" placeholder="Ton prénom" required>
-
             <label for="nomInscription">Nom</label>
             <input type="text" id="nomInscription" placeholder="Ton nom de famille" required>
-
             <label for="dateNaissanceInscription">Date de naissance</label>
             <input type="date" id="dateNaissanceInscription" required>
-        <label for="emailInscription">Adresse e-mail</label>
-        <input type="email" id="emailInscription" placeholder="toi@exemple.com" required>
-        <label for="motDePasseInscription">Mot de passe</label>
-        <input type="password" id="motDePasseInscription" placeholder="6 caractères minimum" required>
-        <p id="erreurInscription" class="message-erreur"></p>
-        <button id="boutonValiderInscription" class="bouton-accent bouton-pleine-largeur">Créer mon compte</button>
+            <label for="emailInscription">Adresse e-mail</label>
+            <input type="email" id="emailInscription" placeholder="toi@exemple.com" required>
+            <label for="motDePasseInscription">Mot de passe</label>
+            <input type="password" id="motDePasseInscription" placeholder="6 caractères minimum" required>
+            <p id="erreurInscription" class="message-erreur"></p>
+            <button id="boutonValiderInscription" class="bouton-accent bouton-pleine-largeur">Créer mon compte</button>
+        </div>
     </div>
-</div>
 
-<main class="container">
+    <!-- ===================== CONTENU PRINCIPAL ===================== -->
+    <main class="container">
 
-    <h2 class="section-title"><i class="fa-solid fa-laptop-code fa-beat" style="color: rgb(6, 58, 147);"></i>Cours de Technologies Web</h2>
-    
-    <section class="resources-grid">
-        <!-- Carte Cours 1 -->
-         <div class="card">
-            <div class="card-icon"><i class="fas fa-microchip"></i></div>
-            <h4>Chapitre 1 : Développement WEB</h4>
-            <p>Introduction aux technologies web</p>
-            <button type="button" class="bouton-download" data-fichier="FICHIERS/COURS/TechnologieWeb/Chapitre.1-Developpement-WEB.pdf"><i class="fas fa-download"></i>Télécharger PDF</button>
-        </div>
-
-        <!-- Carte Cours 2 -->
-        <div class="card">
-            <div class="card-icon"><i class="fas fa-microchip"></i></div>
-            <h4>Chapitre 2 : Insertion de médias</h4>
-            <p>Insertion et gestion des médias dans les pages web</p>
-            <button type="button" class="bouton-download" data-fichier="FICHIERS/COURS/TechnologieWeb/Chapitre.2-Insertion-de-medias.pdf"><i class="fas fa-download"></i>Télécharger PDF</button>
-        </div>
-
-        <!-- Carte Cours 3 -->
-         <div class="card">
-            <div class="card-icon"><i class="fas fa-microchip"></i></div>
-            <h4>Chapitre 3 : Les Listes</h4>
-            <p>Présentation et utilisation des listes dans les pages web</p>
-            <button type="button" class="bouton-download" data-fichier="FICHIERS/COURS/TechnologieWeb/Chapitre.3-Les-Listes.pdf"><i class="fas fa-download"></i>Télécharger PDF</button>
-        </div>
-
-        <div class="card">
-            <div class="card-icon"><i class="fas fa-microchip"></i></div>
-            <h4>Chapitre 4 : Les Liens</h4>
-            <p>Présentation et utilisation des liens dans les pages web</p>
-            <button type="button" class="bouton-download" data-fichier="FICHIERS/COURS/Technologie Web/Chapitre.4-Les-Liens.pdf"><i class="fas fa-download"></i>Télécharger PDF</button>
-        </div>
-
-        <div class="card">
-            <div class="card-icon"><i class="fas fa-microchip"></i></div>
-            <h4>Chapitre 5 : Les Formulaires</h4>
-            <p>Présentation et utilisation des formulaires dans les pages web</p>
-            <button type="button" class="bouton-download" data-fichier="FICHIERS/COURS/TechnologieWeb/Chapitre.5-Les-Formulaires.pdf"><i class="fas fa-download"></i>Télécharger PDF</button>
-        </div>
-
-        <div class="card">
-            <div class="card-icon"><i class="fas fa-microchip"></i></div>
-            <h4>Chapitre 6 : Le Langage CSS</h4>
-            <p>Introduction au langage CSS et ses principes de base</p>
-            <button type="button" class="bouton-download" data-fichier="FICHIERS/COURS/TechnologieWeb/Chapitre.6-Le-Langage-CSS.pdf"><i class="fas fa-download"></i>Télécharger PDF</button>
-        </div>
-
-        <div class="card">
-            <div class="card-icon"><i class="fas fa-microchip"></i></div>
-            <h4>Chapitre 7 : Margin & Padding</h4>
-            <p>Présentation des propriétés margin et padding dans CSS</p>
-            <button type="button" class="bouton-download" data-fichier="FICHIERS/COURS/Technologie Web/Chapitre.7-Margin_Padding.pdf"><i class="fas fa-download"></i>Télécharger PDF</button>
-        </div>
-
-        <div class="card">
-            <div class="card-icon"><i class="fas fa-microchip"></i></div>
-            <h4>Utilitaire: Liste des propriétés CSS</h4>
-            <p>Liste complète des propriétés CSS avec leurs descriptions et exemples</p>
-            <button type="button" class="bouton-download" data-fichier="FICHIERS/COURS/TechnologieWeb/Liste-des-proprietes-CSS-Support-PDF-Pierre-Giraud.pdf"><i class="fas fa-download"></i>Télécharger PDF</button>
-        </div>
+        <h2 class="section-title"><i class="fa-solid fa-laptop-code fa-beat" style="color: rgb(6, 58, 147);"></i>Cours de Technologies Web</h2>
         
-        <div class="card">
-            <div class="card-icon"><i class="fas fa-microchip"></i></div>
-            <h4>Les Structures Conditionnelles en JavaScript</h4>
-            <p>Un guide pratique pour maîtriser les structures conditionnelles et les opérateurs en JavaScript</p>
-            <button type="button" class="bouton-download" data-fichier="FICHIERS/COURS/TechnologieWeb/Support_Cours_JS_Conditions_ISI.pdf"><i class="fas fa-download"></i>Télécharger PDF</button>
-        </div>
+        <section class="resources-grid">
+            <!-- Carte Cours 1 -->
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-file-code"></i></div>
+                <h4>Chapitre 1 : Développement WEB</h4>
+                <p>Introduction aux technologies web</p>
+                <button type="button" class="bouton-download" data-fichier="FICHIERS/COURS/TechnologieWeb/Chapitre.1-Developpement-WEB.pdf"><i class="fas fa-download"></i>Télécharger PDF</button>
+            </div>
 
-        <div class="card">
-            <div class="card-icon"><i class="fas fa-microchip"></i></div>
-            <h4>Le DOM en JavaScript</h4>
-            <p>Une introduction essentielle au DOM en JavaScript, expliquant le cycle en trois étapes : sélectionner, modifier et écouter les événements à travers des commandes pratiques</p>
-            <button type="button" class="bouton-download" data-fichier="FICHIERS/COURS/TechnologieWeb/Le-DOM-en-JavaScript-Essentiel L1GL.pptx"><i class="fas fa-download"></i>Télécharger PPTX</button>
-        </div>
+            <!-- Carte Cours 2 -->
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-photo-film"></i></div>
+                <h4>Chapitre 2 : Insertion de médias</h4>
+                <p>Insertion et gestion des médias dans les pages web</p>
+                <button type="button" class="bouton-download" data-fichier="FICHIERS/COURS/TechnologieWeb/Chapitre.2-Insertion-de-medias.pdf"><i class="fas fa-download"></i>Télécharger PDF</button>
+            </div>
 
-        <div class="card">
-            <div class="card-icon"><i class="fas fa-microchip"></i></div>
-            <h4>JavaScript : Web Storage & Manipulation de classes (classList)</h4>
-            <p>Un guide pratique pour maîtriser le stockage Web (localStorage, sessionStorage) et la manipulation dynamique des classes CSS avec classList en JavaScript, enrichi d'exercices concrets d'application</p>
-            <button type="button" class="bouton-download" data-fichier="FICHIERS/COURS/TechnologieWeb/Support_Cours_JS_WebStorage_classList.pdf"><i class="fas fa-download"></i>Télécharger PDF</button>
-        </div>
-        <div class="card">
-            <div class="card-icon"><i class="fas fa-microchip"></i></div>
-            <h4>JavaScript : Le Stockage de Tableaux dans localStorage</h4>
-            <p>Un guide pratique pour apprendre à stocker et récupérer des tableaux dans localStorage grâce à JSON.stringify() et JSON.parse(), illustré par des exemples concrets de persistance de données</p>
-            <button type="button" class="bouton-download" data-fichier="FICHIERS/COURS/TechnologieWeb/Support_Cours_LocalStorage_Tableaux.pdf"><i class="fas fa-download"></i>Télécharger PDF</button>
-        </div>
+            <!-- Carte Cours 3 -->
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-list-ol"></i></div>
+                <h4>Chapitre 3 : Les Listes</h4>
+                <p>Présentation et utilisation des listes dans les pages web</p>
+                <button type="button" class="bouton-download" data-fichier="FICHIERS/COURS/TechnologieWeb/Chapitre.3-Les-Listes.pdf"><i class="fas fa-download"></i>Télécharger PDF</button>
+            </div>
 
-    </section>
-<hr>
-    <h2 class="section-title"><i class="fa-solid fa-pen-to-square fa-shake" style="color: rgb(30, 41, 59);"></i>Travaux Dirigés (TD)</h2>
+            <!-- Carte Cours 4 -->
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-link"></i></div>
+                <h4>Chapitre 4 : Les Liens</h4>
+                <p>Présentation et utilisation des liens dans les pages web</p>
+                <button type="button" class="bouton-download" data-fichier="FICHIERS/COURS/TechnologieWeb/Chapitre.4-Les-Liens.pdf"><i class="fas fa-download"></i>Télécharger PDF</button>
+            </div>
 
-    <section class="resources-grid">
-        <!-- Carte TD 1 -->
-        <div class="card">
-            <h4>TD 1 : Liste</h4>
-            <p>Les listes dans le langage HTML</p>
-            <button type="button" class="bouton-download" data-fichier="FICHIERS/TD/TD-TW/TD-LISTE.png"><i class="fas fa-download"></i>Télécharger Image</button>
-        </div>
+            <!-- Carte Cours 5 -->
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-align-justify"></i></div>
+                <h4>Chapitre 5 : Les Formulaires</h4>
+                <p>Présentation et utilisation des formulaires dans les pages web</p>
+                <button type="button" class="bouton-download" data-fichier="FICHIERS/COURS/TechnologieWeb/Chapitre.5-Les-Formulaires.pdf"><i class="fas fa-download"></i>Télécharger PDF</button>
+            </div>
 
-        <!-- Carte TD 2 -->
-        <div class="card">
-            <h4>TD 2 : Liste & insertion de Médias</h4>
-            <p>Insertion et gestion des médias dans les pages web</p>
-            <button type="button" class="bouton-download" data-fichier="FICHIERS/TD/TD-TW/TD-Liste-&-insertion-de-Medias.png"><i class="fas fa-download"></i>Télécharger Image</button>
-        </div>
+            <!-- Carte Cours 6 -->
+            <div class="card">
+                <div class="card-icon"><i class="fab fa-css3-alt"></i></div>
+                <h4>Chapitre 6 : Le Langage CSS</h4>
+                <p>Introduction au langage CSS et ses principes de base</p>
+                <button type="button" class="bouton-download" data-fichier="FICHIERS/COURS/TechnologieWeb/Chapitre.6-Le-Langage-CSS.pdf"><i class="fas fa-download"></i>Télécharger PDF</button>
+            </div>
 
-        <div class="card">
-            <h4>TD 3 : Tableaux</h4>
-            <p>Production de tableaux HTML</p>
-            <button type="button" class="bouton-download" data-fichier="FICHIERS/TD/TD-TW/TP-TABLEAU.pdf"><i class="fas fa-download"></i>Télécharger PDF</button>
-        </div>
+            <!-- Carte Cours 7 -->
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-expand"></i></div>
+                <h4>Chapitre 7 : Margin & Padding</h4>
+                <p>Présentation des propriétés margin et padding dans CSS</p>
+                <button type="button" class="bouton-download" data-fichier="FICHIERS/COURS/TechnologieWeb/Chapitre.7-Margin_Padding.pdf"><i class="fas fa-download"></i>Télécharger PDF</button>
+            </div>
 
-        <div class="card">
-            <h4>TD 4 : Tableau & Formulaire</h4>
-            <p>Production de tableaux HTML et de formulaires</p>
-            <button type="button" class="bouton-download" data-fichier="FICHIERS/TD/TD-TW/TD-Tableau-&-Formulaire.jpg"><i class="fas fa-download"></i>Télécharger Image</button>
-        </div>
-    </section>
+            <!-- Carte Cours 8 -->
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-book-open"></i></div>
+                <h4>Utilitaire: Liste des propriétés CSS</h4>
+                <p>Liste complète des propriétés CSS avec leurs descriptions et exemples</p>
+                <button type="button" class="bouton-download" data-fichier="FICHIERS/COURS/TechnologieWeb/Liste-des-proprietes-CSS-Support-PDF-Pierre-Giraud.pdf"><i class="fas fa-download"></i>Télécharger PDF</button>
+            </div>
+            
+            <!-- Carte Cours 9 -->
+            <div class="card">
+                <div class="card-icon"><i class="fab fa-js"></i></div>
+                <h4>Les Structures Conditionnelles en JavaScript</h4>
+                <p>Un guide pratique pour maîtriser les structures conditionnelles et les opérateurs en JavaScript</p>
+                <button type="button" class="bouton-download" data-fichier="FICHIERS/COURS/TechnologieWeb/Support_Cours_JS_Conditions_ISI.pdf"><i class="fas fa-download"></i>Télécharger PDF</button>
+            </div>
 
-</main>
+            <!-- Carte Cours 10 -->
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-sitemap"></i></div>
+                <h4>Le DOM en JavaScript</h4>
+                <p>Une introduction essentielle au DOM en JavaScript, expliquant le cycle : sélectionner, modifier et écouter</p>
+                <button type="button" class="bouton-download" data-fichier="FICHIERS/COURS/TechnologieWeb/Le-DOM-en-JavaScript-Essentiel L1GL.pptx"><i class="fas fa-download"></i>Télécharger PPTX</button>
+            </div>
 
-<footer>
-    <p>&copy; 2026 - GL HUB | Département Informatique</p>
-</footer>
-<script src="theme.js"></script>
-<script src="auth.js"></script>
-<script src="paywall.js"></script>
+            <!-- Carte Cours 11 -->
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-database"></i></div>
+                <h4>JavaScript : Web Storage & classList</h4>
+                <p>Un guide pratique pour maîtriser le stockage Web et la manipulation dynamique des classes CSS</p>
+                <button type="button" class="bouton-download" data-fichier="FICHIERS/COURS/TechnologieWeb/Support_Cours_JS_WebStorage_classList.pdf"><i class="fas fa-download"></i>Télécharger PDF</button>
+            </div>
+
+            <!-- Carte Cours 12 -->
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-table-list"></i></div>
+                <h4>JavaScript : Stockage de Tableaux dans localStorage</h4>
+                <p>Un guide pour apprendre à sérialiser et désérialiser des tableaux grâce à JSON.stringify et JSON.parse</p>
+                <button type="button" class="bouton-download" data-fichier="FICHIERS/COURS/TechnologieWeb/Support_Cours_LocalStorage_Tableaux.pdf"><i class="fas fa-download"></i>Télécharger PDF</button>
+            </div>
+        </section>
+
+        <hr>
+
+        <h2 class="section-title"><i class="fa-solid fa-pen-to-square fa-shake" style="color: rgb(30, 41, 59);"></i>Travaux Dirigés (TD)</h2>
+
+        <section class="resources-grid">
+            <!-- Carte TD 1 -->
+            <div class="card">
+                <h4>TD 1 : Liste</h4>
+                <p>Les listes dans le langage HTML</p>
+                <button type="button" class="bouton-download" data-fichier="FICHIERS/TD/TD-TW/TD-LISTE.png"><i class="fas fa-download"></i>Télécharger Image</button>
+            </div>
+
+            <!-- Carte TD 2 -->
+            <div class="card">
+                <h4>TD 2 : Liste & insertion de Médias</h4>
+                <p>Insertion et gestion des médias dans les pages web</p>
+                <button type="button" class="bouton-download" data-fichier="FICHIERS/TD/TD-TW/TD-Liste-&-insertion-de-Medias.png"><i class="fas fa-download"></i>Télécharger Image</button>
+            </div>
+
+            <!-- Carte TD 3 -->
+            <div class="card">
+                <h4>TD 3 : Tableaux</h4>
+                <p>Production de tableaux HTML</p>
+                <button type="button" class="bouton-download" data-fichier="FICHIERS/TD/TD-TW/TP-TABLEAU.pdf"><i class="fas fa-download"></i>Télécharger PDF</button>
+            </div>
+
+            <!-- Carte TD 4 -->
+            <div class="card">
+                <h4>TD 4 : Tableau & Formulaire</h4>
+                <p>Production de tableaux HTML et de formulaires</p>
+                <button type="button" class="bouton-download" data-fichier="FICHIERS/TD/TD-TW/TD-Tableau-&-Formulaire.jpg"><i class="fas fa-download"></i>Télécharger Image</button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ===================== PIED DE PAGE ===================== -->
+    <footer>
+        <p>&copy; 2026 - GL HUB | Département Informatique</p>
+    </footer>
+
+    <script src="theme.js"></script>
+    <script src="auth.js"></script>
+    <script src="paywall.js"></script>
 </body>
 </html>
