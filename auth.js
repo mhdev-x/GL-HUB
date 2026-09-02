@@ -474,8 +474,20 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        erreurInscription.textContent = "Création du compte...";
+        erreurInscription.textContent = "Vérification de l'email...";
         boutonValiderInscription.disabled = true;
+
+        let { data: verification } = await supabaseClient.functions.invoke("verifier-email-disponible", {
+            body: { email: email }
+        });
+
+        if (verification && verification.disponible === false) {
+            erreurInscription.textContent = "Cet email a déjà été utilisé pour créer un compte. Connecte-toi avec ton adresse institutionnelle (@gl.com), ou contacte l'administrateur si tu l'as oubliée.";
+            boutonValiderInscription.disabled = false;
+            return;
+        }
+
+        erreurInscription.textContent = "Création du compte...";
 
         let { data, error } = await supabaseClient.auth.signUp({
             email: email,
