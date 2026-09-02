@@ -13,32 +13,37 @@
 </head>
 
 <body>
-    <button id="themeToggle" class="theme-toggle" aria-label="Changer de thème">🌚</button>
-
     <nav>
         <div class="nav-interieur">
-            <a href="index.html" class="nav-logo">
-                <i class="fa-solid fa-user-graduate"></i>GL HUB
-            </a>
+            <!-- 1. Bouton Menu Mobile (Placé en premier pour être à gauche sur mobile) -->
             <button id="boutonMenuMobile" class="bouton-menu-mobile" aria-label="Menu">
                 <i class="fa-solid fa-bars"></i>
             </button>
+
+            <!-- 2. Logo du site (Toujours visible) -->
+            <a href="index.html" class="nav-logo">
+                <i class="fa-solid fa-user-graduate"></i>GL HUB
+            </a>
+
+            <!-- 3. Menu de navigation (Desktop) -->
             <ul class="menu">
                 <li><a href="index.html"><i class="fa-solid fa-house fa-bounce" style="color: rgb(4, 51, 131);"></i>Accueil</a></li>
                 <li><a href="contact.html"><i class="fa-solid fa-envelope fa-bounce" style="color: rgb(4, 51, 131);"></i>Contact</a></li>
-                <!-- Bouton qui ouvre le menu burger des matières (accès réservé aux connectés) -->
-            <li><button id="boutonMatieres" class="lien-menu-bouton"><i class="fa-solid fa-bars"></i>Matières</button></li>
-                <!-- Bouton qui ouvre la fenêtre de connexion / inscription -->
+                <li><button id="boutonMatieres" class="lien-menu-bouton"><i class="fa-solid fa-bars"></i>Matières</button></li>
                 <li id="zoneAuthNav"><button id="boutonAuth" class="lien-menu-bouton"><i class="fa-solid fa-user"></i>Se connecter</button></li>
-            <li class="item-recherche">
-                <div class="barre-recherche">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                    <input type="text" id="rechercheCours" placeholder="Rechercher un cours..." autocomplete="off">
-                </div>
-                <div id="resultatsRecherche" class="resultats-recherche"></div>
-            </li>
-        
-                    </ul>
+                <li class="item-recherche">
+                    <div class="barre-recherche">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="rechercheCours" placeholder="Rechercher un cours..." autocomplete="off">
+                    </div>
+                    <div id="resultatsRecherche" class="resultats-recherche"></div>
+                </li>
+            </ul>
+
+            <!-- 4. Bouton Thème (Intégré proprement à droite dans la navbar) -->
+            <button id="themeToggle" class="theme-toggle" aria-label="Changer de thème">
+                <i class="fa-solid fa-moon"></i>
+            </button>
         </div>
     </nav>
 

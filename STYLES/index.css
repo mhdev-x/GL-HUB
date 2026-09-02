@@ -56,7 +56,7 @@ hr {
 .slogan-hero {
     display: flex;
     align-items: center;
-    gap: 15px; /* Espace entre les mots et les séparateurs */
+    gap: 15px; 
     font-size: clamp(0.9rem, 1.8vw, 1.2rem);
     font-weight: 500;
     color: rgba(255, 255, 255, 0.95);
@@ -73,16 +73,17 @@ hr {
 .slogan-hero span:not(:last-child)::after {
     content: "|";
     margin-left: 15px;
-    color: rgba(255, 255, 255, 0.5); /* Couleur légèrement transparente pour le design */
+    color: rgba(255, 255, 255, 0.5);
 }
 
-/* --- NAVIGATION --- */
+/* --- NAVIGATION GENERALE --- */
 nav {
     background-color: var(--color-nav-bg);
     border-bottom: 1px solid var(--color-nav-border);
     position: sticky;
     top: 0;
     z-index: 100;
+    width: 100%;
 }
 
 .nav-interieur {
@@ -91,7 +92,9 @@ nav {
     justify-content: space-between;
     max-width: 1300px;
     margin: 0 auto;
-    padding: 0 20px;
+    padding: 10px 20px;
+    min-height: 70px;
+    gap: 15px;
 }
 
 .nav-logo {
@@ -112,6 +115,7 @@ nav {
 
 .menu {
     display: flex;
+    align-items: center;
     justify-content: center;
     flex-wrap: wrap;
     margin: 0;
@@ -122,26 +126,28 @@ ul {
     list-style-type: none;
 }
 
-.menu li a {
+.menu li a, .lien-menu-bouton {
     display: block;
-    padding: 18px 20px;
+    padding: 15px 18px;
     text-decoration: none;
     color: var(--color-nav-link);
     font-weight: 600;
     font-size: 0.95rem;
-    transition: all 0.3s ease;
+    background: none;
+    border: none;
     border-bottom: 3px solid transparent;
+    cursor: pointer;
+    transition: all 0.3s ease;
 }
 
-.menu li a:hover {
+.menu li a:hover, .lien-menu-bouton:hover {
     color: var(--color-accent); 
     background-color: var(--color-nav-link-hover-bg);
 }
 
-.menu li a.active {
-    color: var(--color-accent);  
-    border-bottom-color: var(--color-accent);  
-    background-color: var(--color-nav-link-active-bg);
+/* Cache le bouton menu hamburger sur grand écran */
+.bouton-menu-mobile {
+    display: none;
 }
 
 /* --- ZONE PRINCIPALE --- */
@@ -151,15 +157,6 @@ ul {
     max-width: 1100px;  
     margin: 5px auto;
     padding: 20px; 
-}
-
-.container h1 {
-    text-align: center;
-    font-size: 3rem; 
-    text-decoration: underline;
-    color: var(--color-text);
-    margin: 0 auto 30px;
-    padding: 10px;
 }
 
 /* --- SECTION BIENVENUE (ACCUEIL) --- */
@@ -271,33 +268,65 @@ footer p {
     font-size: 0.9rem;
 }
 
-
 /* ==========================================================================
-   RESPONSIVE : À PARTIR DES ÉCRANS LAPTOP ET PLUS PETITS (<= 1024px)
+   RESPONSIVE LAPTOP (<= 1024px)
    ========================================================================== */
-
 @media (max-width: 1024px) {
-    /* TRANSFORMATION DU SLOGAN : Mode vertical */
+    /* TRANSFORMATION DU SLOGAN EN VERTICAL */
     .slogan-hero {
         flex-direction: column;
-        align-items: flex-start; /* Aligné à gauche dans l'espace négatif */
-        gap: 8px; /* Espacement vertical entre les slogans */
+        align-items: flex-start;
+        gap: 8px;
     }
 
-    /* Suppression des barres de séparation "|" */
+    /* Suppression des barres de séparation "|" générées */
     .slogan-hero span::after {
         display: none !important;
     }
 }
 
-/* --- FORMAT TABLETTE & MOBILE (< 768px) --- */
+/* ==========================================================================
+   RESPONSIVE TABLETTE & MOBILE (< 768px)
+   ========================================================================== */
 @media (max-width: 768px) {
+    
+    /* NAV : Ordonnancement sans chevauchement */
+    .nav-interieur {
+        padding: 8px 15px;
+        flex-wrap: wrap; /* Permet au menu de passer en dessous */
+        justify-content: space-between;
+    }
+
+    .bouton-menu-mobile {
+        display: flex;         /* Affiche le bouton */
+        align-items: center;
+        justify-content: center;
+        background: none;
+        border: none;
+        color: var(--color-text);
+        font-size: 1.35rem;
+        cursor: pointer;
+        width: 42px;
+        height: 42px;
+        order: 1;              /* Force la position tout à gauche */
+    }
+
+    .nav-logo {
+        order: 2;              /* Force la position au milieu */
+        font-size: 1.2rem;
+        margin: 0 auto;        /* Centre parfaitement le logo */
+    }
+
+    .theme-toggle {
+        order: 3;              /* Force la position tout à droite */
+    }
+
+    /* --- BANDEAU ILLUSTRÉ (HERO) --- */
     .site-header {
-        aspect-ratio: auto; /* Laisse le bandeau s'agrandir verticalement pour contenir le texte */
+        aspect-ratio: auto;
         min-height: 240px;
         padding: 30px 20px;
         background-position: left center;
-        /* Renforcement du filtre sombre pour garantir la lisibilité du texte sur petit écran */
         background-image: linear-gradient(90deg, rgba(11,32,76,0.92) 0%, rgba(11,32,76,0.65) 100%),
                            url("../MEDIAS/hero-banner.jpg");
     }
@@ -312,10 +341,6 @@ footer p {
 
     .slogan-hero {
         font-size: 0.95rem;
-    }
-
-    .nav-logo {
-        font-size: 1.15rem;
     }
 
     .hero {
@@ -334,6 +359,10 @@ footer p {
 
 /* --- TRÈS PETITS SMARTPHONES (< 400px) --- */
 @media (max-width: 400px) {
+    .nav-logo {
+        font-size: 1.05rem; 
+    }
+
     .logo-text-hero {
         font-size: 1.5rem;
     }
@@ -341,9 +370,5 @@ footer p {
     .slogan-hero {
         font-size: 0.85rem;
         gap: 6px;
-    }
-    
-    .hero {
-        padding: 20px 15px;
     }
 }
