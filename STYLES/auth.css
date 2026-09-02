@@ -521,8 +521,13 @@ nav.nav-scrolled {
 @media (max-width: 768px) {
     .bouton-menu-mobile {
         display: block;
-        width: 100%;
+        width: auto;
         text-align: left;
+    }
+
+    .nav-interieur {
+        flex-wrap: wrap;
+        padding: 8px 20px;
     }
 
     nav .menu {
@@ -530,9 +535,19 @@ nav.nav-scrolled {
         flex-direction: column;
         background-color: var(--color-nav-bg);
         border-top: 1px solid var(--color-nav-border);
+        width: 100%;
+    }
+
+    nav .menu li a {
+        text-align: center;
+        justify-content: center;
+        padding: 12px;
+        border-bottom: none;
+        border-left: 4px solid transparent;
     }
 
     nav .menu.menu-mobile-ouvert {
         display: flex;
+        flex-basis: 100%;
     }
 }

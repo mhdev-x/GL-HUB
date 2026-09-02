@@ -15,36 +15,39 @@
 <body>
     <button id="themeToggle" class="theme-toggle" aria-label="Changer de thème">🌚</button>
 
-    <header class="site-header">
-        <img class="logo-img" src="MEDIAS/LOGO-GL-HUB.png" alt="logo de GL HUB">
-        <div class="logo-text">
-            <i class="fa-solid fa-user-graduate fa-bounce" style="color: rgb(255, 255, 255);"></i>GL HUB
-        </div>
-        <p class="slogan" style="font-size: 1.2rem; font-weight: bold;">
-            Un Hub | Une Communauté | Une Progression</p>
-    </header>
-
     <nav>
-        <button id="boutonMenuMobile" class="bouton-menu-mobile" aria-label="Menu">
-            <i class="fa-solid fa-bars"></i>
-        </button>
-        <ul class="menu">
-            <li><a href="index.html"><i class="fa-solid fa-house fa-bounce" style="color: rgb(4, 51, 131);"></i>Accueil</a></li>
-            <li><a href="contact.html"><i class="fa-solid fa-envelope fa-bounce" style="color: rgb(4, 51, 131);"></i>Contact</a></li>
-            <!-- Bouton qui ouvre le menu burger des matières (accès réservé aux connectés) -->
-        <li><button id="boutonMatieres" class="lien-menu-bouton"><i class="fa-solid fa-bars"></i>Matières</button></li>
-            <!-- Bouton qui ouvre la fenêtre de connexion / inscription -->
-            <li id="zoneAuthNav"><button id="boutonAuth" class="lien-menu-bouton"><i class="fa-solid fa-user"></i>Se connecter</button></li>
-        <li class="item-recherche">
-            <div class="barre-recherche">
-                <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" id="rechercheCours" placeholder="Rechercher un cours..." autocomplete="off">
-            </div>
-            <div id="resultatsRecherche" class="resultats-recherche"></div>
-        </li>
+        <div class="nav-interieur">
+            <a href="index.html" class="nav-logo">
+                <i class="fa-solid fa-user-graduate"></i>GL HUB
+            </a>
+            <button id="boutonMenuMobile" class="bouton-menu-mobile" aria-label="Menu">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            <ul class="menu">
+                <li><a href="index.html"><i class="fa-solid fa-house fa-bounce" style="color: rgb(4, 51, 131);"></i>Accueil</a></li>
+                <li><a href="contact.html"><i class="fa-solid fa-envelope fa-bounce" style="color: rgb(4, 51, 131);"></i>Contact</a></li>
+                <!-- Bouton qui ouvre le menu burger des matières (accès réservé aux connectés) -->
+            <li><button id="boutonMatieres" class="lien-menu-bouton"><i class="fa-solid fa-bars"></i>Matières</button></li>
+                <!-- Bouton qui ouvre la fenêtre de connexion / inscription -->
+                <li id="zoneAuthNav"><button id="boutonAuth" class="lien-menu-bouton"><i class="fa-solid fa-user"></i>Se connecter</button></li>
+            <li class="item-recherche">
+                <div class="barre-recherche">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="rechercheCours" placeholder="Rechercher un cours..." autocomplete="off">
+                </div>
+                <div id="resultatsRecherche" class="resultats-recherche"></div>
+            </li>
         
                     </ul>
+        </div>
     </nav>
+
+    <header class="site-header">
+        <div class="hero-overlay-texte">
+            <div class="logo-text-hero">GL HUB</div>
+            <p class="slogan-hero">Un Hub | Une Communauté | Une Progression</p>
+        </div>
+    </header>
 
     <!-- ===================== PANNEAU BURGER : MATIÈRES ===================== -->
     <div id="voileMatieres" class="voile"></div>
