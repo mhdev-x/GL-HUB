@@ -21,11 +21,8 @@ hr {
 }    
 /* --- HEADER (bandeau illustré) --- */
 .site-header {
-    background-image: linear-gradient(90deg,
-        rgba(11,32,76,0.55) 0%, 
-        rgba(11,32,76,0.15) 55%,
-        rgba(11,32,76,0) 100%), 
-        url("MEDIAS/hero-banner.jpg");
+    background-image: linear-gradient(90deg, rgba(11,32,76,0.55) 0%, rgba(11,32,76,0.15) 55%, rgba(11,32,76,0) 100%),
+                       url("../MEDIAS/hero-banner.jpg");
     background-size: cover;
     background-position: center;
     min-height: 340px;
