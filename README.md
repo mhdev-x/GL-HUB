@@ -1,6 +1,6 @@
 # 🎓 GL HUB
 
-![GL HUB Logo](FICHIERS/MEDIAS/LOGO-GL-HUB.png)
+![GL HUB Logo](../MEDIAS/LOGO-GL-HUB.png)
 
 **GL HUB** est une plateforme éducative centralisée, conçue par un étudiant en Génie Logiciel pour ses pairs. Elle regroupe l'ensemble des ressources pédagogiques essentielles du cursus en un lieu unique, accessible à tous.
 
@@ -67,11 +67,10 @@ GL-HUB/
 ├── technologieWeb.html
 ├── basedeDonnees.html
 ├── algo.html
-├── FICHIERS/
-│   ├── MEDIAS/
-│   │   └── LOGO-GL-HUB.png
-│   └── DOCUMENTS/
-│       └── (cours, TD, projets)
+├── MEDIAS/
+│   ├── hero-banner.jpg
+│   │
+│   └── LOGO-GL-HUB.png
 ├── assets/
 │   └── css/
 └── LICENSE
