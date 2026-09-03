@@ -1,6 +1,6 @@
 # 🎓 GL HUB
 
-![GL HUB Logo](../MEDIAS/LOGO-GL-HUB.png)
+![GL HUB Logo](MEDIAS/LOGO-GL-HUB.png)
 
 **GL HUB** est une plateforme éducative centralisée, conçue par un étudiant en Génie Logiciel pour ses pairs. Elle regroupe l'ensemble des ressources pédagogiques essentielles du cursus en un lieu unique, accessible à tous.
 
