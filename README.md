@@ -43,7 +43,7 @@ Face à la **dispersion des supports de cours** et au **manque de centralisation
 - 📚 **5 matières principales** organisées et accessibles  
 - 📄 **57 ressources pédagogiques** (cours, TD, TP, projet d'examen)  
 - 🆓 **100 % gratuit** : plus de paiement, on progresse en réussissant des quiz  
-- 🔓 **Déblocage progressif** : la première ressource de chaque matière est libre, les suivantes se débloquent avec un quiz (70 % minimum)  
+- 🔓 **Déblocage progressif des cours** : le premier cours de chaque matière est libre, les suivants se débloquent avec un quiz (70 % minimum). Les **TD sont libres pour tout le monde**  
 - 🎲 **Quiz aléatoires** : deux étudiants n'ont pas forcément les mêmes questions  
 - 📖 **Lecture en ligne ou téléchargement** de chaque ressource (pour les utilisateurs connectés)  
 - 🕘 **Historique personnel** des dernières ressources lues et téléchargées  
@@ -56,11 +56,12 @@ Face à la **dispersion des supports de cours** et au **manque de centralisation
 ## Comment fonctionne le déblocage par quiz
 
 1. **Crée un compte** (gratuit) et connecte-toi.
-2. **La première ressource** de chaque matière est accessible tout de suite : tu peux la **lire** en ligne ou la **télécharger**.
-3. Pour débloquer la ressource suivante, passe le **quiz de la ressource que tu viens de lire** : 10 questions tirées au hasard dans une banque de questions.
-4. Il faut **70 % minimum**. En cas d'échec, tu peux réessayer après 2 minutes, avec des questions qui peuvent être différentes.
-5. Après une réussite, tu vois la **correction** avec les explications, et la ressource suivante est débloquée.
-6. Chaque matière suit un **ordre pédagogique** (Chapitre 1 avant Chapitre 2, TD 1 avant TD 2...). Chaque carte indique son numéro d'étape.
+2. **Les TD, TP et projets sont libres** : tu peux les lire ou les télécharger tout de suite.
+3. **Le premier cours** de chaque matière est libre aussi.
+4. Pour débloquer le **cours suivant**, passe le **quiz du cours que tu viens de lire** : 10 questions tirées au hasard dans une banque de questions.
+5. Il faut **70 % minimum**. En cas d'échec, tu peux réessayer après 2 minutes, avec des questions qui peuvent être différentes.
+6. Après une réussite, tu vois la **correction** avec les explications, et le cours suivant est débloqué.
+7. Les cours suivent un **ordre pédagogique** (Chapitre 1 avant Chapitre 2...). Chaque carte indique son numéro (« Cours 3 sur 8 ») ou « Accès libre » pour un TD.
 
 Les administrateurs ont accès à toutes les ressources. Les étudiants qui avaient déjà payé l'ancien système (500 FCFA par ressource) ont gardé l'accès à leurs ressources.
 
@@ -102,9 +103,9 @@ Les administrateurs ont accès à toutes les ressources. Les étudiants qui avai
 |----------|------|
 | `quiz-start` | Vérifie l'accès, tire les questions au hasard et les envoie **sans les bonnes réponses** |
 | `quiz-submit` | Corrige côté serveur, enregistre le score et débloque la ressource suivante |
-| `resource-access` | Génère une URL signée temporaire pour lire ou télécharger, seulement si la ressource est débloquée |
+| `resource-access` | Vérifie l'accès (TD libres, cours débloqués, admin) puis renvoie le fichier lui-même : aucun lien partageable n'est donné au navigateur |
 
-**Sécurité** : les fichiers sont dans un stockage privé (jamais d'URL publique), les quiz sont corrigés par le serveur, la table des questions est protégée par des règles RLS, et la recherche publique passe par une vue (`catalogue_public`) qui n'expose que le titre, le type et la matière : les visiteurs n'ont un droit de lecture que sur ces colonnes, jamais sur le chemin du fichier.
+**Sécurité** : les fichiers sont dans un stockage privé et livrés par une Edge Function qui revérifie l'accès à chaque lecture ou téléchargement (le navigateur ne reçoit jamais de lien réutilisable ni partageable), les quiz sont corrigés par le serveur, la table des questions est protégée par des règles RLS, et la recherche publique passe par une vue (`catalogue_public`) qui n'expose que le titre, le type et la matière : les visiteurs n'ont un droit de lecture que sur ces colonnes, jamais sur le chemin du fichier.
 
 ---
 
@@ -140,8 +141,9 @@ GL-HUB/
    - `002_reorganiser_ordre.sql` : ordre pédagogique des ressources (spécifique aux titres actuels, à adapter si tu changes les ressources) ;
    - `003_droits_lecture.sql` : droits de lecture des nouvelles tables ;
    - `004_recherche_publique_et_admin_quiz.sql` : recherche ouverte aux visiteurs et gestion des questions par les administrateurs.
-   - `005_vue_catalogue_securisee.sql` : sécurise la vue de recherche (droits de lecture limités aux colonnes publiques).
-4. Crée un **bucket privé** dans Storage et envoie-y tes fichiers. Le chemin de chaque fichier doit correspondre à la colonne `chemin_fichier` de `ressources`. Le nom attendu est `ressources` (constante en haut de `supabase/functions/resource-access/index.ts`) ; s'il est différent, la fonction cherche automatiquement le fichier dans les autres buckets.
+   - `005_vue_catalogue_securisee.sql` : sécurise la vue de recherche (droits de lecture limités aux colonnes publiques) ;
+   - `006_quiz_seulement_pour_les_cours.sql` : les quiz ne concernent que les cours, les TD sont libres.
+4. Crée un **bucket privé** dans Storage et envoie-y tes fichiers. Le chemin de chaque fichier doit correspondre à la colonne `chemin_fichier` de `ressources`. Le nom attendu est `ressources-privees` (constante en haut de `supabase/functions/resource-access/index.ts`) ; s'il est différent, la fonction cherche automatiquement le fichier dans les autres buckets.
 5. Déploie les trois fonctions de `supabase/functions/` (`supabase functions deploy quiz-start`, etc., ou en collant le code dans le tableau de bord Supabase). Chaque fichier est autonome.
 6. Ajoute ton compte dans la table `admins` (`user_id` de ton compte) pour accéder à l'espace administrateur.
 
@@ -166,7 +168,7 @@ Depuis l'espace **Admin → Quiz** (`admin-quiz.html`) :
 ]
 ```
 
-La dernière ressource de chaque matière n'a pas besoin de quiz, puisqu'elle ne débloque rien. Une ressource sans question bloque la suivante : pense à remplir la banque avant d'ouvrir une nouvelle matière au public.
+Seuls les **cours** ont un quiz : les TD n'apparaissent qu'avec la mention « accès libre ». Le dernier cours de chaque matière n'a pas besoin de quiz, puisqu'il ne débloque rien. Un cours sans question bloque le cours suivant : pense à remplir la banque avant d'ouvrir une nouvelle matière au public.
 
 ---
 

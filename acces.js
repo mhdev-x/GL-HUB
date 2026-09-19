@@ -83,40 +83,85 @@ document.addEventListener("DOMContentLoaded", async () => {
     // ========================================================
     // LIRE / TÉLÉCHARGER
     // ========================================================
+    // Message d'erreur lisible à partir de la réponse du serveur
+    let expliquerErreur = (detail, statut) => {
+        if (detail && detail.error) return detail.error;
+        if (detail && (detail.message || detail.msg)) return `Erreur du serveur : ${detail.message || detail.msg} (code ${statut})`;
+        return `Une erreur est survenue (code ${statut || "inconnu"}). Réessaie dans un instant.`;
+    };
+
+    // Récupère le fichier lui-même via l'Edge Function : le serveur vérifie ton accès puis renvoie le fichier.
+    // Aucun lien partageable n'existe : personne d'autre ne peut ouvrir "ton" lien.
+    let recupererFichier = async (ressource, action) => {
+        try {
+            let { data: sessionData } = await supabaseClient.auth.getSession();
+            let session = sessionData.session;
+            if (!session) return { erreur: "Connecte-toi pour accéder aux ressources.", statut: 401 };
+
+            let urlSupabase = typeof SUPABASE_URL !== "undefined" ? SUPABASE_URL : supabaseClient.supabaseUrl;
+            let cleAnon = typeof SUPABASE_ANON_KEY !== "undefined" ? SUPABASE_ANON_KEY : supabaseClient.supabaseKey;
+
+            let reponse = await fetch(`${urlSupabase}/functions/v1/resource-access`, {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${session.access_token}`,
+                    "apikey": cleAnon,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ ressource_id: ressource.id, action })
+            });
+
+            if (reponse.ok) {
+                return { blob: await reponse.blob(), type: reponse.headers.get("Content-Type") || "" };
+            }
+
+            let detail = null;
+            try { detail = await reponse.json(); } catch (_) { /* pas de JSON */ }
+            console.error(`Fonction resource-access (code ${reponse.status})`, detail);
+            return { erreur: expliquerErreur(detail, reponse.status), data: detail, statut: reponse.status };
+        } catch (e) {
+            console.error(e);
+            return { erreur: "Impossible de joindre le serveur (réseau ou CORS). Vérifie ta connexion.", statut: 0 };
+        }
+    };
+
     let ouvrirRessource = async (ressource, action, bouton) => {
         let contenuOriginal = Array.from(bouton.childNodes);
         bouton.disabled = true;
-        bouton.replaceChildren(icone("fa-solid fa-spinner fa-spin"), "Préparation...");
+        bouton.replaceChildren(icone("fa-solid fa-spinner fa-spin"), "Chargement...");
 
         // Pour la lecture, on ouvre l'onglet tout de suite (sinon certains navigateurs mobiles bloquent la fenêtre)
         let fenetre = action === "lecture" ? window.open("", "_blank") : null;
 
-        let { data, erreur } = await appelerFonction("resource-access", {
-            ressource_id: ressource.id,
-            action
-        });
+        let resultat = await recupererFichier(ressource, action);
 
         bouton.disabled = false;
         bouton.replaceChildren(...contenuOriginal);
 
-        if (erreur || !data || !data.url) {
+        if (resultat.erreur || !resultat.blob) {
             if (fenetre) fenetre.close();
-            let detailAdmin = data && data.detail ? ` (${data.detail})` : "";
-            if (data && data.detail) console.error("resource-access :", data.detail);
-            notifier((erreur || "Impossible d'ouvrir ce fichier pour le moment.") + detailAdmin, "fa-solid fa-triangle-exclamation");
+            let detailAdmin = resultat.data && resultat.data.detail ? ` (${resultat.data.detail})` : "";
+            if (detailAdmin) console.error("resource-access :", resultat.data.detail);
+            notifier((resultat.erreur || "Impossible d'ouvrir ce fichier pour le moment.") + detailAdmin, "fa-solid fa-triangle-exclamation");
             return;
         }
 
+        // Le fichier est maintenant dans le navigateur : l'adresse "blob:" n'existe que dans CET onglet et ne peut pas être partagée
+        let nomFichier = String(ressource.chemin_fichier || "ressource.pdf").split("/").pop();
+        let typeFichier = /\.pdf$/i.test(nomFichier) ? "application/pdf" : (resultat.type || "application/octet-stream");
+        let adresseLocale = URL.createObjectURL(new Blob([resultat.blob], { type: typeFichier }));
+
         if (action === "lecture") {
-            if (fenetre) fenetre.location.href = data.url;
-            else window.location.assign(data.url); // popup bloquée : on ouvre dans l'onglet courant
+            if (fenetre) fenetre.location.href = adresseLocale;
+            else window.location.assign(adresseLocale); // popup bloquée : on ouvre dans l'onglet courant
         } else {
             let lien = document.createElement("a");
-            lien.href = data.url;
-            lien.rel = "noopener";
+            lien.href = adresseLocale;
+            lien.download = nomFichier;
             document.body.appendChild(lien);
             lien.click();
             lien.remove();
+            setTimeout(() => URL.revokeObjectURL(adresseLocale), 60000);
         }
     };
 
