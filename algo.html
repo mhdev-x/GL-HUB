@@ -3,24 +3,13 @@
 <head>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabaseClient.js"></script>
-    <script>
-        // 🔒 GARDE D'ACCÈS — vérifie la vraie session Supabase avant d'afficher la page
-        document.documentElement.style.visibility = "hidden";
-        (async () => {
-            let { data } = await supabaseClient.auth.getSession();
-            if (!data.session) {
-                window.location.replace("index.html");
-            } else {
-                document.documentElement.style.visibility = "visible";
-            }
-        })();
-    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="STYLES/algo.css">
     <link rel="stylesheet" href="STYLES/theme.css">
     <link rel="stylesheet" href="STYLES/auth.css">
+    <link rel="stylesheet" href="STYLES/acces.css">
     <link rel="icon" type="image/png" href="MEDIAS/LOGO-GL-HUB.png">    
     <title>GL HUB - Algorithmique</title>
 </head>
@@ -78,7 +67,7 @@
     <aside id="panneauMatieres" class="panneau-lateral">
         <div class="panneau-entete">
             <h3><i class="fa-solid fa-book"></i>Espace Matières</h3>
-            <button id="fermerPanneauMatieres" class="bouton-fermer" aria-label="Fermer">✕</button>
+            <button id="fermerPanneauMatieres" class="bouton-fermer" aria-label="Fermer"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div id="matieresVerrouillees" class="panneau-message">
             <i class="fa-solid fa-lock fa-2x"></i>
@@ -97,7 +86,7 @@
     <!-- ===================== MODALE : CONNEXION / INSCRIPTION ===================== -->
     <div id="voileAuth" class="voile"></div>
     <div id="modaleAuth" class="modale">
-        <button id="fermerModaleAuth" class="bouton-fermer" aria-label="Fermer">✕</button>
+        <button id="fermerModaleAuth" class="bouton-fermer" aria-label="Fermer"><i class="fa-solid fa-xmark"></i></button>
         <div class="onglets-auth">
             <button id="ongletConnexion" class="onglet-auth actif">Connexion</button>
             <button id="ongletInscription" class="onglet-auth">Inscription</button>
@@ -240,6 +229,6 @@
 
     <script src="theme.js"></script>
     <script src="auth.js"></script>
-    <script src="paywall.js"></script>
+    <script src="acces.js"></script>
 </body>
 </html>

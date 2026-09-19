@@ -114,43 +114,77 @@ document.addEventListener("DOMContentLoaded", async () => {
         afficherToast("Mot de passe changé avec succès.");
     });
 
-    // ---------- Charger la liste des ressources téléchargées ----------
-    let chargerMesRessources = async () => {
-        let { data: paiements, error } = await supabaseClient
-            .from("paiements")
-            .select("montant, valide_le, ressources ( titre )")
-            .eq("user_id", utilisateur.id)
-            .eq("statut", "valide")
-            .order("valide_le", { ascending: false });
+    // ---------- Historique : dernières lectures et derniers téléchargements ----------
+    let listeLectures = document.querySelector("#listeLectures");
+    let listeTelechargements = document.querySelector("#listeTelechargements");
 
-        if (error) {
-            listeMesRessources.innerHTML = `<p class="message-chargement">Erreur de chargement.</p>`;
+    let remplirListe = (conteneur, evenements, ressourceParId, texteVide, icone) => {
+        conteneur.innerHTML = "";
+
+        if (evenements.length === 0) {
+            let vide = document.createElement("p");
+            vide.className = "message-chargement";
+            vide.textContent = texteVide;
+            conteneur.appendChild(vide);
             return;
         }
 
-        if (!paiements || paiements.length === 0) {
-            listeMesRessources.innerHTML = `<p class="message-chargement">Tu n'as encore débloqué aucune ressource.</p>`;
-            return;
-        }
+        evenements.forEach(e => {
+            let ressource = ressourceParId[e.ressource_id];
+            if (!ressource) return;
 
-        listeMesRessources.innerHTML = "";
-        paiements.forEach(p => {
-            let carte = document.createElement("div");
-            carte.className = "carte-ressource-perso";
+            let carte = document.createElement("a");
+            carte.className = "carte-ressource-perso carte-lien";
+            carte.href = ressource.matieres ? `${ressource.matieres.slug}.html` : "index.html";
 
             let titre = document.createElement("strong");
-            titre.textContent = (p.ressources && p.ressources.titre) || "Ressource supprimée";
+            let iconeEl = document.createElement("i");
+            iconeEl.className = icone;
+            titre.append(iconeEl, ` ${ressource.titre}`);
 
             let details = document.createElement("p");
-            let date = p.valide_le ? new Date(p.valide_le).toLocaleDateString("fr-FR") : "";
-            details.textContent = `${p.montant} FCFA — débloqué le ${date}`;
+            let date = new Date(e.dernier_le).toLocaleString("fr-FR", { dateStyle: "medium", timeStyle: "short" });
+            let matiere = ressource.matieres ? ressource.matieres.nom : "";
+            details.textContent = matiere ? `${matiere} — ${date}` : date;
 
             carte.append(titre, details);
-            listeMesRessources.appendChild(carte);
+            conteneur.appendChild(carte);
         });
     };
 
-    chargerMesRessources();
+    let chargerMonHistorique = async () => {
+        let { data: evenements, error } = await supabaseClient
+            .from("mes_ressources_recentes")
+            .select("ressource_id, type_evenement, dernier_le")
+            .order("dernier_le", { ascending: false })
+            .limit(60);
+
+        if (error) {
+            console.error(error);
+            listeLectures.innerHTML = `<p class="message-chargement">Erreur de chargement.</p>`;
+            listeTelechargements.innerHTML = `<p class="message-chargement">Erreur de chargement.</p>`;
+            return;
+        }
+
+        let lectures = (evenements || []).filter(e => e.type_evenement === "lecture").slice(0, 10);
+        let telechargements = (evenements || []).filter(e => e.type_evenement === "telechargement").slice(0, 10);
+
+        let ids = [...new Set([...lectures, ...telechargements].map(e => e.ressource_id))];
+        let ressourceParId = {};
+
+        if (ids.length > 0) {
+            let { data: ressources } = await supabaseClient
+                .from("ressources")
+                .select("id, titre, matieres ( nom, slug )")
+                .in("id", ids);
+            (ressources || []).forEach(r => { ressourceParId[r.id] = r; });
+        }
+
+        remplirListe(listeLectures, lectures, ressourceParId, "Tu n'as encore lu aucune ressource.", "fa-solid fa-book-open");
+        remplirListe(listeTelechargements, telechargements, ressourceParId, "Tu n'as encore téléchargé aucune ressource.", "fa-solid fa-download");
+    };
+
+    chargerMonHistorique();
 
     // ---------- Supprimer son compte ----------
     boutonSupprimerCompte.addEventListener("click", () => {
@@ -160,10 +194,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         let modale = document.createElement("div");
         modale.className = "modale visible modale-paiement";
         modale.innerHTML = `
-            <button class="bouton-fermer" aria-label="Fermer">✕</button>
+            <button class="bouton-fermer" aria-label="Fermer"><i class="fa-solid fa-xmark"></i></button>
             <h3><i class="fa-solid fa-triangle-exclamation" style="color:#dc2626;"></i> Confirmer la suppression</h3>
             <p class="instructions-paiement">
-                Cette action est <strong>définitive</strong>. Ton compte, ton profil et ton historique de paiements
+                Cette action est <strong>définitive</strong>. Ton compte, ton profil, ta progression et ton historique
                 seront supprimés pour toujours. Es-tu sûr de vouloir continuer ?
             </p>
             <button class="bouton-danger bouton-pleine-largeur" id="boutonConfirmerSuppression">Oui, supprimer définitivement</button>

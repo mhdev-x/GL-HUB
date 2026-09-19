@@ -12,7 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabaseClient.js"></script>
     <script>
-        // 🔒 GARDE D'ACCÈS — il faut simplement être connecté (étudiant ou admin)
+        // GARDE D'ACCÈS — il faut simplement être connecté (étudiant ou admin)
         document.documentElement.style.visibility = "hidden";
         (async () => {
             let { data } = await supabaseClient.auth.getSession();
@@ -78,7 +78,7 @@
     <aside id="panneauMatieres" class="panneau-lateral">
         <div class="panneau-entete">
             <h3><i class="fa-solid fa-book"></i>Espace Matières</h3>
-            <button id="fermerPanneauMatieres" class="bouton-fermer" aria-label="Fermer">✕</button>
+            <button id="fermerPanneauMatieres" class="bouton-fermer" aria-label="Fermer"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div id="matieresVerrouillees" class="panneau-message">
             <i class="fa-solid fa-lock fa-2x"></i>
@@ -97,7 +97,7 @@
     <!-- ===================== MODALE : CONNEXION / INSCRIPTION ===================== -->
     <div id="voileAuth" class="voile"></div>
     <div id="modaleAuth" class="modale">
-        <button id="fermerModaleAuth" class="bouton-fermer" aria-label="Fermer">✕</button>
+        <button id="fermerModaleAuth" class="bouton-fermer" aria-label="Fermer"><i class="fa-solid fa-xmark"></i></button>
         <div class="onglets-auth">
             <button id="ongletConnexion" class="onglet-auth actif">Connexion</button>
             <button id="ongletInscription" class="onglet-auth">Inscription</button>
@@ -158,8 +158,15 @@
 
         <hr>
 
-        <h2 class="section-title"><i class="fa-solid fa-download"></i>Mes ressources téléchargées</h2>
-        <div id="listeMesRessources" class="liste-mes-ressources">
+        <h2 class="section-title"><i class="fa-solid fa-book-open"></i>Mes dernières lectures</h2>
+        <div id="listeLectures" class="liste-mes-ressources">
+            <p class="message-chargement">Chargement...</p>
+        </div>
+
+        <hr>
+
+        <h2 class="section-title"><i class="fa-solid fa-download"></i>Mes derniers téléchargements</h2>
+        <div id="listeTelechargements" class="liste-mes-ressources">
             <p class="message-chargement">Chargement...</p>
         </div>
 
@@ -167,7 +174,7 @@
 
         <h2 class="section-title" style="color:#dc2626;"><i class="fa-solid fa-triangle-exclamation"></i>Zone de danger</h2>
         <section class="carte-profil carte-danger">
-            <p>Supprimer ton compte est <strong>définitif et irréversible</strong>. Toutes tes données (profil, historique de paiements) seront effacées. Les ressources déjà téléchargées sur ton appareil ne sont pas concernées.</p>
+            <p>Supprimer ton compte est <strong>définitif et irréversible</strong>. Toutes tes données (profil, progression et historique) seront effacées. Les ressources déjà téléchargées sur ton appareil ne sont pas concernées.</p>
             <button id="boutonSupprimerCompte" class="bouton-danger">Supprimer mon compte définitivement</button>
         </section>
 

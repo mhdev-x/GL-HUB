@@ -63,6 +63,9 @@ document.addEventListener("DOMContentLoaded", () => {
         modaleAuth.classList.add("visible");
     };
 
+    // Rendue accessible aux autres scripts (les boutons "Se connecter pour accéder" des cartes)
+    window.ouvrirModaleAuth = ouvrirModaleAuth;
+
     let fermerLaModaleAuth = () => {
         voileAuth.classList.remove("visible");
         modaleAuth.classList.remove("visible");
@@ -341,8 +344,9 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     let afficherEtatDeconnecte = () => {
-        if (matieresVerrouillees) matieresVerrouillees.style.display = "block";
-        if (listeMatieres) listeMatieres.style.display = "none";
+        // Les matières sont visibles par tout le monde ; seule la lecture / le téléchargement demande une connexion
+        if (matieresVerrouillees) matieresVerrouillees.style.display = "none";
+        if (listeMatieres) listeMatieres.style.display = "block";
 
         if (zoneAuthNav) {
             zoneAuthNav.innerHTML = `<button id="boutonAuth" class="lien-menu-bouton"><i class="fa-solid fa-user"></i>Se connecter</button>`;
