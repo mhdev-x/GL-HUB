@@ -59,11 +59,21 @@ document.addEventListener("DOMContentLoaded", async () => {
                 statut = error.context.status;
                 try { detail = await error.context.json(); } catch (_) { /* pas de JSON */ }
             }
-            return {
-                data: detail,
-                erreur: (detail && detail.error) || "Une erreur est survenue. Réessaie dans un instant.",
-                statut
-            };
+            console.error(`Fonction ${nom} : ${error.name || "erreur"} (code ${statut || "?"})`, detail || error);
+
+            // 1) Message renvoyé par notre fonction
+            if (detail && detail.error) return { data: detail, erreur: detail.error, statut };
+
+            // 2) Message renvoyé par Supabase lui-même (fonction introuvable, JWT refusé, plantage au démarrage...)
+            if (detail && (detail.message || detail.msg)) {
+                return { data: detail, erreur: `Erreur du serveur : ${detail.message || detail.msg} (code ${statut})`, statut };
+            }
+
+            // 3) Pas de réponse exploitable (réseau, CORS...)
+            if (error.name === "FunctionsFetchError") {
+                return { data: null, erreur: "Impossible de joindre le serveur (réseau ou CORS). Vérifie ta connexion.", statut: 0 };
+            }
+            return { data: detail, erreur: `Une erreur est survenue (code ${statut || "inconnu"}). Réessaie dans un instant.`, statut };
         } catch (e) {
             console.error(e);
             return { data: null, erreur: "Connexion impossible. Vérifie ton réseau.", statut: 0 };
@@ -448,7 +458,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         let [resRessources, resDeblocages, resReussites] = await Promise.all([
             supabaseClient
                 .from("ressources")
-                .select("id, titre, chemin_fichier, ordre")
+                .select("id, titre, chemin_fichier, ordre, type")
                 .eq("matiere_id", matiere.id)
                 .order("ordre", { ascending: true }),
             estAdmin ? vide : supabaseClient
@@ -475,7 +485,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         let ressources = resRessources.data || [];
         let idsDebloques = new Set((resDeblocages.data || []).map(d => d.ressource_id));
         let idsReussis = new Set((resReussites.data || []).map(r => r.ressource_id));
-        let premiereOrdre = ressources.length ? ressources[0].ordre : null;
+
+        // Les quiz ne concernent que les COURS : les TD (et TP, projet) sont libres pour tout le monde
+        let estCours = (r) => String(r.type || "").trim().toLowerCase() === "cours";
+        let cours = ressources.filter(estCours);                 // déjà triés par ordre
+        let premierCours = cours.length ? cours[0] : null;       // le premier cours de la matière est libre
 
         let ressourceParChemin = {};
         ressources.forEach(r => { ressourceParChemin[r.chemin_fichier] = r; });
@@ -491,34 +505,43 @@ document.addEventListener("DOMContentLoaded", async () => {
                 return;
             }
 
-            // Numéro d'étape dans la matière
+            let cetteRessourceEstUnCours = estCours(ressource);
+            let rangCours = cours.findIndex(c => c.id === ressource.id) + 1; // 0 si ce n'est pas un cours
+
+            // Pastille en haut de la carte : numéro du cours, ou "accès libre" pour un TD
             if (carte) {
                 let badge = el("span", "badge-etape");
-                badge.append(icone("fa-solid fa-list-ol"), ` Étape ${ressource.ordre} sur ${ressources.length}`);
+                if (cetteRessourceEstUnCours) {
+                    badge.append(icone("fa-solid fa-list-ol"), ` Cours ${rangCours} sur ${cours.length}`);
+                } else {
+                    badge.append(icone("fa-solid fa-lock-open"), " Accès libre");
+                }
                 carte.prepend(badge);
             }
 
-            let accessible = estAdmin || ressource.ordre === premiereOrdre || idsDebloques.has(ressource.id);
+            let accessible = estAdmin
+                || !cetteRessourceEstUnCours
+                || (premierCours && ressource.id === premierCours.id)
+                || idsDebloques.has(ressource.id);
 
-            // ----- Ressource verrouillée -----
+            // ----- Cours verrouillé -----
             if (!accessible) {
                 if (carte) carte.classList.add("carte-verrouillee");
 
-                let precedentes = ressources.filter(r => r.ordre < ressource.ordre);
-                let precedente = precedentes[precedentes.length - 1];
+                let precedent = cours[rangCours - 2]; // le cours d'avant
 
                 let bouton = creerBouton("bouton-download bouton-verrouille", "fa-solid fa-lock", "Verrouillé");
                 bouton.addEventListener("click", () => {
                     notifier(
-                        precedente
-                            ? `Réussis d'abord le quiz de « ${precedente.titre} » pour débloquer cette ressource.`
-                            : "Cette ressource est verrouillée.",
+                        precedent
+                            ? `Réussis d'abord le quiz de « ${precedent.titre} » pour débloquer ce cours.`
+                            : "Ce cours est verrouillé.",
                         "fa-solid fa-lock"
                     );
                 });
 
                 let info = el("p", "info-verrou");
-                info.append(icone("fa-solid fa-lock"), ` Débloqué par le quiz de : ${precedente ? precedente.titre : "la ressource précédente"}`);
+                info.append(icone("fa-solid fa-lock"), ` Débloqué par le quiz de : ${precedent ? precedent.titre : "le cours précédent"}`);
 
                 zone.replaceChildren(bouton, info);
                 return;
@@ -535,8 +558,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             rangeeActions.append(boutonLire, boutonTelecharger);
             let elements = [rangeeActions];
 
-            // ----- Quiz (seulement s'il reste une ressource à débloquer après celle-ci) -----
-            let aUneSuite = ressources.some(r => r.ordre > ressource.ordre);
+            // ----- Quiz : seulement sur un COURS, et s'il reste un cours à débloquer après celui-ci -----
+            let aUneSuite = cetteRessourceEstUnCours && cours.some(c => c.ordre > ressource.ordre);
             if (aUneSuite) {
                 let rangeeQuiz = el("div", "rangee-quiz");
 
@@ -547,7 +570,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     boutonRefaire.addEventListener("click", () => ouvrirQuiz(ressource, boutonRefaire));
                     rangeeQuiz.append(statutQuiz, boutonRefaire);
                 } else {
-                    let boutonQuiz = creerBouton("bouton-quiz", "fa-solid fa-circle-question", "Passer le quiz pour débloquer la suite");
+                    let boutonQuiz = creerBouton("bouton-quiz", "fa-solid fa-circle-question", "Passer le quiz pour débloquer le cours suivant");
                     boutonQuiz.addEventListener("click", () => ouvrirQuiz(ressource, boutonQuiz));
                     rangeeQuiz.appendChild(boutonQuiz);
                 }

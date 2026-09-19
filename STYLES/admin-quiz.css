@@ -400,3 +400,13 @@
         flex-direction: column;
     }
 }
+
+/* TD, TP, projet : accès libre, pas de quiz à gérer */
+.ligne-ressource-quiz.ligne-libre {
+    opacity: 0.6;
+    cursor: default;
+}
+
+.ligne-ressource-quiz.ligne-libre:hover {
+    border-color: var(--color-card-border);
+}

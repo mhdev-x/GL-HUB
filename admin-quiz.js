@@ -38,6 +38,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     let idEnEdition = null;
 
     // ---------- Petits outils ----------
+    // Les quiz ne concernent que les COURS : les TD, TP et projets sont libres
+    let estCours = (ressource) => String(ressource.type || "").trim().toLowerCase() === "cours";
+    let identifiantDernierCours = () => {
+        let cours = ressources.filter(estCours);
+        return cours.length ? cours[cours.length - 1].id : null;
+    };
+
     let el = (balise, classe, texte) => {
         let element = document.createElement(balise);
         if (classe) element.className = classe;
@@ -165,12 +172,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     // ========================================================
     // LISTE DES RESSOURCES (avec le nombre de questions)
     // ========================================================
-    let creerBadgeBanque = (nombreActives, estDerniere) => {
+    let creerBadgeBanque = (nombreActives, estDerniere, libre = false) => {
         let badge = el("span", "badge-banque");
 
-        if (estDerniere && nombreActives === 0) {
+        if (libre) {
             badge.classList.add("badge-neutre");
-            badge.append(icone("fa-solid fa-flag-checkered"), " Dernière : pas de quiz");
+            badge.append(icone("fa-solid fa-lock-open"), " Accès libre : pas de quiz");
+        } else if (estDerniere && nombreActives === 0) {
+            badge.classList.add("badge-neutre");
+            badge.append(icone("fa-solid fa-flag-checkered"), " Dernier cours : pas de quiz");
         } else if (nombreActives === 0) {
             badge.classList.add("badge-vide");
             badge.append(icone("fa-solid fa-circle-xmark"), " Aucune question");
@@ -195,11 +205,15 @@ document.addEventListener("DOMContentLoaded", async () => {
             return;
         }
 
-        ressources.forEach((ressource, position) => {
-            let estDerniere = position === ressources.length - 1;
+        let dernierCours = identifiantDernierCours();
+
+        ressources.forEach((ressource) => {
+            let libre = !estCours(ressource);              // TD, TP, projet : pas de quiz
+            let estDernier = ressource.id === dernierCours;
             let actives = (questionsParRessource[ressource.id] || []).filter(q => q.actif).length;
 
             let ligne = el("div", "ligne-ressource-quiz");
+            if (libre) ligne.classList.add("ligne-libre");
             if (ressourceChoisie && ressourceChoisie.id === ressource.id) ligne.classList.add("selectionnee");
             ligne.dataset.id = ressource.id;
 
@@ -207,8 +221,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             let infos = el("div", "infos-ressource-quiz");
             infos.append(el("strong", "", ressource.titre), el("span", "type-ressource-quiz", ressource.type || ""));
 
-            ligne.append(pastille, infos, creerBadgeBanque(actives, estDerniere));
-            ligne.addEventListener("click", () => choisirRessource(ressource.id, true));
+            ligne.append(pastille, infos, creerBadgeBanque(actives, estDernier, libre));
+            if (!libre) ligne.addEventListener("click", () => choisirRessource(ressource.id, true));
             listeRessourcesEl.appendChild(ligne);
         });
     };
@@ -231,13 +245,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     // LISTE DES QUESTIONS D'UNE RESSOURCE
     // ========================================================
     let afficherResumeBanque = (actives) => {
-        let position = ressources.findIndex(r => r.id === ressourceChoisie.id);
-        let estDerniere = position === ressources.length - 1;
+        let estDerniere = ressourceChoisie.id === identifiantDernierCours();
 
         if (estDerniere && actives === 0) {
-            resumeBanque.textContent = "C'est la dernière ressource de la matière : elle n'a pas besoin de quiz (il ne débloque rien).";
+            resumeBanque.textContent = "C'est le dernier cours de la matière : il n'a pas besoin de quiz (il ne débloque rien).";
         } else if (actives === 0) {
-            resumeBanque.textContent = "Aucune question active : les étudiants ne pourront pas débloquer la ressource suivante tant que tu n'en ajoutes pas.";
+            resumeBanque.textContent = "Aucune question active : les étudiants ne pourront pas débloquer le cours suivant tant que tu n'en ajoutes pas.";
         } else if (actives < TAILLE_QUIZ) {
             resumeBanque.textContent = `${actives} question(s) active(s) : ajoutes-en jusqu'à ${TAILLE_QUIZ} au minimum (idéalement ${BANQUE_CONSEILLEE} ou plus).`;
         } else if (actives < BANQUE_CONSEILLEE) {
