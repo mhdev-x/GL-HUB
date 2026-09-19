@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="STYLES/admin.css">
+    <link rel="stylesheet" href="STYLES/theme.css">
+    <link rel="stylesheet" href="STYLES/auth.css">
+    <link rel="stylesheet" href="STYLES/admin-quiz.css">
+    <link rel="icon" type="image/png" href="MEDIAS/LOGO-GL-HUB.png">
+    <title>GL HUB — Admin : Quiz</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabaseClient.js"></script>
+    <script>
+        // GARDE D'ACCÈS ADMIN — connecté ET présent dans la table "admins"
+        document.documentElement.style.visibility = "hidden";
+        (async () => {
+            let { data: sessionData } = await supabaseClient.auth.getSession();
+            if (!sessionData.session) {
+                window.location.replace("index.html");
+                return;
+            }
+            let { data: admin } = await supabaseClient
+                .from("admins")
+                .select("user_id")
+                .eq("user_id", sessionData.session.user.id)
+                .maybeSingle();
+
+            if (!admin) {
+                window.location.replace("index.html");
+            } else {
+                document.documentElement.style.visibility = "visible";
+            }
+        })();
+    </script>
+</head>
+<body>
+
+    <!-- ===================== BARRE DE NAVIGATION ===================== -->
+    <nav>
+        <div class="nav-interieur">
+            <button id="boutonMenuMobile" class="bouton-menu-mobile" aria-label="Menu">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+
+            <a href="index.html" class="nav-logo">
+                <i class="fa-solid fa-user-shield"></i>GL HUB — Admin
+            </a>
+
+            <ul class="menu">
+                <li><a href="index.html"><i class="fa-solid fa-house" style="color: rgb(4, 51, 131);"></i>Accueil du site</a></li>
+                <li><a href="admin.html" class="lien-menu-bouton"><i class="fa-solid fa-users"></i>Étudiants et paiements</a></li>
+                <li><a href="profil.html" class="lien-menu-bouton"><i class="fa-solid fa-user"></i>Mon profil</a></li>
+                <li><button id="boutonDeconnexionAdmin" class="lien-menu-bouton"><i class="fa-solid fa-right-from-bracket"></i>Se déconnecter</button></li>
+            </ul>
+
+            <button id="themeToggle" class="theme-toggle" aria-label="Changer de thème">
+                <i class="fa-solid fa-moon"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- ===================== HEADER SITE ===================== -->
+    <header class="site-header">
+        <div class="hero-overlay-texte">
+            <div class="logo-text-hero">GL HUB — Admin</div>
+            <p class="slogan-hero">
+                <span>Gestion des quiz</span>
+            </p>
+        </div>
+    </header>
+
+    <!-- ===================== CONTENU PRINCIPAL ===================== -->
+    <main class="container">
+
+        <h2 class="section-title"><i class="fa-solid fa-book"></i>1. Choisis une matière</h2>
+        <select id="choixMatiere" class="champ-admin" aria-label="Matière">
+            <option>Chargement...</option>
+        </select>
+
+        <h2 class="section-title"><i class="fa-solid fa-list-ol"></i>2. Choisis une ressource</h2>
+        <p class="aide-admin">
+            Le quiz d'une ressource débloque la suivante. La <strong>dernière ressource</strong> de chaque matière
+            n'a pas besoin de quiz. Le site tire 10 questions au hasard parmi celles que tu ajoutes :
+            prévois <strong>20 questions ou plus</strong> par ressource pour que deux étudiants n'aient pas le même quiz.
+        </p>
+        <div id="listeRessources" class="liste-ressources-quiz">
+            <p class="message-chargement">Chargement...</p>
+        </div>
+
+        <!-- ===== Zone affichée quand une ressource est choisie ===== -->
+        <div id="zoneQuestions" style="display: none;">
+            <hr>
+
+            <h2 class="section-title"><i class="fa-solid fa-circle-question"></i><span id="titreRessourceChoisie"></span></h2>
+            <p class="resume-banque" id="resumeBanque"></p>
+
+            <!-- ----- Ajouter / modifier une question ----- -->
+            <h3 class="sous-titre-admin"><i class="fa-solid fa-plus"></i><span id="titreFormulaire">Ajouter une question</span></h3>
+            <section class="carte-formulaire-quiz">
+                <label for="champQuestion">Question</label>
+                <textarea id="champQuestion" rows="3" placeholder="Ex : Quelle est la complexité d'une recherche dichotomique ?"></textarea>
+
+                <label>Propositions <span class="aide-inline">(coche la bonne réponse)</span></label>
+                <div id="listeOptionsForm" class="options-formulaire"></div>
+                <button type="button" id="boutonAjouterOption" class="bouton-secondaire-admin">
+                    <i class="fa-solid fa-plus"></i>Ajouter une proposition
+                </button>
+
+                <label for="champExplication">Explication <span class="aide-inline">(facultatif, montrée à l'étudiant après une réussite)</span></label>
+                <textarea id="champExplication" rows="2" placeholder="Ex : On divise l'espace de recherche par 2 à chaque étape."></textarea>
+
+                <p class="message-erreur" id="erreurFormulaire"></p>
+                <div class="actions-formulaire-quiz">
+                    <button type="button" id="boutonAnnulerEdition" class="bouton-secondaire-admin" style="display: none;">Annuler</button>
+                    <button type="button" id="boutonEnregistrerQuestion" class="bouton-accent">
+                        <i class="fa-solid fa-floppy-disk"></i>Enregistrer la question
+                    </button>
+                </div>
+            </section>
+
+            <!-- ----- Importer plusieurs questions ----- -->
+            <h3 class="sous-titre-admin"><i class="fa-solid fa-file-import"></i>Importer plusieurs questions d'un coup</h3>
+            <section class="carte-formulaire-quiz">
+                <p class="aide-admin">
+                    Colle une liste au format JSON. La bonne réponse s'écrit avec le <strong>texte exact</strong>
+                    d'une des propositions (<code>bonne_reponse</code>). Les questions déjà présentes sont ignorées.
+                    Si une seule question est invalide, rien n'est importé.
+                </p>
+                <pre class="exemple-json">[
+  {
+    "question": "Quelle boucle s'exécute au moins une fois ?",
+    "options": ["Pour", "Tant que", "Répéter ... jusqu'à", "Aucune"],
+    "bonne_reponse": "Répéter ... jusqu'à",
+    "explication": "Le test est fait après le premier passage."
+  }
+]</pre>
+                <textarea id="champImport" rows="8" placeholder="Colle ici le JSON..."></textarea>
+                <div id="resultatImport" class="resultat-import"></div>
+                <div class="actions-formulaire-quiz">
+                    <button type="button" id="boutonImporter" class="bouton-accent">
+                        <i class="fa-solid fa-file-import"></i>Vérifier et importer
+                    </button>
+                </div>
+            </section>
+
+            <!-- ----- Questions existantes ----- -->
+            <h3 class="sous-titre-admin"><i class="fa-solid fa-list-check"></i>Questions de cette ressource (<span id="compteurQuestions">0</span>)</h3>
+            <div id="listeQuestions" class="liste-questions-admin"></div>
+        </div>
+
+    </main>
+
+    <!-- ===================== PIED DE PAGE ===================== -->
+    <footer>
+        <p>&copy; 2026 - GL HUB | Département Informatique</p>
+    </footer>
+
+    <script src="theme.js"></script>
+    <script src="admin-quiz.js"></script>
+</body>
+</html>

@@ -1,0 +1,402 @@
+/* ========================================================
+   ADMIN — GESTION DES QUIZ
+   (utilise les variables de theme.css : fonctionne en clair et en sombre)
+   ======================================================== */
+
+.champ-admin {
+    width: 100%;
+    max-width: 420px;
+    padding: 12px 14px;
+    border: 1px solid var(--color-card-border);
+    border-radius: 10px;
+    background-color: var(--color-card-bg);
+    color: var(--color-text);
+    font-family: inherit;
+    font-size: 1rem;
+}
+
+.champ-admin:focus {
+    outline: none;
+    border-color: var(--color-accent);
+}
+
+.aide-admin {
+    color: var(--color-text-secondary);
+    font-size: 0.92rem;
+    line-height: 1.6;
+    margin-bottom: 16px;
+    max-width: 800px;
+}
+
+.aide-inline {
+    font-weight: 400;
+    color: var(--color-text-secondary);
+    font-size: 0.82rem;
+}
+
+.sous-titre-admin {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 34px 0 14px;
+    color: var(--color-text);
+    font-size: 1.2rem;
+}
+
+/* --- Liste des ressources --- */
+.liste-ressources-quiz {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.ligne-ressource-quiz {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    background-color: var(--color-card-bg);
+    border: 1px solid var(--color-card-border);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: border-color 0.2s, background-color 0.2s;
+}
+
+.ligne-ressource-quiz:hover {
+    border-color: var(--color-accent);
+}
+
+.ligne-ressource-quiz.selectionnee {
+    border-color: var(--color-accent);
+    background-color: var(--color-nav-link-active-bg);
+}
+
+.pastille-ordre {
+    flex-shrink: 0;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background-color: var(--color-accent);
+    color: var(--color-accent-text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+.infos-ressource-quiz {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.infos-ressource-quiz strong {
+    color: var(--color-text-tertiary);
+    line-height: 1.35;
+}
+
+.type-ressource-quiz {
+    color: var(--color-text-secondary);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.badge-banque {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 5px 11px;
+    border-radius: 999px;
+}
+
+.badge-vide  { background-color: rgba(220, 38, 38, 0.12);  color: #dc2626; }
+.badge-peu   { background-color: rgba(234, 138, 0, 0.14);  color: #c2710c; }
+.badge-moyen { background-color: rgba(59, 130, 246, 0.14); color: #2563eb; }
+.badge-ok    { background-color: rgba(22, 163, 74, 0.14);  color: #16a34a; }
+.badge-neutre { background-color: var(--color-nav-link-hover-bg); color: var(--color-text-secondary); }
+
+.resume-banque {
+    color: var(--color-text-secondary);
+    margin: -8px 0 10px;
+    line-height: 1.6;
+    max-width: 800px;
+}
+
+/* --- Formulaires --- */
+.carte-formulaire-quiz {
+    background-color: var(--color-card-bg);
+    border: 1px solid var(--color-card-border);
+    border-radius: 14px;
+    padding: 24px;
+    max-width: 800px;
+}
+
+.carte-formulaire-quiz label {
+    display: block;
+    margin: 16px 0 6px;
+    font-weight: 700;
+    font-size: 0.92rem;
+    color: var(--color-text-tertiary);
+}
+
+.carte-formulaire-quiz label:first-child {
+    margin-top: 0;
+}
+
+.carte-formulaire-quiz textarea,
+.option-formulaire input[type="text"] {
+    width: 100%;
+    padding: 11px 13px;
+    border: 1px solid var(--color-card-border);
+    border-radius: 8px;
+    background-color: var(--color-body-bg);
+    color: var(--color-text);
+    font-family: inherit;
+    font-size: 0.95rem;
+    box-sizing: border-box;
+}
+
+.carte-formulaire-quiz textarea {
+    resize: vertical;
+}
+
+.carte-formulaire-quiz textarea:focus,
+.option-formulaire input[type="text"]:focus {
+    outline: none;
+    border-color: var(--color-accent);
+}
+
+.options-formulaire {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.option-formulaire {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.option-formulaire input[type="radio"] {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    accent-color: #16a34a;
+    cursor: pointer;
+}
+
+.bouton-retirer-option {
+    flex-shrink: 0;
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    border: 1px solid var(--color-card-border);
+    background: transparent;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+}
+
+.bouton-retirer-option:hover {
+    color: #dc2626;
+    border-color: #dc2626;
+}
+
+.bouton-secondaire-admin {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    color: var(--color-text);
+    border: 2px solid var(--color-card-border);
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+.bouton-secondaire-admin:hover {
+    border-color: var(--color-accent);
+}
+
+.actions-formulaire-quiz {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.actions-formulaire-quiz .bouton-accent {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+}
+
+.actions-formulaire-quiz .bouton-accent:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.exemple-json {
+    background-color: var(--color-body-bg);
+    border: 1px dashed var(--color-card-border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    overflow-x: auto;
+    color: var(--color-text-secondary);
+    margin-bottom: 14px;
+}
+
+.resultat-import {
+    margin-top: 12px;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.resultat-import:empty { display: none; }
+.resultat-import ul { margin: 8px 0 0 18px; }
+.resultat-erreur { color: #dc2626; }
+.resultat-ok { color: #16a34a; }
+.resultat-info { color: var(--color-text-secondary); }
+
+/* --- Liste des questions --- */
+.liste-questions-admin {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    max-width: 800px;
+}
+
+.carte-question-admin {
+    background-color: var(--color-card-bg);
+    border: 1px solid var(--color-card-border);
+    border-radius: 12px;
+    padding: 18px;
+}
+
+.carte-question-admin.question-inactive {
+    opacity: 0.65;
+    border-style: dashed;
+}
+
+.entete-question-admin {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.entete-question-admin strong {
+    color: var(--color-text-tertiary);
+    line-height: 1.5;
+}
+
+.options-question-admin {
+    list-style: none;
+    margin: 0 0 10px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 0.92rem;
+    color: var(--color-text);
+}
+
+.options-question-admin li {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    line-height: 1.4;
+}
+
+.options-question-admin .option-juste-admin {
+    color: #16a34a;
+    font-weight: 700;
+}
+
+.explication-question-admin {
+    color: var(--color-text-secondary);
+    font-size: 0.88rem;
+    line-height: 1.5;
+    margin-bottom: 10px;
+}
+
+.actions-question-admin {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 6px;
+}
+
+.bouton-petit {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: transparent;
+    color: var(--color-text);
+    border: 1px solid var(--color-card-border);
+    padding: 7px 12px;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+}
+
+.bouton-petit:hover:not(:disabled) {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+}
+
+.bouton-petit:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.bouton-petit-danger:hover:not(:disabled) {
+    border-color: #dc2626;
+    color: #dc2626;
+}
+
+@media (max-width: 768px) {
+    .ligne-ressource-quiz {
+        flex-wrap: wrap;
+    }
+
+    .badge-banque {
+        margin-left: 48px;
+    }
+
+    .carte-formulaire-quiz {
+        padding: 18px;
+    }
+
+    .actions-formulaire-quiz {
+        flex-direction: column-reverse;
+    }
+
+    .actions-formulaire-quiz button {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .entete-question-admin {
+        flex-direction: column;
+    }
+}
