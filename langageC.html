@@ -35,10 +35,10 @@
                 <li><button id="boutonMatieres" class="lien-menu-bouton"><i class="fa-solid fa-bars"></i>Matières</button></li>
                 <li id="zoneAuthNav"><button id="boutonAuth" class="lien-menu-bouton"><i class="fa-solid fa-user"></i>Se connecter</button></li>
                 <li class="item-recherche">
-                    <div class="barre-recherche">
+                    <form class="barre-recherche" role="search" autocomplete="off" onsubmit="return false;">
                         <i class="fa-solid fa-magnifying-glass"></i>
-                        <input type="text" id="rechercheCours" placeholder="Rechercher un cours..." autocomplete="off">
-                    </div>
+                        <input type="text" name="q" id="rechercheCours" placeholder="Rechercher un cours..." autocomplete="off">
+                    </form>
                     <div id="resultatsRecherche" class="resultats-recherche"></div>
                 </li>
             </ul>
@@ -93,24 +93,24 @@
         </div>
         <div id="formConnexion" class="formulaire-auth">
             <label for="emailConnexion">Adresse e-mail</label>
-            <input type="email" id="emailConnexion" placeholder="prenom.nom@gl.com" required>
+            <input type="email" id="emailConnexion" autocomplete="username" placeholder="prenom.nom@gl.com" required>
             <label for="motDePasseConnexion">Mot de passe</label>
-            <input type="password" id="motDePasseConnexion" placeholder="••••••••" required>
+            <input type="password" id="motDePasseConnexion" autocomplete="current-password" placeholder="••••••••" required>
             <button type="button" id="lienMotDePasseOublie" class="lien-mot-de-passe-oublie">Mot de passe oublié ?</button>
             <p id="erreurConnexion" class="message-erreur"></p>
             <button id="boutonValiderConnexion" class="bouton-accent bouton-pleine-largeur">Se connecter</button>
         </div>
         <div id="formInscription" class="formulaire-auth" style="display: none;">
             <label for="prenomInscription">Prénom</label>
-            <input type="text" id="prenomInscription" placeholder="Ton prénom" required>
+            <input type="text" id="prenomInscription" autocomplete="given-name" placeholder="Ton prénom" required>
             <label for="nomInscription">Nom</label>
-            <input type="text" id="nomInscription" placeholder="Ton nom de famille" required>
+            <input type="text" id="nomInscription" autocomplete="family-name" placeholder="Ton nom de famille" required>
             <label for="dateNaissanceInscription">Date de naissance</label>
             <input type="date" id="dateNaissanceInscription" required>
             <label for="emailInscription">Adresse e-mail</label>
-            <input type="email" id="emailInscription" placeholder="toi@exemple.com" required>
+            <input type="email" id="emailInscription" autocomplete="email" placeholder="toi@exemple.com" required>
             <label for="motDePasseInscription">Mot de passe</label>
-            <input type="password" id="motDePasseInscription" placeholder="6 caractères minimum" required>
+            <input type="password" id="motDePasseInscription" autocomplete="new-password" placeholder="6 caractères minimum" required>
             <p id="erreurInscription" class="message-erreur"></p>
             <button id="boutonValiderInscription" class="bouton-accent bouton-pleine-largeur">Créer mon compte</button>
         </div>

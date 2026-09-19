@@ -91,7 +91,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         if (erreur || !data || !data.url) {
             if (fenetre) fenetre.close();
-            notifier(erreur || "Impossible d'ouvrir ce fichier pour le moment.", "fa-solid fa-triangle-exclamation");
+            let detailAdmin = data && data.detail ? ` (${data.detail})` : "";
+            if (data && data.detail) console.error("resource-access :", data.detail);
+            notifier((erreur || "Impossible d'ouvrir ce fichier pour le moment.") + detailAdmin, "fa-solid fa-triangle-exclamation");
             return;
         }
 
@@ -434,7 +436,14 @@ document.addEventListener("DOMContentLoaded", async () => {
             .select("id")
             .eq("slug", slugMatiere)
             .single();
-        if (!matiere) { afficherIndisponible(); return; }
+        if (!matiere) {
+            notifier("Matière introuvable dans la base de données.", "fa-solid fa-triangle-exclamation");
+            afficherIndisponible();
+            return;
+        }
+
+        // Un admin a toutes les ressources débloquées d'office : inutile d'aller lire ses déblocages
+        let vide = Promise.resolve({ data: [], error: null });
 
         let [resRessources, resDeblocages, resReussites] = await Promise.all([
             supabaseClient
@@ -442,11 +451,11 @@ document.addEventListener("DOMContentLoaded", async () => {
                 .select("id, titre, chemin_fichier, ordre")
                 .eq("matiere_id", matiere.id)
                 .order("ordre", { ascending: true }),
-            supabaseClient
+            estAdmin ? vide : supabaseClient
                 .from("deblocages")
                 .select("ressource_id")
                 .eq("user_id", utilisateur.id),
-            supabaseClient
+            estAdmin ? vide : supabaseClient
                 .from("tentatives_quiz")
                 .select("ressource_id")
                 .eq("user_id", utilisateur.id)
@@ -455,9 +464,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         if (maVersion !== versionAffichage) return; // une version plus récente de l'affichage a pris le relais
 
-        if (resRessources.error || resDeblocages.error || resReussites.error) {
-            console.error(resRessources.error || resDeblocages.error || resReussites.error);
-            notifier("Impossible de charger tes accès. Recharge la page.", "fa-solid fa-triangle-exclamation");
+        let probleme = resRessources.error || resDeblocages.error || resReussites.error;
+        if (probleme) {
+            console.error(probleme);
+            notifier(`Impossible de charger tes accès (${probleme.message}). Recharge la page.`, "fa-solid fa-triangle-exclamation");
             afficherIndisponible();
             return;
         }

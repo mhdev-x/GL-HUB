@@ -104,7 +104,7 @@ Les administrateurs ont accès à toutes les ressources. Les étudiants qui avai
 | `quiz-submit` | Corrige côté serveur, enregistre le score et débloque la ressource suivante |
 | `resource-access` | Génère une URL signée temporaire pour lire ou télécharger, seulement si la ressource est débloquée |
 
-**Sécurité** : les fichiers sont dans un stockage privé (jamais d'URL publique), les quiz sont corrigés par le serveur, la table des questions est protégée par des règles RLS, et la recherche publique passe par une vue (`catalogue_public`) qui n'expose que le titre et la matière.
+**Sécurité** : les fichiers sont dans un stockage privé (jamais d'URL publique), les quiz sont corrigés par le serveur, la table des questions est protégée par des règles RLS, et la recherche publique passe par une vue (`catalogue_public`) qui n'expose que le titre, le type et la matière : les visiteurs n'ont un droit de lecture que sur ces colonnes, jamais sur le chemin du fichier.
 
 ---
 
@@ -140,7 +140,8 @@ GL-HUB/
    - `002_reorganiser_ordre.sql` : ordre pédagogique des ressources (spécifique aux titres actuels, à adapter si tu changes les ressources) ;
    - `003_droits_lecture.sql` : droits de lecture des nouvelles tables ;
    - `004_recherche_publique_et_admin_quiz.sql` : recherche ouverte aux visiteurs et gestion des questions par les administrateurs.
-4. Crée un **bucket privé** dans Storage et envoie-y tes fichiers. Le chemin de chaque fichier doit correspondre à la colonne `chemin_fichier` de `ressources`. Vérifie le nom du bucket en haut de `supabase/functions/resource-access/index.ts`.
+   - `005_vue_catalogue_securisee.sql` : sécurise la vue de recherche (droits de lecture limités aux colonnes publiques).
+4. Crée un **bucket privé** dans Storage et envoie-y tes fichiers. Le chemin de chaque fichier doit correspondre à la colonne `chemin_fichier` de `ressources`. Le nom attendu est `ressources` (constante en haut de `supabase/functions/resource-access/index.ts`) ; s'il est différent, la fonction cherche automatiquement le fichier dans les autres buckets.
 5. Déploie les trois fonctions de `supabase/functions/` (`supabase functions deploy quiz-start`, etc., ou en collant le code dans le tableau de bord Supabase). Chaque fichier est autonome.
 6. Ajoute ton compte dans la table `admins` (`user_id` de ton compte) pour accéder à l'espace administrateur.
 
