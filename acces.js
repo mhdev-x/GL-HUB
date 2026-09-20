@@ -147,22 +147,35 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
         // Le fichier est maintenant dans le navigateur : l'adresse "blob:" n'existe que dans CET onglet et ne peut pas être partagée
-        let nomFichier = String(ressource.chemin_fichier || "ressource.pdf").split("/").pop();
-        let typeFichier = /\.pdf$/i.test(nomFichier) ? "application/pdf" : (resultat.type || "application/octet-stream");
+        let nomFichier = String(ressource.chemin_fichier || "ressource").split("/").pop();
+        let extension = (nomFichier.split(".").pop() || "").toLowerCase();
+        let typesAffichables = {
+            pdf: "application/pdf", png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg",
+            gif: "image/gif", webp: "image/webp", svg: "image/svg+xml", txt: "text/plain"
+        };
+        let seLitDansLeNavigateur = Object.prototype.hasOwnProperty.call(typesAffichables, extension);
+        let typeFichier = seLitDansLeNavigateur ? typesAffichables[extension] : (resultat.type || "application/octet-stream");
         let adresseLocale = URL.createObjectURL(new Blob([resultat.blob], { type: typeFichier }));
 
-        if (action === "lecture") {
+        // PDF et images : on les affiche dans un onglet. Word, PowerPoint... ne s'affichent pas dans un navigateur :
+        // le fichier est alors téléchargé avec son vrai nom.
+        if (action === "lecture" && seLitDansLeNavigateur) {
             if (fenetre) fenetre.location.href = adresseLocale;
             else window.location.assign(adresseLocale); // popup bloquée : on ouvre dans l'onglet courant
-        } else {
-            let lien = document.createElement("a");
-            lien.href = adresseLocale;
-            lien.download = nomFichier;
-            document.body.appendChild(lien);
-            lien.click();
-            lien.remove();
-            setTimeout(() => URL.revokeObjectURL(adresseLocale), 60000);
+            return;
         }
+
+        if (fenetre) fenetre.close();
+        if (action === "lecture") {
+            notifier("Ce format (Word, PowerPoint...) s'ouvre avec ton application : le fichier est téléchargé.", "fa-solid fa-download");
+        }
+        let lien = document.createElement("a");
+        lien.href = adresseLocale;
+        lien.download = nomFichier;
+        document.body.appendChild(lien);
+        lien.click();
+        lien.remove();
+        setTimeout(() => URL.revokeObjectURL(adresseLocale), 60000);
     };
 
     // ========================================================
@@ -536,14 +549,25 @@ document.addEventListener("DOMContentLoaded", async () => {
         let cours = ressources.filter(estCours);                 // déjà triés par ordre
         let premierCours = cours.length ? cours[0] : null;       // le premier cours de la matière est libre
 
+        // Rapprochement carte <-> base de données : d'abord le chemin exact, puis une comparaison souple
+        // (on ignore majuscules, accents, espaces et séparateurs . - _ pour tolérer une petite différence d'écriture)
+        let simplifier = (chemin) => String(chemin || "")
+            .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+            .toLowerCase().replace(/[^a-z0-9]/g, "");
+
         let ressourceParChemin = {};
-        ressources.forEach(r => { ressourceParChemin[r.chemin_fichier] = r; });
+        let ressourceParCheminSimplifie = {};
+        ressources.forEach(r => {
+            ressourceParChemin[r.chemin_fichier] = r;
+            ressourceParCheminSimplifie[simplifier(r.chemin_fichier)] = r;
+        });
 
         cartes.forEach(({ zone, carte, chemin }) => {
             nettoyerCarte(carte);
-            let ressource = ressourceParChemin[chemin];
+            let ressource = ressourceParChemin[chemin] || ressourceParCheminSimplifie[simplifier(chemin)];
 
             if (!ressource) {
+                console.warn("Aucune ressource de la base ne correspond à ce fichier de la page :", chemin);
                 let bouton = creerBouton("bouton-download bouton-verrouille", "fa-solid fa-triangle-exclamation", "Indisponible");
                 bouton.disabled = true;
                 zone.replaceChildren(bouton);
