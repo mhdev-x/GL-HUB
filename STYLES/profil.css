@@ -356,3 +356,7 @@ footer p {
 /* Cartes cliquables de l'historique (lectures / téléchargements) */
 a.carte-lien { display: block; text-decoration: none; transition: border-color 0.2s; }
 a.carte-lien:hover { border-color: var(--color-accent); }
+
+
+/* Statut de liaison Google */
+#texteStatutGoogle { display: flex; align-items: center; gap: 6px; }

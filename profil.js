@@ -20,6 +20,79 @@ document.addEventListener("DOMContentLoaded", async () => {
     let infosUtilisateur = utilisateur.user_metadata || {};
     champNom.value = infosUtilisateur.nom || infosUtilisateur.full_name || infosUtilisateur.name || "";
 
+    // ---------- Lier / voir la liaison avec Google ----------
+    // Permet à un étudiant déjà inscrit de se connecter ensuite avec le bouton "Google"
+    // sur SON compte existant, au lieu d'en créer un nouveau sans le vouloir.
+    let texteStatutGoogle = document.querySelector("#texteStatutGoogle");
+    let boutonLierGoogle = document.querySelector("#boutonLierGoogle");
+
+    let afficherStatutGoogle = (utilisateurActuel) => {
+        let lie = (utilisateurActuel.identities || []).some(i => i.provider === "google");
+        if (lie) {
+            texteStatutGoogle.replaceChildren();
+            let icone = document.createElement("i");
+            icone.className = "fa-solid fa-circle-check";
+            icone.style.color = "#16a34a";
+            texteStatutGoogle.append(icone, " Ton compte Google est lié : tu peux te connecter avec le bouton Google.");
+            boutonLierGoogle.style.display = "none";
+        } else {
+            texteStatutGoogle.textContent = "Lie ton compte Google pour pouvoir te connecter avec, sans retaper ton mot de passe.";
+            boutonLierGoogle.style.display = "";
+        }
+    };
+    afficherStatutGoogle(utilisateur);
+
+    boutonLierGoogle.addEventListener("click", async () => {
+        let contenuOriginal = Array.from(boutonLierGoogle.childNodes);
+        boutonLierGoogle.disabled = true;
+        let icone = document.createElement("i");
+        icone.className = "fa-solid fa-spinner fa-spin";
+        boutonLierGoogle.replaceChildren(icone, " Redirection vers Google...");
+
+        let { error } = await supabaseClient.auth.linkIdentity({
+            provider: "google",
+            options: {
+                redirectTo: window.location.origin + window.location.pathname,
+                queryParams: { prompt: "select_account" }
+            }
+        });
+
+        if (error) {
+            console.error(error);
+            boutonLierGoogle.disabled = false;
+            boutonLierGoogle.replaceChildren(...contenuOriginal);
+            let message = error.message && error.message.includes("Identity is already linked")
+                ? "Ce compte Google est déjà lié à un autre compte GL HUB."
+                : "Liaison impossible pour le moment. Réessaie plus tard.";
+            afficherToast(message, "fa-solid fa-triangle-exclamation");
+        }
+        // En cas de succès, Google redirige hors de la page : rien d'autre à faire ici.
+    });
+
+    // Après le retour de Google (redirigé sur cette même page), la session est mise à jour :
+    // on rafraîchit le statut affiché sans recharger toute la page.
+    if (window.location.hash.includes("access_token") || new URLSearchParams(window.location.search).has("error")) {
+        let dansLUrl = new URLSearchParams(window.location.search);
+        let dansLeHash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+        let description = dansLUrl.get("error_description") || dansLeHash.get("error_description");
+        window.history.replaceState({}, document.title, window.location.pathname);
+
+        if (description) {
+            afficherToast(
+                description.includes("Identity is already linked")
+                    ? "Ce compte Google est déjà lié à un autre compte GL HUB."
+                    : "Liaison Google impossible.",
+                "fa-solid fa-triangle-exclamation"
+            );
+        } else {
+            let { data: sessionApres } = await supabaseClient.auth.getSession();
+            if (sessionApres.session) {
+                afficherStatutGoogle(sessionApres.session.user);
+                afficherToast("Compte Google lié avec succès !");
+            }
+        }
+    }
+
     // ---------- Compte connecté uniquement avec Google : pas de mot de passe GL HUB à gérer ----------
     let identites = utilisateur.identities || [];
     let compteGoogleSeul = identites.some(i => i.provider === "google") && !identites.some(i => i.provider === "email");

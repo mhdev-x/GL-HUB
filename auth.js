@@ -42,6 +42,8 @@ document.addEventListener("DOMContentLoaded", () => {
             message = "Connexion Google annulée.";
         } else if (description && description.includes("Database error saving new user")) {
             message = "Impossible de créer ton compte avec cette adresse Google : un compte GL HUB existe peut-être déjà avec cette adresse. Connecte-toi avec ton adresse institutionnelle (@gl.com), ou contacte l'administrateur.";
+        } else if (description && description.includes("Identity is already linked")) {
+            message = "Ce compte Google est déjà lié à un autre compte GL HUB.";
         } else {
             message = "Connexion impossible" + (description ? " : " + description : ".");
         }
