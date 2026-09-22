@@ -17,7 +17,31 @@ document.addEventListener("DOMContentLoaded", async () => {
     let boutonSupprimerCompte = document.querySelector("#boutonSupprimerCompte");
 
     // ---------- Pré-remplir le nom actuel ----------
-    champNom.value = (utilisateur.user_metadata && utilisateur.user_metadata.nom) || "";
+    let infosUtilisateur = utilisateur.user_metadata || {};
+    champNom.value = infosUtilisateur.nom || infosUtilisateur.full_name || infosUtilisateur.name || "";
+
+    // ---------- Compte connecté uniquement avec Google : pas de mot de passe GL HUB à gérer ----------
+    let identites = utilisateur.identities || [];
+    let compteGoogleSeul = identites.some(i => i.provider === "google") && !identites.some(i => i.provider === "email");
+    if (compteGoogleSeul) {
+        let sectionMdp = boutonChangerMdp.closest("section");
+        let note = document.createElement("p");
+        note.className = "message-chargement";
+        let iconeGoogle = document.createElement("i");
+        iconeGoogle.className = "fa-brands fa-google";
+        note.append(iconeGoogle, " Ton compte est connecté avec Google : tu n'as pas de mot de passe GL HUB à gérer.");
+        sectionMdp.replaceChildren(note);
+        let titreMdp = sectionMdp.previousElementSibling; // le <h2> juste avant
+        if (titreMdp) {
+            let iconeCadenas = document.createElement("i");
+            iconeCadenas.className = "fa-solid fa-lock";
+            titreMdp.replaceChildren(iconeCadenas, "Mot de passe");
+        }
+
+        // L'adresse affichée est celle du compte Google, pas une adresse @gl.com
+        document.querySelector('label[for="champEmailInstitutionnel"]').textContent = "Compte Google utilisé";
+        document.querySelector("#boutonCopierEmail").style.display = "none";
+    }
 
     // ---------- Un admin ne voit jamais l'option de suppression de compte ----------
     let { data: adminData } = await supabaseClient

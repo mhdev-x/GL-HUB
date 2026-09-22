@@ -22,6 +22,69 @@ document.addEventListener("DOMContentLoaded", () => {
     let vientDeConfirmerSonEmail = window.location.hash.includes("type=signup");
     let vientDeReinitialiserSonMdp = window.location.hash.includes("type=recovery");
 
+    // Nom à afficher : celui saisi à l'inscription, sinon celui fourni par Google
+    let nomDe = (utilisateur) => {
+        let m = utilisateur.user_metadata || {};
+        return m.nom || m.full_name || m.name || "";
+    };
+
+    // ---------- Retour d'une connexion Google qui a échoué ----------
+    // (Supabase renvoie ici avec "error" et "error_description" dans l'adresse)
+    let afficherErreurRetourGoogle = () => {
+        let dansLUrl = new URLSearchParams(window.location.search);
+        let dansLeHash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+        let code = dansLUrl.get("error") || dansLeHash.get("error");
+        let description = dansLUrl.get("error_description") || dansLeHash.get("error_description");
+        if (!code && !description) return;
+
+        let message;
+        if (code === "access_denied") {
+            message = "Connexion Google annulée.";
+        } else if (description && description.includes("Database error saving new user")) {
+            message = "Impossible de créer ton compte avec cette adresse Google : un compte GL HUB existe peut-être déjà avec cette adresse. Connecte-toi avec ton adresse institutionnelle (@gl.com), ou contacte l'administrateur.";
+        } else {
+            message = "Connexion impossible" + (description ? " : " + description : ".");
+        }
+
+        afficherToast(message, "fa-solid fa-triangle-exclamation");
+        window.history.replaceState({}, document.title, window.location.pathname);
+    };
+    afficherErreurRetourGoogle();
+
+    // ---------- Compte créé avec Google : on complète la ligne "profils" avec les infos données par Google ----------
+    let profilGoogleVerifie = false;
+    let completerProfilGoogle = async (utilisateur) => {
+        let estGoogle = (utilisateur.identities || []).some(i => i.provider === "google");
+        if (!estGoogle || profilGoogleVerifie) return;
+        profilGoogleVerifie = true;
+
+        let m = utilisateur.user_metadata || {};
+        let nomComplet = m.full_name || m.name || "";
+
+        let { data: profil } = await supabaseClient
+            .from("profils")
+            .select("nom, prenom, nom_famille, email_personnel")
+            .eq("user_id", utilisateur.id)
+            .maybeSingle();
+        if (!profil) return; // pas de ligne (ou pas de droit de lecture) : on ne force rien
+
+        let majNoms = {};
+        if (!profil.nom && nomComplet) majNoms.nom = nomComplet;
+        if (!profil.prenom && m.given_name) majNoms.prenom = m.given_name;
+        if (!profil.nom_famille && m.family_name) majNoms.nom_famille = m.family_name;
+
+        if (Object.keys(majNoms).length > 0) {
+            let { error } = await supabaseClient.from("profils").update(majNoms).eq("user_id", utilisateur.id);
+            if (error) console.warn("Profil Google : noms non enregistrés :", error.message);
+        }
+
+        // Séparément : cette colonne est unique, un conflit ne doit pas empêcher d'enregistrer les noms
+        if (!profil.email_personnel && utilisateur.email) {
+            let { error } = await supabaseClient.from("profils").update({ email_personnel: utilisateur.email }).eq("user_id", utilisateur.id);
+            if (error) console.warn("Profil Google : adresse personnelle non enregistrée :", error.message);
+        }
+    };
+
     // Si le navigateur restaure une page "gelée" (retour en arrière depuis PayDunya
     // par exemple), on force un vrai rechargement pour repartir sur un état propre
     window.addEventListener("pageshow", (evenement) => {
@@ -234,32 +297,31 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     let lancerRecherche = async (terme) => {
-        let { data: sessionData } = await supabaseClient.auth.getSession();
-
-        if (!sessionData.session) {
-            resultatsRecherche.innerHTML = `<p class="message-recherche">Connecte-toi pour voir les cours.</p>`;
-            resultatsRecherche.classList.add("visible");
-            return;
-        }
-
+        // La recherche est ouverte à tout le monde (visiteurs inclus) : elle passe par la vue
+        // "catalogue_public" qui n'expose que le titre de la ressource et sa matière.
         let { data: resultats, error } = await supabaseClient
-            .from("ressources")
-            .select("id, titre, matieres ( nom, slug )")
+            .from("catalogue_public")
+            .select("id, titre, matiere_nom, matiere_slug")
             .ilike("titre", `%${terme}%`)
             .limit(8);
 
         resultatsRecherche.innerHTML = "";
 
         if (error || !resultats || resultats.length === 0) {
-            resultatsRecherche.innerHTML = `<p class="message-recherche">Aucun résultat pour "${terme}".</p>`;
+            if (error) console.error(error);
+            let message = document.createElement("p");
+            message.className = "message-recherche";
+            message.textContent = error
+                ? "La recherche est momentanément indisponible."
+                : `Aucun résultat pour "${terme}".`;
+            resultatsRecherche.appendChild(message);
             resultatsRecherche.classList.add("visible");
             return;
         }
 
         resultats.forEach(r => {
-            if (!r.matieres) return;
             let lien = document.createElement("a");
-            lien.href = `${r.matieres.slug}.html`;
+            lien.href = `${r.matiere_slug}.html`;
 
             let contenu = document.createElement("span");
             contenu.className = "contenu-resultat";
@@ -269,7 +331,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             let matiereEl = document.createElement("span");
             matiereEl.className = "matiere-resultat";
-            matiereEl.textContent = r.matieres.nom;
+            matiereEl.textContent = r.matiere_nom;
 
             contenu.append(titreEl, matiereEl);
             lien.appendChild(contenu);
@@ -282,6 +344,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // ---------- Mettre à jour l'interface selon l'état de connexion ----------
     let afficherEtatConnecte = async (utilisateur) => {
+        completerProfilGoogle(utilisateur); // sans attendre : n'a aucun effet pour un compte classique
+
         if (matieresVerrouillees) matieresVerrouillees.style.display = "none";
         if (listeMatieres) listeMatieres.style.display = "block";
 
@@ -295,7 +359,7 @@ document.addEventListener("DOMContentLoaded", () => {
         let lienAdmin = admin ? `<a href="admin.html" class="lien-menu-bouton"><i class="fa-solid fa-user-shield"></i>Admin</a>` : "";
 
         if (zoneAuthNav) {
-            let nom = (utilisateur.user_metadata && utilisateur.user_metadata.nom) || utilisateur.email;
+            let nom = nomDe(utilisateur) || utilisateur.email;
 
             zoneAuthNav.innerHTML = `${lienAdmin}<a href="profil.html" class="lien-menu-bouton" id="lienProfil"><i class="fa-solid fa-user"></i></a><button id="boutonDeconnexion" class="lien-menu-bouton" title="Se déconnecter"><i class="fa-solid fa-right-from-bracket"></i></button>`;
             // Le nom est ajouté via textContent (jamais innerHTML) pour empêcher
@@ -313,7 +377,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // On ne l'affiche qu'une seule fois, juste après le clic sur le lien reçu par mail
         if (vientDeConfirmerSonEmail) {
             vientDeConfirmerSonEmail = false; // évite de le réafficher si la fonction est rappelée
-            let nomBienvenue = (utilisateur.user_metadata && utilisateur.user_metadata.nom) || "";
+            let nomBienvenue = nomDe(utilisateur);
             afficherToast(`Email confirmé ! Bienvenue sur GL HUB${nomBienvenue ? ", " + nomBienvenue : ""}.`);
             // On nettoie l'adresse au cas où Supabase ne l'aurait pas déjà fait
             window.history.replaceState({}, document.title, window.location.pathname);
@@ -323,7 +387,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Un seul canal de présence pour tout le site : quiconque le rejoint apparaît
         // "en ligne" pour l'admin, et disparaît automatiquement en fermant l'onglet
         if (!admin) {
-            let nomAffiche = (utilisateur.user_metadata && utilisateur.user_metadata.nom) || utilisateur.email;
+            let nomAffiche = nomDe(utilisateur) || utilisateur.email;
             let canalPresence = supabaseClient.channel("presence-etudiants", {
                 config: {
                     private: true,
@@ -529,6 +593,59 @@ document.addEventListener("DOMContentLoaded", () => {
             erreurInscription.textContent = "Compte créé ! Vérifie ta boîte mail pour confirmer.";
         }
     });
+
+    // ---------- Connexion / inscription avec Google ----------
+    // (le compte est créé automatiquement à la première connexion)
+    let connecterAvecGoogle = async (bouton) => {
+        let contenuOriginal = Array.from(bouton.childNodes);
+        bouton.disabled = true;
+        let icone = document.createElement("i");
+        icone.className = "fa-solid fa-spinner fa-spin";
+        bouton.replaceChildren(icone, "Redirection vers Google...");
+
+        let { error } = await supabaseClient.auth.signInWithOAuth({
+            provider: "google",
+            options: {
+                // On revient sur la page où l'étudiant se trouvait
+                redirectTo: window.location.origin + window.location.pathname,
+                // Laisse choisir le compte Google (utile sur un appareil partagé)
+                queryParams: { prompt: "select_account" }
+            }
+        });
+
+        if (error) {
+            console.error(error);
+            bouton.disabled = false;
+            bouton.replaceChildren(...contenuOriginal);
+            afficherToast("Connexion avec Google impossible pour le moment. Réessaie plus tard.", "fa-solid fa-triangle-exclamation");
+        }
+    };
+
+    // Le séparateur "ou" et le bouton Google sont ajoutés ici, sous les boutons "Se connecter" et
+    // "Créer mon compte" : aucune modification des pages HTML n'est nécessaire.
+    let ajouterBoutonGoogle = (boutonDeReference, id) => {
+        if (!boutonDeReference || document.getElementById(id)) return;
+
+        let separateur = document.createElement("div");
+        separateur.className = "separateur-auth";
+        let ou = document.createElement("span");
+        ou.textContent = "ou";
+        separateur.appendChild(ou);
+
+        let boutonGoogle = document.createElement("button");
+        boutonGoogle.type = "button";
+        boutonGoogle.className = "bouton-google";
+        boutonGoogle.id = id;
+        let iconeGoogle = document.createElement("i");
+        iconeGoogle.className = "fa-brands fa-google";
+        boutonGoogle.append(iconeGoogle, "Continuer avec Google");
+        boutonGoogle.addEventListener("click", () => connecterAvecGoogle(boutonGoogle));
+
+        boutonDeReference.after(separateur, boutonGoogle);
+    };
+
+    ajouterBoutonGoogle(boutonValiderConnexion, "boutonGoogleConnexion");
+    ajouterBoutonGoogle(boutonValiderInscription, "boutonGoogleInscription");
 
     // ---------- Générer l'adresse institutionnelle après confirmation d'email ----------
     let genererAdresseInstitutionnelleSiBesoin = async () => {

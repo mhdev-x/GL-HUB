@@ -551,3 +551,53 @@ nav.nav-scrolled {
         flex-basis: 100%;
     }
 }
+
+/* --- CONNEXION AVEC GOOGLE --- */
+.separateur-auth {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 18px 0 14px;
+    color: var(--color-text-secondary);
+    font-size: 0.85rem;
+}
+
+.separateur-auth::before,
+.separateur-auth::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background-color: var(--color-nav-border);
+}
+
+.bouton-google {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 12px;
+    background-color: transparent;
+    color: var(--color-text);
+    border: 2px solid var(--color-card-border);
+    border-radius: 8px;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: border-color 0.2s, background-color 0.2s;
+}
+
+.bouton-google i {
+    color: var(--color-accent);
+}
+
+.bouton-google:hover:not(:disabled) {
+    border-color: var(--color-accent);
+    background-color: var(--color-nav-link-active-bg);
+}
+
+.bouton-google:disabled {
+    opacity: 0.7;
+    cursor: wait;
+}
