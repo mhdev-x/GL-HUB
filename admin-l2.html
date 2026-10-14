@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="STYLES/admin.css">
+    <link rel="stylesheet" href="STYLES/theme.css">
+    <link rel="stylesheet" href="STYLES/auth.css">
+    <link rel="stylesheet" href="STYLES/admin-l2.css">
+    <link rel="icon" type="image/png" href="MEDIAS/LOGO-GL-HUB.png">
+    <title>GL HUB — Admin : Espace L2</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabaseClient.js"></script>
+    <script>
+        // GARDE D'ACCÈS ADMIN — connecté ET présent dans la table "admins"
+        document.documentElement.style.visibility = "hidden";
+        (async () => {
+            let { data: sessionData } = await supabaseClient.auth.getSession();
+            if (!sessionData.session) {
+                window.location.replace("index.html");
+                return;
+            }
+            let { data: admin } = await supabaseClient
+                .from("admins")
+                .select("user_id")
+                .eq("user_id", sessionData.session.user.id)
+                .maybeSingle();
+
+            if (!admin) {
+                window.location.replace("index.html");
+            } else {
+                document.documentElement.style.visibility = "visible";
+            }
+        })();
+    </script>
+</head>
+<body>
+
+    <!-- ===================== BARRE DE NAVIGATION ===================== -->
+    <nav>
+        <div class="nav-interieur">
+            <button id="boutonMenuMobile" class="bouton-menu-mobile" aria-label="Menu">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+
+            <a href="index.html" class="nav-logo">
+                <i class="fa-solid fa-user-shield"></i>GL HUB — Admin
+            </a>
+
+            <ul class="menu">
+                <li><a href="index.html"><i class="fa-solid fa-house" style="color: rgb(4, 51, 131);"></i>Accueil du site</a></li>
+                <li><a href="admin.html" class="lien-menu-bouton"><i class="fa-solid fa-users"></i>Étudiants et paiements</a></li>
+                <li><a href="admin-quiz.html" class="lien-menu-bouton"><i class="fa-solid fa-circle-question"></i>Quiz</a></li>
+                <li><a href="profil.html" class="lien-menu-bouton"><i class="fa-solid fa-user"></i>Mon profil</a></li>
+                <li><button id="boutonDeconnexionAdmin" class="lien-menu-bouton"><i class="fa-solid fa-right-from-bracket"></i>Se déconnecter</button></li>
+            </ul>
+
+            <button id="themeToggle" class="theme-toggle" aria-label="Changer de thème">
+                <i class="fa-solid fa-moon"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- ===================== HEADER SITE ===================== -->
+    <header class="site-header">
+        <div class="hero-overlay-texte">
+            <div class="logo-text-hero">GL HUB — Admin</div>
+            <p class="slogan-hero">
+                <span>Espace L2 : demandes d'accès et membres</span>
+            </p>
+        </div>
+    </header>
+
+    <!-- ===================== CONTENU PRINCIPAL ===================== -->
+    <main class="container">
+
+        <p id="messageAdminL2" class="message-admin-l2" role="status" aria-live="polite" hidden></p>
+
+        <div class="stats-admin">
+            <div class="stat-card">
+                <span class="stat-number" id="statEnAttenteL2">–</span>
+                Demandes en attente
+            </div>
+            <div class="stat-card">
+                <span class="stat-number" id="statMembresL2">–</span>
+                Membres de la classe
+            </div>
+            <div class="stat-card">
+                <span class="stat-number" id="statResponsablesL2">–</span>
+                Responsable(s)
+            </div>
+        </div>
+
+        <div class="entete-liste">
+            <h2 class="section-title"><i class="fa-solid fa-hourglass-half"></i>Demandes en attente</h2>
+            <button type="button" id="boutonActualiserL2" class="bouton-mini"><i class="fa-solid fa-rotate"></i>Actualiser</button>
+        </div>
+        <p class="aide-admin">Compare le numéro avec celui du groupe WhatsApp de la classe : accepte s'il correspond, refuse sinon.</p>
+        <div id="listeDemandes" class="liste-paiements">
+            <p class="message-chargement">Chargement...</p>
+        </div>
+
+        <hr>
+
+        <h2 class="section-title"><i class="fa-solid fa-users"></i>Membres de la classe</h2>
+        <div id="listeMembres" class="liste-paiements">
+            <p class="message-chargement">Chargement...</p>
+        </div>
+
+        <hr>
+
+        <h2 class="section-title"><i class="fa-solid fa-clock-rotate-left"></i>Historique des demandes</h2>
+        <div id="listeHistoriqueL2" class="liste-paiements">
+            <p class="message-chargement">Chargement...</p>
+        </div>
+
+    </main>
+
+    <footer>
+        <p>&copy; 2026 - GL HUB | Département Informatique</p>
+    </footer>
+
+    <script src="theme.js"></script>
+    <script src="admin-l2.js"></script>
+</body>
+</html>
