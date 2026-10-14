@@ -450,9 +450,18 @@ body.dark-theme .bandeau-refus {
     background-color: #3a2c0f;
 }
 
-.aide-champ {
+.carte-acces-l2 .aide-champ {
     margin: 6px 0 0;
     font-size: 0.85rem;
     color: var(--color-text-secondary);
     flex-grow: 0;
+}
+
+.titre-acces-l2 {
+    justify-content: center;
+    text-align: center;
+}
+
+.lien-secondaire {
+    margin-top: 12px;
 }

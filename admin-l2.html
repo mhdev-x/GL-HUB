@@ -68,7 +68,7 @@
         <div class="hero-overlay-texte">
             <div class="logo-text-hero">GL HUB — Admin</div>
             <p class="slogan-hero">
-                <span>Espace L2 : demandes d'accès et membres</span>
+                <span>Espace L2 : demandes, dépôts, matières et membres</span>
             </p>
         </div>
     </header>
@@ -79,6 +79,10 @@
         <p id="messageAdminL2" class="message-admin-l2" role="status" aria-live="polite" hidden></p>
 
         <div class="stats-admin">
+            <div class="stat-card">
+                <span class="stat-number" id="statDepotsL2">–</span>
+                Dépôts à valider
+            </div>
             <div class="stat-card">
                 <span class="stat-number" id="statEnAttenteL2">–</span>
                 Demandes en attente
@@ -93,6 +97,14 @@
             </div>
         </div>
 
+        <h2 class="section-title"><i class="fa-solid fa-inbox"></i>Dépôts à valider</h2>
+        <p class="aide-admin">Ouvre chaque fichier ou lien avant de le publier : une fois publié, toute la classe le voit.</p>
+        <div id="listeDepots" class="liste-paiements">
+            <p class="message-chargement">Chargement...</p>
+        </div>
+
+        <hr>
+
         <div class="entete-liste">
             <h2 class="section-title"><i class="fa-solid fa-hourglass-half"></i>Demandes en attente</h2>
             <button type="button" id="boutonActualiserL2" class="bouton-mini"><i class="fa-solid fa-rotate"></i>Actualiser</button>
@@ -104,8 +116,27 @@
 
         <hr>
 
+        <h2 class="section-title"><i class="fa-solid fa-book"></i>Matières de la L2</h2>
+        <form id="formMatiere" class="form-matiere" novalidate>
+            <label for="nomMatiere" class="libelle-cache">Nom de la nouvelle matière</label>
+            <input type="text" id="nomMatiere" maxlength="100" placeholder="Ex : Algorithmique avancée" required>
+            <button type="submit" id="boutonAjouterMatiere" class="bouton-valider"><i class="fa-solid fa-plus"></i>Ajouter la matière</button>
+        </form>
+        <div id="listeMatieresL2" class="liste-paiements">
+            <p class="message-chargement">Chargement...</p>
+        </div>
+
+        <hr>
+
         <h2 class="section-title"><i class="fa-solid fa-users"></i>Membres de la classe</h2>
         <div id="listeMembres" class="liste-paiements">
+            <p class="message-chargement">Chargement...</p>
+        </div>
+
+        <hr>
+
+        <h2 class="section-title"><i class="fa-solid fa-folder-open"></i>Ressources publiées</h2>
+        <div id="listePublieesL2" class="liste-paiements">
             <p class="message-chargement">Chargement...</p>
         </div>
 
@@ -123,6 +154,7 @@
     </footer>
 
     <script src="theme.js"></script>
+    <script src="l2-outils.js"></script>
     <script src="admin-l2.js"></script>
 </body>
 </html>

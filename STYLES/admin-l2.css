@@ -180,3 +180,54 @@ body.dark-theme .badge-role-responsable {
         justify-content: center;
     }
 }
+
+
+/* ---- Dépôts à valider et ressources publiées ---- */
+.apercu-depot {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.miniature-depot {
+    width: 120px;
+    height: 68px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid var(--color-card-border);
+}
+
+/* ---- Formulaire d'ajout de matière ---- */
+.form-matiere {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+}
+
+.form-matiere input {
+    flex: 1;
+    min-width: 220px;
+    padding: 10px 12px;
+    font: inherit;
+    color: var(--color-text);
+    background: var(--color-card-bg);
+    border: 1px solid var(--color-card-border);
+    border-radius: 8px;
+}
+
+.form-matiere input:focus-visible {
+    outline: 3px solid var(--color-accent);
+    outline-offset: 1px;
+}
+
+.libelle-cache {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}

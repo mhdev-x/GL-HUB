@@ -124,6 +124,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 .maybeSingle();
             if (erreurMembre) throw erreurMembre;
             if (membre) {
+                document.querySelector("#lienResponsable").hidden = membre.role !== "responsable";
                 montrerVue("membre");
                 return;
             }
