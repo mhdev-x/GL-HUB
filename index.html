@@ -34,6 +34,7 @@
             <ul class="menu">
                 <li><a href="index.html"><i class="fa-solid fa-house fa-bounce" style="color: rgb(4, 51, 131);"></i>Accueil</a></li>
                 <li><a href="contact.html"><i class="fa-solid fa-envelope fa-bounce" style="color: rgb(4, 51, 131);"></i>Contact</a></li>
+                <li><a href="acces-l2.html"><i class="fa-solid fa-graduation-cap fa-bounce" style="color: rgb(4, 51, 131);"></i>Espace L2</a></li>
                 <li><button id="boutonMatieres" class="lien-menu-bouton"><i class="fa-solid fa-bars"></i>Matières</button></li>
                 <li id="zoneAuthNav"><button id="boutonAuth" class="lien-menu-bouton"><i class="fa-solid fa-user"></i>Se connecter</button></li>
                 <li class="item-recherche">
@@ -85,6 +86,7 @@
             <li><a href="technologieWeb.html"><i class="fa-solid fa-laptop-code" style="color: rgb(6, 58, 147);"></i>Technologie Web</a></li>
             <li><a href="basedeDonnees.html"><i class="fa-solid fa-database" style="color: rgb(6, 78, 146);"></i>Base de Données</a></li>
             <li><a href="algo.html"><i class="fa-solid fa-brain" style="color: rgb(4, 51, 131);"></i>Algorithme</a></li>
+            <li><a href="acces-l2.html"><i class="fa-solid fa-graduation-cap" style="color: rgb(4, 51, 131);"></i>Espace L2 (Licence 2)</a></li>
         </ul>
     </aside>
 
@@ -138,6 +140,30 @@
 
     <main class="container">
 
+        <!-- CHOIX DU NIVEAU : L1 ou L2 -->
+        <section class="choix-niveau" aria-labelledby="titreChoixNiveau">
+            <h2 class="titre-choix-niveau" id="titreChoixNiveau">Choisis ton niveau</h2>
+            <p class="soustitre-choix-niveau">Retrouve tes cours, TD et examens selon ta classe.</p>
+
+            <div class="cartes-niveau">
+                <article class="carte-niveau" data-niveau="L1">
+                    <span class="badge-dernier-choix" hidden><i class="fa-solid fa-clock-rotate-left"></i>Ton dernier choix</span>
+                    <div class="icone-niveau"><i class="fa-solid fa-book-open"></i></div>
+                    <h3>L1 Génie Logiciel</h3>
+                    <p>Algorithmique, Langage C, Base de Données, Systèmes d'Exploitation et Technologies Web : cours, TD et quiz pour progresser à ton rythme.</p>
+                    <button type="button" id="boutonNiveauL1" class="bouton-accent bouton-niveau">Voir les matières L1</button>
+                </article>
+
+                <article class="carte-niveau" data-niveau="L2">
+                    <span class="badge-dernier-choix" hidden><i class="fa-solid fa-clock-rotate-left"></i>Ton dernier choix</span>
+                    <div class="icone-niveau"><i class="fa-solid fa-graduation-cap"></i></div>
+                    <h3>L2 Génie Logiciel</h3>
+                    <p>Espace réservé aux camarades de la classe 2026/2027 : cours, TD, examens et liens partagés par ton responsable de classe.</p>
+                    <a href="acces-l2.html" id="lienNiveauL2" class="bouton-accent bouton-niveau">Accéder à l'espace L2</a>
+                </article>
+            </div>
+        </section>
+
         <!-- CONTENU SPÉCIFIQUE À CHAQUE PAGE -->
         <div class="hero">
             <h2 class="BGLHUB">Bienvenue sur GL HUB</h2>
@@ -182,5 +208,6 @@
 <script src="supabaseClient.js"></script>
 <script src="theme.js"></script>
 <script src="auth.js"></script>
+<script src="niveau.js"></script>
 </body>
 </html>

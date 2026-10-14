@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabaseClient.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="STYLES/acces-l2.css">
+    <link rel="stylesheet" href="STYLES/theme.css">
+    <link rel="stylesheet" href="STYLES/auth.css">
+    <link rel="icon" type="image/png" href="MEDIAS/LOGO-GL-HUB.png">    
+    <title>GL HUB - Espace L2</title>
+</head>
+<body>
+
+    <!-- ===================== BARRE DE NAVIGATION ===================== -->
+    <nav>
+        <div class="nav-interieur">
+            <!-- 1. Bouton Menu Mobile (Placé à gauche) -->
+            <button id="boutonMenuMobile" class="bouton-menu-mobile" aria-label="Menu">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+
+            <!-- 2. Logo de la barre (Centre sur mobile) -->
+            <a href="index.html" class="nav-logo">
+                <i class="fa-solid fa-user-graduate"></i>GL HUB
+            </a>
+
+            <!-- 3. Menu complet (Desktop) -->
+            <ul class="menu">
+                <li><a href="index.html"><i class="fa-solid fa-house fa-bounce" style="color: rgb(4, 51, 131);"></i>Accueil</a></li>
+                <li><a href="contact.html"><i class="fa-solid fa-envelope fa-bounce" style="color: rgb(4, 51, 131);"></i>Contact</a></li>
+                <li><button id="boutonMatieres" class="lien-menu-bouton"><i class="fa-solid fa-bars"></i>Matières</button></li>
+                <li id="zoneAuthNav"><button id="boutonAuth" class="lien-menu-bouton"><i class="fa-solid fa-user"></i>Se connecter</button></li>
+                <li class="item-recherche">
+                    <form class="barre-recherche" role="search" autocomplete="off" onsubmit="return false;">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" name="q" id="rechercheCours" placeholder="Rechercher un cours..." autocomplete="off">
+                    </form>
+                    <div id="resultatsRecherche" class="resultats-recherche"></div>
+                </li>
+            </ul>
+
+            <!-- 4. Bouton Thème (Intégré à droite) -->
+            <button id="themeToggle" class="theme-toggle" aria-label="Changer de thème">
+                <i class="fa-solid fa-moon"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- ===================== HEADER SITE (Bandeau unifié 21:9) ===================== -->
+    <header class="site-header">
+        <div class="hero-overlay-texte">
+            <div class="logo-text-hero">GL HUB</div>
+            <p class="slogan-hero">
+                <span>Un Hub</span>
+                <span>Une Communauté</span>
+                <span>Une Progression</span>
+            </p>
+        </div>
+    </header>
+
+    <!-- ===================== PANNEAU BURGER : MATIÈRES ===================== -->
+    <div id="voileMatieres" class="voile"></div>
+    <aside id="panneauMatieres" class="panneau-lateral">
+        <div class="panneau-entete">
+            <h3><i class="fa-solid fa-book"></i>Espace Matières</h3>
+            <button id="fermerPanneauMatieres" class="bouton-fermer" aria-label="Fermer"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div id="matieresVerrouillees" class="panneau-message">
+            <i class="fa-solid fa-lock fa-2x"></i>
+            <p>Connecte-toi pour accéder aux cours, TD et examens de chaque matière.</p>
+            <button id="boutonConnexionDepuisPanneau" class="bouton-accent">Se connecter</button>
+        </div>
+        <ul id="listeMatieres" class="liste-matieres" style="display: none;">
+            <li><a href="langageC.html"><i class="fa-solid fa-bug" style="color: rgb(4, 51, 131);"></i>Langage C</a></li>
+            <li><a href="systemedExploitation.html"><i class="fa-brands fa-windows" style="color: rgb(6, 58, 147);"></i>Système d'Exploitation</a></li>
+            <li><a href="technologieWeb.html"><i class="fa-solid fa-laptop-code" style="color: rgb(6, 58, 147);"></i>Technologie Web</a></li>
+            <li><a href="basedeDonnees.html"><i class="fa-solid fa-database" style="color: rgb(6, 78, 146);"></i>Base de Données</a></li>
+            <li><a href="algo.html"><i class="fa-solid fa-brain" style="color: rgb(4, 51, 131);"></i>Algorithme</a></li>
+        </ul>
+    </aside>
+
+    <!-- ===================== MODALE : CONNEXION / INSCRIPTION ===================== -->
+    <div id="voileAuth" class="voile"></div>
+    <div id="modaleAuth" class="modale">
+        <button id="fermerModaleAuth" class="bouton-fermer" aria-label="Fermer"><i class="fa-solid fa-xmark"></i></button>
+        <div class="onglets-auth">
+            <button id="ongletConnexion" class="onglet-auth actif">Connexion</button>
+            <button id="ongletInscription" class="onglet-auth">Inscription</button>
+        </div>
+        <div id="formConnexion" class="formulaire-auth">
+            <label for="emailConnexion">Adresse e-mail</label>
+            <input type="email" id="emailConnexion" autocomplete="username" placeholder="prenom.nom@gl.com" required>
+            <label for="motDePasseConnexion">Mot de passe</label>
+            <input type="password" id="motDePasseConnexion" autocomplete="current-password" placeholder="••••••••" required>
+            <button type="button" id="lienMotDePasseOublie" class="lien-mot-de-passe-oublie">Mot de passe oublié ?</button>
+            <p id="erreurConnexion" class="message-erreur"></p>
+            <button id="boutonValiderConnexion" class="bouton-accent bouton-pleine-largeur">Se connecter</button>
+        </div>
+        <div id="formInscription" class="formulaire-auth" style="display: none;">
+            <label for="prenomInscription">Prénom</label>
+            <input type="text" id="prenomInscription" autocomplete="given-name" placeholder="Ton prénom" required>
+            <label for="nomInscription">Nom</label>
+            <input type="text" id="nomInscription" autocomplete="family-name" placeholder="Ton nom de famille" required>
+            <label for="dateNaissanceInscription">Date de naissance</label>
+            <input type="date" id="dateNaissanceInscription" required>
+            <label for="emailInscription">Adresse e-mail</label>
+            <input type="email" id="emailInscription" autocomplete="email" placeholder="toi@exemple.com" required>
+            <label for="motDePasseInscription">Mot de passe</label>
+            <input type="password" id="motDePasseInscription" autocomplete="new-password" placeholder="6 caractères minimum" required>
+            <p id="erreurInscription" class="message-erreur"></p>
+            <button id="boutonValiderInscription" class="bouton-accent bouton-pleine-largeur">Créer mon compte</button>
+        </div>
+    </div>
+
+    <!-- ===================== CONTENU PRINCIPAL ===================== -->
+    <main class="container">
+
+        <h2 class="section-title"><i class="fa-solid fa-graduation-cap" style="color: rgb(4, 51, 131);"></i>Espace Licence 2 Génie Logiciel</h2>
+
+        <section class="card carte-acces-l2" aria-live="polite">
+
+            <!-- 1. Chargement -->
+            <div id="vueChargement">
+                <p class="message-chargement"><i class="fa-solid fa-spinner fa-spin"></i> Vérification de ton compte...</p>
+            </div>
+
+            <!-- 2. Pas connecté -->
+            <div id="vueConnexion" hidden>
+                <div class="card-icon"><i class="fa-solid fa-lock"></i></div>
+                <h4>Connecte-toi pour continuer</h4>
+                <p>L'espace L2 est réservé aux camarades de la classe. Connecte-toi ou crée un compte, puis demande l'accès.</p>
+                <button type="button" id="boutonConnexionL2" class="bouton-accent">Se connecter</button>
+            </div>
+
+            <!-- 3. Accès déjà actif -->
+            <div id="vueMembre" hidden>
+                <span class="badge-etat badge-etat-ok"><i class="fa-solid fa-circle-check"></i>Accès actif</span>
+                <h4>Tu fais partie de l'espace L2</h4>
+                <p>Retrouve ici les cours, TD, examens et liens partagés par ton responsable de classe.</p>
+                <a href="espace-l2.html" class="bouton-accent bouton-lien">Entrer dans l'espace L2</a>
+            </div>
+
+            <!-- 4. Demande en attente -->
+            <div id="vueAttente" hidden>
+                <span class="badge-etat badge-etat-attente"><i class="fa-solid fa-hourglass-half"></i>Demande en attente</span>
+                <h4>Ta demande a bien été envoyée</h4>
+                <p>L'administrateur compare ton numéro WhatsApp avec celui du groupe de la classe. Dès que ton accès est activé, tu pourras entrer dans l'espace.</p>
+                <button type="button" id="boutonActualiser" class="bouton-accent bouton-clair">Vérifier mon statut</button>
+            </div>
+
+            <!-- 5. Formulaire -->
+            <div id="vueFormulaire" hidden>
+                <div class="card-icon"><i class="fa-solid fa-user-check"></i></div>
+                <h4>Demander l'accès à l'espace L2</h4>
+                <p>Ta demande sera faite au nom de <strong id="nomDemandeur"></strong>. Il te suffit de donner ton numéro WhatsApp.</p>
+
+                <div id="bandeauRefus" class="bandeau-refus" role="status" hidden>
+                    <i class="fa-solid fa-circle-info"></i><span id="texteRefus"></span>
+                </div>
+
+                <form id="formDemandeL2" class="formulaire-auth" novalidate>
+                    <label for="telephoneL2">Numéro WhatsApp</label>
+                    <input type="tel" id="telephoneL2" inputmode="tel" autocomplete="tel" maxlength="25" placeholder="+221 77 123 45 67" aria-describedby="aideTelephoneL2" required>
+                    <p class="aide-champ" id="aideTelephoneL2">Utilise le numéro avec lequel tu es dans le groupe WhatsApp de la classe. Il sert uniquement à vérifier ton identité et seul l'administrateur peut le voir.</p>
+                    <p id="erreurDemandeL2" class="message-erreur" role="alert"></p>
+                    <button type="submit" id="boutonEnvoyerDemande" class="bouton-accent bouton-pleine-largeur">Envoyer ma demande</button>
+                </form>
+            </div>
+
+            <!-- 6. Erreur -->
+            <div id="vueErreur" hidden>
+                <div class="card-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                <h4>Un problème est survenu</h4>
+                <p id="messageErreurL2"></p>
+                <button type="button" id="boutonReessayer" class="bouton-accent bouton-clair">Réessayer</button>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- ===================== PIED DE PAGE ===================== -->
+    <footer>
+        <p>&copy; 2026 - GL HUB | Département Informatique</p>
+    </footer>
+
+    <script src="theme.js"></script>
+    <script src="auth.js"></script>
+    <script src="acces-l2.js"></script>
+</body>
+</html>
