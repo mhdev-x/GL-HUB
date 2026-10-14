@@ -42,8 +42,13 @@
         return resultat ? resultat[1] : null;
     };
 
-    let urlMiniatureYoutube = (idVideo) => `https://img.youtube.com/vi/${idVideo}/hqdefault.jpg`;
+    // qualite : hqdefault (480x360), mqdefault (320x180, format 16:9 sans bandes noires)
+    let urlMiniatureYoutube = (idVideo, qualite = "hqdefault") => `https://img.youtube.com/vi/${idVideo}/${qualite}.jpg`;
     let urlLecteurYoutube = (idVideo) => `https://www.youtube-nocookie.com/embed/${idVideo}?rel=0&autoplay=1`;
+
+    // Vrai si ce format peut s'ouvrir dans un onglet (PDF, images, texte)
+    let peutSeLireDansLeNavigateur = (extension) =>
+        Object.prototype.hasOwnProperty.call(TYPES_AFFICHABLES, String(extension || "").toLowerCase());
 
     // ---------- Validations ----------
     let urlValide = (url) => /^https?:\/\/[^\s]+$/i.test(String(url || "").trim());
@@ -153,6 +158,7 @@
         extraireIdYoutube,
         urlMiniatureYoutube,
         urlLecteurYoutube,
+        peutSeLireDansLeNavigateur,
         urlValide,
         extensionDe,
         verifierFichier,
