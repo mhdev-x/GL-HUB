@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="STYLES/acces.css">
     <link rel="icon" type="image/png" href="MEDIAS/LOGO-GL-HUB.png">
     <title>GL HUB - Langage C</title>
+    <link rel="stylesheet" href="STYLES/classes-nav.css">
 </head>
 <body data-matiere="langageC">
 
@@ -32,8 +33,14 @@
             <ul class="menu">
                 <li><a href="index.html"><i class="fa-solid fa-house fa-bounce" style="color: rgb(4, 51, 131);"></i>Accueil</a></li>
                 <li><a href="contact.html"><i class="fa-solid fa-envelope fa-bounce" style="color: rgb(4, 51, 131);"></i>Contact</a></li>
-                <li><a href="acces-l2.html"><i class="fa-solid fa-graduation-cap fa-bounce" style="color: rgb(4, 51, 131);"></i>Espace L2</a></li>
-                <li><button id="boutonMatieres" class="lien-menu-bouton"><i class="fa-solid fa-bars"></i>Matières</button></li>
+                <li class="menu-classes">
+                    <div id="declencheurClasses" class="menu-classes-declencheur lien-menu-bouton" role="button" tabindex="0" aria-haspopup="true" aria-expanded="false" aria-controls="sousMenuClasses"><i class="fa-solid fa-people-group fa-bounce" style="color: rgb(4, 51, 131);"></i>Classes<i class="fa-solid fa-chevron-down icone-chevron"></i></div>
+                    <ul id="sousMenuClasses" class="sous-menu-classes" hidden>
+                        <li><button type="button" id="choixL1"><i class="fa-solid fa-book-open"></i>L1 Génie Logiciel</button></li>
+                        <li><a href="acces-l2.html" id="choixL2"><i class="fa-solid fa-graduation-cap"></i>L2 Génie Logiciel</a></li>
+                    </ul>
+                </li>
+                <li hidden><button id="boutonMatieres" class="lien-menu-bouton"><i class="fa-solid fa-bars"></i>Matières</button></li>
                 <li id="zoneAuthNav"><button id="boutonAuth" class="lien-menu-bouton"><i class="fa-solid fa-user"></i>Se connecter</button></li>
                 <li class="item-recherche">
                     <form class="barre-recherche" role="search" autocomplete="off" onsubmit="return false;">
@@ -81,7 +88,6 @@
             <li><a href="technologieWeb.html"><i class="fa-solid fa-laptop-code" style="color: rgb(6, 58, 147);"></i>Technologie Web</a></li>
             <li><a href="basedeDonnees.html"><i class="fa-solid fa-database" style="color: rgb(6, 78, 146);"></i>Base de Données</a></li>
             <li><a href="algo.html"><i class="fa-solid fa-brain" style="color: rgb(4, 51, 131);"></i>Algorithme</a></li>
-            <li><a href="acces-l2.html"><i class="fa-solid fa-graduation-cap" style="color: rgb(4, 51, 131);"></i>Espace L2 (Licence 2)</a></li>
         </ul>
     </aside>
 
@@ -235,6 +241,7 @@
 
     <script src="theme.js"></script>
     <script src="auth.js"></script>
+    <script src="classes-nav.js"></script>
     <script src="acces.js"></script>
 </body>
 </html>

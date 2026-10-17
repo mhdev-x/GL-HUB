@@ -109,6 +109,12 @@
     }
 }
 
+/* ---- Page courante dans le menu des pages d'administration ---- */
+.menu a[aria-current="page"] {
+    color: var(--color-accent);
+    background-color: var(--color-nav-link-active-bg);
+}
+
 /* ---- Onglets de l'espace L2 (Ressources / Emploi du temps / Discussion) ---- */
 .onglets-l2 {
     /* Ces onglets sont un <nav> : on neutralise la règle globale "nav" (barre fixe en haut de page) */

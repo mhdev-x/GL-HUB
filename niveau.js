@@ -2,7 +2,7 @@
 // CHOIX DU NIVEAU (L1 / L2) — page d'accueil GL HUB
 //
 //  - L1 : ouvre le panneau "Matières" déjà présent dans la navigation
-//  - L2 : mène à la page d'accès de l'espace L2
+//  - L2 : connexion, espace L2 ou demande d'accès selon la situation (classes-nav.js)
 //  - Le dernier choix est mémorisé sur cet appareil : sa carte passe en
 //    premier avec un badge "Ton dernier choix".
 // Aucune donnée n'est envoyée au serveur.
@@ -40,6 +40,12 @@ document.addEventListener("DOMContentLoaded", () => {
         let bouton = carte.querySelector(".bouton-niveau");
         if (bouton) bouton.addEventListener("click", () => memoriserNiveau(niveau));
     });
+
+    // ---------- L2 : même logique que le menu Classes (connexion, espace ou demande d'accès) ----------
+    let lienNiveauL2 = document.querySelector("#lienNiveauL2");
+    if (lienNiveauL2 && window.GLClasses) {
+        lienNiveauL2.addEventListener("click", (e) => window.GLClasses.ouvrirL2(e));
+    }
 
     // ---------- L1 : ouvrir le panneau des matières ----------
     let boutonNiveauL1 = document.querySelector("#boutonNiveauL1");
