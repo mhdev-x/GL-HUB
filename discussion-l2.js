@@ -3,7 +3,8 @@
 //
 // Réservée aux membres de la classe (et à l'admin).
 //  - messages écrits : 1000 caractères maximum
-//  - vocaux : 2 minutes maximum, fichiers dans le bucket privé "chat-l2"
+//  - vocaux : 2 minutes maximum, voix en mono à 48 kbit/s, fichiers dans le bucket privé "chat-l2"
+//  - suppression : chacun supprime ses messages, l'admin et le responsable tous les messages
 //  - fenêtre glissante de 7 jours : les messages plus anciens sont masqués
 //    par la base (RLS) et supprimés chaque nuit par l'Edge Function
 //    l2-chat-purge
@@ -56,6 +57,7 @@ document.addEventListener("DOMContentLoaded", () => {
         utilisateur: null,
         classe: null,
         estAdmin: false,
+        peutModerer: false,        // admin et responsable : suppression de n'importe quel message
         messages: [],              // du plus ancien au plus récent
         ids: new Set(),
         plusAnciensDisponibles: false,
@@ -259,11 +261,12 @@ document.addEventListener("DOMContentLoaded", () => {
         heure.textContent = formaterHeure(message.cree_le);
         infos.appendChild(heure);
 
-        if (estPropre || etat.estAdmin) {
+        if (estPropre || etat.peutModerer) {
             let boutonSupprimer = document.createElement("button");
             boutonSupprimer.type = "button";
             boutonSupprimer.className = "chat-supprimer";
             boutonSupprimer.textContent = "Supprimer";
+            if (!estPropre) boutonSupprimer.setAttribute("aria-label", `Supprimer le message de ${message.auteur_nom || "cet étudiant"} (modération)`);
             boutonSupprimer.addEventListener("click", () => supprimerMessage(message));
             infos.appendChild(boutonSupprimer);
         }
@@ -422,7 +425,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // ---------- Supprimer un message ----------
     let supprimerMessage = async (message) => {
-        if (!confirm("Supprimer ce message ?")) return;
+        let estPropre = message.auteur_id === etat.utilisateur.id;
+        let question = estPropre
+            ? "Supprimer ton message ?"
+            : `Supprimer le message de ${message.auteur_nom || "cet étudiant"} ? Cette action est définitive.`;
+        if (!confirm(question)) return;
         try {
             if (message.type === "vocal" && message.chemin_audio) {
                 let { error: erreurFichier } = await supabaseClient.storage.from(BUCKET_CHAT).remove([message.chemin_audio]);
@@ -572,7 +579,10 @@ document.addEventListener("DOMContentLoaded", () => {
         boutonMicro.disabled = true;
         let flux;
         try {
-            flux = await navigator.mediaDevices.getUserMedia({ audio: true });
+            // Voix seule (mono) avec suppression d'écho et de bruit, pour un son net même dans une salle
+            flux = await navigator.mediaDevices.getUserMedia({
+                audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+            });
         } catch (e) {
             console.error(e);
             boutonMicro.disabled = false;
@@ -582,8 +592,10 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
+        // 48 kbit/s en Opus (Chrome, Android) et 64 kbit/s en AAC (Safari, iPhone) :
+        // voix nette, et 2 minutes restent sous 1 Mo
         let type = choisirTypeMime();
-        let options = { audioBitsPerSecond: 24000 };
+        let options = { audioBitsPerSecond: type.includes("mp4") ? 64000 : 48000 };
         if (type) options.mimeType = type;
 
         let enregistreur;
@@ -775,6 +787,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 montrerVue("pasMembre");
                 return;
             }
+            etat.peutModerer = etat.estAdmin || (!!reponseMembre.data && reponseMembre.data.role === "responsable");
 
             montrerVue("chat");
             await chargerMessages();

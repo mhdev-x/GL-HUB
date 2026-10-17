@@ -1,0 +1,173 @@
+/* ==========================================================================
+   MENU "CLASSES" (barre de navigation) et ONGLETS DE L'ESPACE L2
+   Utilise les variables de theme.css : fonctionne en clair et en sombre.
+   ========================================================================== */
+[hidden] {
+    display: none !important;
+}
+
+/* ---- Menu déroulant Classes ---- */
+.menu-classes {
+    position: relative;
+}
+
+.menu-classes-declencheur {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    user-select: none;
+}
+
+.menu-classes-declencheur .icone-chevron {
+    font-size: 0.7rem;
+    transition: transform 0.2s ease;
+}
+
+.menu-classes-declencheur[aria-expanded="true"] {
+    color: var(--color-accent);
+    background-color: var(--color-nav-link-hover-bg);
+}
+
+.menu-classes-declencheur[aria-expanded="true"] .icone-chevron {
+    transform: rotate(180deg);
+}
+
+.menu-classes-declencheur:focus-visible,
+.sous-menu-classes a:focus-visible,
+.sous-menu-classes button:focus-visible {
+    outline: 3px solid var(--color-accent);
+    outline-offset: -3px;
+}
+
+.sous-menu-classes {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 1500;
+    min-width: 240px;
+    margin: 0;
+    padding: 6px;
+    background: var(--color-card-bg);
+    border: 1px solid var(--color-card-border);
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+}
+
+.menu .sous-menu-classes li a,
+.menu .sous-menu-classes li button {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 12px 14px;
+    font: inherit;
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-align: left;
+    text-decoration: none;
+    color: var(--color-text);
+    background: none;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.menu .sous-menu-classes li a:hover,
+.menu .sous-menu-classes li button:hover {
+    color: var(--color-accent);
+    background-color: var(--color-nav-link-hover-bg);
+}
+
+.sous-menu-classes i {
+    width: 18px;
+    text-align: center;
+    color: var(--color-accent);
+}
+
+@media (max-width: 768px) {
+    .menu-classes {
+        width: 100%;
+    }
+
+    .menu-classes-declencheur {
+        justify-content: center;
+    }
+
+    /* Dans le menu mobile, le sous-menu s'ouvre à la suite, sans fenêtre flottante */
+    .sous-menu-classes {
+        position: static;
+        min-width: 0;
+        box-shadow: none;
+        border: none;
+        background: transparent;
+        padding: 0 0 6px;
+    }
+
+    .menu .sous-menu-classes li a,
+    .menu .sous-menu-classes li button {
+        justify-content: center;
+    }
+}
+
+/* ---- Onglets de l'espace L2 (Ressources / Emploi du temps / Discussion) ---- */
+.onglets-l2 {
+    /* Ces onglets sont un <nav> : on neutralise la règle globale "nav" (barre fixe en haut de page) */
+    position: static;
+    z-index: auto;
+    width: auto;
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 0 auto 24px;
+    padding: 6px;
+    max-width: 560px;
+    background: var(--color-card-bg);
+    border: 1px solid var(--color-card-border);
+    border-radius: 999px;
+}
+
+.onglets-l2 a {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 14px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-decoration: none;
+    color: var(--color-text-secondary);
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+.onglets-l2 a:hover {
+    color: var(--color-accent);
+}
+
+.onglets-l2 a[aria-current="page"] {
+    color: var(--color-accent-text);
+    background-color: var(--color-button-bg);
+}
+
+.onglets-l2 a:focus-visible {
+    outline: 3px solid var(--color-accent);
+    outline-offset: 2px;
+}
+
+@media (max-width: 480px) {
+    .onglets-l2 a {
+        padding: 10px 8px;
+        font-size: 0.8rem;
+    }
+
+    .onglets-l2 a i {
+        display: none;
+    }
+}
+
+/* Bloque le défilement de la page derrière une fenêtre modale */
+body.modale-ouverte {
+    overflow: hidden;
+}

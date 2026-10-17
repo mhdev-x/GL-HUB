@@ -116,6 +116,20 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             classeL2 = classe;
 
+            // L'administrateur entre directement : pas de formulaire, pas de numéro de téléphone
+            let { data: admin, error: erreurAdmin } = await supabaseClient
+                .from("admins")
+                .select("user_id")
+                .eq("user_id", utilisateurCourant.id)
+                .maybeSingle();
+            if (erreurAdmin) throw erreurAdmin;
+            if (admin) {
+                document.querySelector("#titreMembre").textContent = "Accès administrateur";
+                document.querySelector("#lienResponsable").hidden = false;
+                montrerVue("membre");
+                return;
+            }
+
             let { data: membre, error: erreurMembre } = await supabaseClient
                 .from("membres_classe")
                 .select("role")
@@ -124,6 +138,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 .maybeSingle();
             if (erreurMembre) throw erreurMembre;
             if (membre) {
+                document.querySelector("#titreMembre").textContent = "Tu fais partie de l'espace L2";
                 document.querySelector("#lienResponsable").hidden = membre.role !== "responsable";
                 montrerVue("membre");
                 return;
