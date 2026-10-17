@@ -37,6 +37,17 @@ document.addEventListener("DOMContentLoaded", () => {
     let utilisateurCourant = null;
     let classeL2 = null;
 
+    // Si une page HTML plus ancienne n'a pas l'élément, on l'ignore au lieu de bloquer toute la page
+    let definirTexte = (selecteur, texte) => {
+        let element = document.querySelector(selecteur);
+        if (element) element.textContent = texte;
+    };
+
+    let definirVisible = (selecteur, visible) => {
+        let element = document.querySelector(selecteur);
+        if (element) element.hidden = !visible;
+    };
+
     // ---------- Afficher une seule vue à la fois ----------
     let montrerVue = (nom) => {
         Object.keys(vues).forEach(cle => {
@@ -124,8 +135,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 .maybeSingle();
             if (erreurAdmin) throw erreurAdmin;
             if (admin) {
-                document.querySelector("#titreMembre").textContent = "Accès administrateur";
-                document.querySelector("#lienResponsable").hidden = false;
+                definirTexte("#titreMembre", "Accès administrateur");
+                definirVisible("#lienResponsable", true);
                 montrerVue("membre");
                 return;
             }
@@ -138,8 +149,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 .maybeSingle();
             if (erreurMembre) throw erreurMembre;
             if (membre) {
-                document.querySelector("#titreMembre").textContent = "Tu fais partie de l'espace L2";
-                document.querySelector("#lienResponsable").hidden = membre.role !== "responsable";
+                definirTexte("#titreMembre", "Tu fais partie de l'espace L2");
+                definirVisible("#lienResponsable", membre.role === "responsable");
                 montrerVue("membre");
                 return;
             }
