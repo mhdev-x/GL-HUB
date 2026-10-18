@@ -899,3 +899,20 @@ body.dark-theme .chat-erreur {
 .titre-acces-l2 {
     scroll-margin-top: 96px;
 }
+
+/* ---- Conseils (neutre) et vocal non lisible ---- */
+.chat-erreur.chat-info {
+    color: var(--color-accent);
+    background-color: var(--color-nav-link-active-bg);
+}
+
+body.dark-theme .chat-erreur.chat-info {
+    color: var(--color-accent);
+    background-color: var(--color-nav-link-active-bg);
+}
+
+.chat-vocal-note {
+    margin: 6px 0 0;
+    font-size: 0.74rem;
+    opacity: 0.85;
+}

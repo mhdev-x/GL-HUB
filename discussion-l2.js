@@ -3,7 +3,8 @@
 //
 // Réservée aux membres de la classe (et à l'admin).
 //  - messages écrits : 1000 caractères maximum
-//  - vocaux : 2 minutes maximum, voix en mono à 48 kbit/s, fichiers dans le bucket privé "chat-l2"
+//  - vocaux : 2 minutes maximum, voix en mono, enregistrés en MP4 (AAC) quand le navigateur sait le faire,
+//    fichiers dans le bucket privé "chat-l2"
 //  - suppression : chacun supprime ses messages, l'admin et le responsable tous les messages
 //  - fenêtre glissante de 7 jours : les messages plus anciens sont masqués
 //    par la base (RLS) et supprimés chaque nuit par l'Edge Function
@@ -23,6 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let NB_MESSAGES_PAR_PAGE = 100;
     let INTERVALLE_RAFRAICHISSEMENT = 30000;   // millisecondes
     let SEPT_JOURS = 7 * 24 * 60 * 60 * 1000;
+    let EXPIRATION_URL_VOCAL = 7200;           // secondes : durée de validité d'une adresse d'écoute
     let COLONNES = "id, classe_id, auteur_id, auteur_nom, type, contenu, chemin_audio, duree_secondes, cree_le";
 
     let vues = {
@@ -62,7 +64,8 @@ document.addEventListener("DOMContentLoaded", () => {
         ids: new Set(),
         plusAnciensDisponibles: false,
         canal: null,
-        minuteurRafraichissement: null
+        minuteurRafraichissement: null,
+        urlsVocaux: new Map()      // chemin du fichier -> { url, expire } : adresses d'écoute préparées à l'avance
     };
 
     let lecteurActif = null;           // un seul vocal joue à la fois
@@ -80,9 +83,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let afficherErreurChat = (texte) => {
         erreurChat.textContent = texte;
+        erreurChat.classList.remove("chat-info");
         erreurChat.hidden = false;
         clearTimeout(minuteurErreur);
         minuteurErreur = setTimeout(() => { erreurChat.hidden = true; }, 7000);
+    };
+
+    // Même zone que les erreurs, mais avec un style neutre (conseils, pas de problème)
+    let afficherInfoChat = (texte) => {
+        afficherErreurChat(texte);
+        erreurChat.classList.add("chat-info");
     };
 
     let effacerErreurChat = () => {
@@ -144,8 +154,62 @@ document.addEventListener("DOMContentLoaded", () => {
         return "Le message n'a pas pu être envoyé. Réessaie dans un instant.";
     };
 
+    // ---------- Adresses d'écoute des vocaux ----------
+    // Safari (iPhone, iPad) n'autorise la lecture d'un son que juste après un appui de l'utilisateur,
+    // pas après une attente réseau. On prépare donc les adresses AVANT l'appui : au clic, la lecture
+    // démarre immédiatement. Une seule requête pour tous les vocaux affichés.
+    let preparerUrlsVocaux = async (messages) => {
+        let maintenant = Date.now();
+        let chemins = [...new Set(
+            messages.filter(m => m.type === "vocal" && m.chemin_audio).map(m => m.chemin_audio)
+        )].filter(chemin => {
+            let entree = etat.urlsVocaux.get(chemin);
+            return !entree || entree.expire - maintenant < 10 * 60 * 1000;   // pas encore prête, ou bientôt expirée
+        });
+        if (chemins.length === 0) return;
+
+        try {
+            let { data, error } = await supabaseClient.storage
+                .from(BUCKET_CHAT)
+                .createSignedUrls(chemins, EXPIRATION_URL_VOCAL);
+            if (error || !data) {
+                console.error("Adresses des vocaux :", error);
+                return;
+            }
+            data.forEach(element => {
+                if (element.signedUrl && !element.error) {
+                    etat.urlsVocaux.set(element.path, {
+                        url: element.signedUrl,
+                        expire: maintenant + (EXPIRATION_URL_VOCAL - 60) * 1000
+                    });
+                }
+            });
+        } catch (e) {
+            console.error("Adresses des vocaux :", e);
+        }
+    };
+
+    // Formats que cet appareil sait lire (un iPad ancien ne lit pas le WebM)
+    let TYPES_AUDIO = {
+        webm: 'audio/webm; codecs="opus"',
+        ogg: 'audio/ogg; codecs="opus"',
+        mp4: "audio/mp4",
+        mp3: "audio/mpeg"
+    };
+    let sondeAudio = new Audio();
+
+    let formatLisible = (chemin) => {
+        let extension = String(chemin || "").split(".").pop().toLowerCase();
+        let type = TYPES_AUDIO[extension];
+        return !type || sondeAudio.canPlayType(type) !== "";
+    };
+
+    let MESSAGE_FORMAT_NON_LISIBLE = "Ce vocal est dans un format que ton appareil ne sait pas lire. Mets à jour ton navigateur ou ton système, ou écoute-le sur un autre appareil.";
+
     // ---------- Lecteur d'un message vocal ----------
     let creerLecteurVocal = (message) => {
+        let conteneur = document.createElement("div");
+
         let bloc = document.createElement("div");
         bloc.className = "chat-vocal";
 
@@ -169,56 +233,106 @@ document.addEventListener("DOMContentLoaded", () => {
         };
         majBouton(false);
 
+        bloc.append(bouton, piste, duree);
+        conteneur.appendChild(bloc);
+
+        // Format que cet appareil ne peut pas lire : on le dit tout de suite, sans bouton qui échoue
+        if (!formatLisible(message.chemin_audio)) {
+            bouton.disabled = true;
+            bouton.setAttribute("aria-label", "Vocal non lisible sur cet appareil");
+            let note = document.createElement("p");
+            note.className = "chat-vocal-note";
+            note.textContent = "Format non pris en charge par cet appareil";
+            conteneur.appendChild(note);
+            return conteneur;
+        }
+
         let audio = null;
+        let urlDuLecteur = null;
 
-        bouton.addEventListener("click", async () => {
+        let creerAudio = (url) => {
+            let lecteur = new Audio();
+            lecteur.preload = "auto";
+            lecteur.addEventListener("timeupdate", () => {
+                let total = message.duree_secondes || lecteur.duration || 1;
+                progression.style.width = `${Math.min(1, lecteur.currentTime / total) * 100}%`;
+                duree.textContent = formaterDuree(total - lecteur.currentTime);
+            });
+            lecteur.addEventListener("play", () => majBouton(true));
+            lecteur.addEventListener("pause", () => majBouton(false));
+            lecteur.addEventListener("ended", () => {
+                progression.style.width = "0";
+                duree.textContent = formaterDuree(message.duree_secondes);
+                majBouton(false);
+            });
+            lecteur.addEventListener("error", () => {
+                let code = lecteur.error ? lecteur.error.code : 0;
+                console.error("Lecteur de vocal, code", code);
+                afficherErreurChat(code === 4
+                    ? MESSAGE_FORMAT_NON_LISIBLE
+                    : "Impossible de lire ce message vocal. Vérifie ta connexion, puis réessaie.");
+                majBouton(false);
+            });
+            lecteur.src = url;
+            return lecteur;
+        };
+
+        // Retourne le lecteur tout de suite, ou null si l'adresse n'est pas encore prête
+        let obtenirAudio = () => {
+            let entree = etat.urlsVocaux.get(message.chemin_audio);
+            if (!entree || entree.expire <= Date.now()) return null;
+            // Adresse renouvelée : on change de lecteur, sauf s'il est en train de jouer
+            if (audio && audio.paused && urlDuLecteur !== entree.url) audio = null;
             if (!audio) {
-                bouton.disabled = true;
-                let { data, error } = await supabaseClient.storage
-                    .from(BUCKET_CHAT)
-                    .createSignedUrl(message.chemin_audio, 3600);
-                bouton.disabled = false;
-                if (error || !data) {
-                    console.error("Lien du vocal :", error);
-                    afficherErreurChat("Ce message vocal n'est plus disponible.");
-                    return;
-                }
+                audio = creerAudio(entree.url);
+                urlDuLecteur = entree.url;
+            }
+            return audio;
+        };
 
-                audio = new Audio(data.signedUrl);
-                audio.addEventListener("timeupdate", () => {
-                    let total = message.duree_secondes || audio.duration || 1;
-                    progression.style.width = `${Math.min(1, audio.currentTime / total) * 100}%`;
-                    duree.textContent = formaterDuree(total - audio.currentTime);
+        bouton.addEventListener("click", () => {
+            let lecteur = obtenirAudio();
+
+            if (!lecteur) {
+                // Rare : l'adresse n'est pas prête (réseau lent, ou page restée ouverte longtemps).
+                // On la prépare, puis il faut appuyer une seconde fois.
+                bouton.disabled = true;
+                preparerUrlsVocaux([message]).then(() => {
+                    bouton.disabled = false;
+                    if (etat.urlsVocaux.has(message.chemin_audio)) {
+                        afficherInfoChat("Le vocal est prêt : appuie une seconde fois sur lecture.");
+                    } else {
+                        afficherErreurChat("Ce message vocal n'est plus disponible.");
+                    }
                 });
-                audio.addEventListener("play", () => majBouton(true));
-                audio.addEventListener("pause", () => majBouton(false));
-                audio.addEventListener("ended", () => {
-                    progression.style.width = "0";
-                    duree.textContent = formaterDuree(message.duree_secondes);
-                    majBouton(false);
-                });
-                audio.addEventListener("error", () => {
-                    afficherErreurChat("Impossible de lire ce message vocal.");
-                    majBouton(false);
-                });
+                return;
             }
 
-            if (audio.paused) {
-                if (lecteurActif && lecteurActif !== audio) lecteurActif.pause();
-                lecteurActif = audio;
-                try {
-                    await audio.play();
-                } catch (e) {
-                    console.error(e);
-                    afficherErreurChat("Impossible de lire ce message vocal.");
-                }
-            } else {
-                audio.pause();
+            if (!lecteur.paused) {
+                lecteur.pause();
+                return;
+            }
+
+            if (lecteurActif && lecteurActif !== lecteur) lecteurActif.pause();
+            lecteurActif = lecteur;
+
+            // play() est appelé directement dans le clic : c'est ce qu'exige Safari
+            let promesse = lecteur.play();
+            if (promesse && promesse.catch) {
+                promesse.catch((e) => {
+                    console.error("Lecture du vocal :", e);
+                    if (e && e.name === "NotAllowedError") {
+                        afficherInfoChat("Ton navigateur a bloqué la lecture : appuie à nouveau sur lecture.");
+                    } else if (e && e.name === "NotSupportedError") {
+                        afficherErreurChat(MESSAGE_FORMAT_NON_LISIBLE);
+                    } else {
+                        afficherErreurChat("Impossible de lire ce message vocal. Vérifie ta connexion, puis réessaie.");
+                    }
+                });
             }
         });
 
-        bloc.append(bouton, piste, duree);
-        return bloc;
+        return conteneur;
     };
 
     // ---------- Éléments d'un message ----------
@@ -302,6 +416,7 @@ document.addEventListener("DOMContentLoaded", () => {
         etat.messages.push(message);
         etat.ids.add(message.id);
         aucunMessage.hidden = true;
+        if (message.type === "vocal") preparerUrlsVocaux([message]);
 
         if (!precedent || new Date(precedent.cree_le).toDateString() !== new Date(message.cree_le).toDateString()) {
             listeMessages.appendChild(creerSeparateurJour(message.cree_le));
@@ -338,6 +453,7 @@ document.addEventListener("DOMContentLoaded", () => {
         etat.plusAnciensDisponibles = (data || []).length === NB_MESSAGES_PAR_PAGE;
         rendreListeComplete();
         defilerEnBas();
+        preparerUrlsVocaux(etat.messages);
     };
 
     let chargerPlusAnciens = async () => {
@@ -362,6 +478,7 @@ document.addEventListener("DOMContentLoaded", () => {
             rendreListeComplete();
             // On garde la position de lecture
             zoneMessages.scrollTop = zoneMessages.scrollHeight - hauteurAvant;
+            preparerUrlsVocaux(nouveaux);
         } catch (e) {
             console.error(e);
             afficherErreurChat("Impossible de charger les messages précédents.");
@@ -415,7 +532,10 @@ document.addEventListener("DOMContentLoaded", () => {
             .subscribe();
 
         etat.minuteurRafraichissement = setInterval(() => {
-            if (!document.hidden) chargerNouveaux();
+            if (!document.hidden) {
+                chargerNouveaux();
+                preparerUrlsVocaux(etat.messages);   // renouvelle les adresses bientôt expirées
+            }
         }, INTERVALLE_RAFRAICHISSEMENT);
     };
 
@@ -554,7 +674,9 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     let choisirTypeMime = () => {
-        let candidats = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/ogg;codecs=opus"];
+        // MP4 (AAC) en premier : il se lit partout, y compris sur les iPad et iPhone anciens qui ne lisent pas le WebM.
+        // Chrome, Edge, Android et Safari récents savent l'enregistrer ; sinon on retombe sur WebM ou Ogg.
+        let candidats = ["audio/mp4", "audio/webm;codecs=opus", "audio/webm", "audio/ogg;codecs=opus"];
         return candidats.find(type => window.MediaRecorder.isTypeSupported && window.MediaRecorder.isTypeSupported(type)) || "";
     };
 
@@ -746,6 +868,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let initialiser = async () => {
         montrerVue("chargement");
         arreterTempsReel();
+        etat.urlsVocaux.clear();
         if (lecteurActif) {
             lecteurActif.pause();
             lecteurActif = null;
