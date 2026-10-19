@@ -4,7 +4,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" ...>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="GL HUB — Plateforme de cours, TD et examens pour les étudiants en Génie Logiciel.">
+    <meta name="description" content="GL HUB — Plateforme gratuite pour les étudiants en Génie Logiciel : cours, TD et examens de la L1, et espace privé de la L2 avec ressources, emploi du temps et discussion.">
     <meta property="og:title" content="GL HUB — Ressources Génie Logiciel">
     <meta property="og:image" content="MEDIAS/hero-banner.jpg">
     <meta property="og:type" content="website">
@@ -146,17 +146,62 @@
 
     <main class="container">
 
-        <!-- CHOIX DU NIVEAU : L1 ou L2 -->
+        <!-- BIENVENUE -->
+        <div class="hero">
+            <h2 class="BGLHUB">Bienvenue sur GL HUB</h2>
+            <p>GL HUB est une initiative créée par un étudiant en Génie Logiciel, pour les étudiants.
+                Face à la dispersion des supports de cours et au manque de centralisation des ressources pédagogiques,
+                GL HUB réunit au même endroit tout ce dont une classe a besoin au quotidien : les cours, les TD, les
+                examens, l'emploi du temps, et un espace pour échanger.</p>
+            <p>Le site accueille désormais <strong>deux classes</strong> : la <strong>L1 Génie Logiciel</strong>, avec les
+                matières fondamentales du cursus, et la <strong>L2 Génie Logiciel</strong>, un espace privé réservé aux
+                membres de la classe. Choisis la tienne juste en dessous. Tout est gratuit : pas de paiement, pas
+                d'abonnement, tu avances à ton rythme, comme en classe.</p>
+            <p>GL HUB ambitionne de devenir un point de référence pour la communauté des étudiants en Génie Logiciel,
+                en encourageant le partage, la collaboration et l’excellence.</p>
+
+            <div class="welcome-grid">
+                <div class="stat-card">
+                    <span class="stat-number">2</span>
+                    Classes
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number">5</span>
+                    Matières en L1
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number">57</span>
+                    Fichiers en L1
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number">70 %</span>
+                    Au quiz pour avancer en L1
+                </div>
+            </div>
+        </div>
+
+        <!-- CHOIX DE LA CLASSE : L1 ou L2 -->
         <section class="choix-niveau" aria-labelledby="titreChoixNiveau">
-            <h2 class="titre-choix-niveau" id="titreChoixNiveau">Choisis ton niveau</h2>
-            <p class="soustitre-choix-niveau">Retrouve tes cours, TD et examens selon ta classe.</p>
+            <h2 class="titre-choix-niveau" id="titreChoixNiveau">Choisis ta classe</h2>
+            <p class="soustitre-choix-niveau">Retrouve tes cours, TD, examens et ton emploi du temps selon ta classe.</p>
 
             <div class="cartes-niveau">
                 <article class="carte-niveau" data-niveau="L1">
                     <span class="badge-dernier-choix" hidden><i class="fa-solid fa-clock-rotate-left"></i>Ton dernier choix</span>
                     <div class="icone-niveau"><i class="fa-solid fa-book-open"></i></div>
                     <h3>L1 Génie Logiciel</h3>
-                    <p>Algorithmique, Langage C, Base de Données, Systèmes d'Exploitation et Technologies Web : cours, TD et quiz pour progresser à ton rythme.</p>
+                    <div class="contenu-niveau">
+                        <p>Les matières fondamentales du cursus, avec cours magistraux, TD et projets. Crée un compte
+                            gratuitement : la première ressource de chaque matière est accessible tout de suite, et la
+                            suivante se débloque en réussissant un court quiz (70 % minimum).</p>
+                        <ul class="liens-matieres-l1" aria-label="Matières de la L1">
+                            <li><a href="langageC.html">Langage C</a></li>
+                            <li><a href="systemedExploitation.html">Systèmes d’Exploitation</a></li>
+                            <li><a href="technologieWeb.html">Technologies Web</a></li>
+                            <li><a href="basedeDonnees.html">Base de Données</a></li>
+                            <li><a href="algo.html">Algorithmique</a></li>
+                        </ul>
+                    </div>
                     <button type="button" id="boutonNiveauL1" class="bouton-accent bouton-niveau">Voir les matières L1</button>
                 </article>
 
@@ -164,46 +209,19 @@
                     <span class="badge-dernier-choix" hidden><i class="fa-solid fa-clock-rotate-left"></i>Ton dernier choix</span>
                     <div class="icone-niveau"><i class="fa-solid fa-graduation-cap"></i></div>
                     <h3>L2 Génie Logiciel</h3>
-                    <p>Espace réservé aux camarades de la classe 2026/2027 : cours, TD, examens et liens partagés par ton responsable de classe.</p>
+                    <div class="contenu-niveau">
+                        <p>L'espace privé de la classe 2026/2027, réservé à ses membres (l'accès est validé par
+                            l'administrateur) :</p>
+                        <ul class="fonctions-l2">
+                            <li><i class="fa-solid fa-folder-open"></i><span><strong>Ressources</strong> : cours, TD, examens et vidéos, classés par matière</span></li>
+                            <li><i class="fa-solid fa-calendar-days"></i><span><strong>Emploi du temps</strong> : mis à jour en direct, avec les cours déplacés ou annulés</span></li>
+                            <li><i class="fa-solid fa-comments"></i><span><strong>Discussion</strong> : messages écrits et vocaux entre camarades</span></li>
+                        </ul>
+                    </div>
                     <a href="acces-l2.html" id="lienNiveauL2" class="bouton-accent bouton-niveau">Accéder à l'espace L2</a>
                 </article>
             </div>
         </section>
-
-        <!-- CONTENU SPÉCIFIQUE À CHAQUE PAGE -->
-        <div class="hero">
-            <h2 class="BGLHUB">Bienvenue sur GL HUB</h2>
-            <p>GL HUB est une initiative créée par un étudiant en Génie Logiciel, pour les étudiants.
-                Face à la dispersion des supports de cours et au manque de centralisation des ressources pédagogiques,
-                GL HUB propose un espace unique regroupant les matières fondamentales du cursus :</p>
-            <p><a class="hero2" href="langageC.html">Langage C</a> | <a class="hero2"
-                    href="systemedExploitation.html">Systèmes d’Exploitation</a> | <a class="hero2"
-                    href="technologieWeb.html">Technologies Web</a> | <a class="hero2" href="basedeDonnees.html">Base de
-                    Données</a> | <a class="hero2" href="algo.html">Algorithmique</a></p>
-            <p>Chaque section offre un accès facile aux cours magistraux, travaux dirigés et projets académiques, tous
-                organisés de manière claire et accessible.</p>
-            <p>Crée un compte gratuitement : la première ressource de chaque matière est accessible tout de suite.
-                Pour débloquer la suivante, il te suffit de réussir un court quiz (70 % minimum) sur ce que tu viens de lire.
-                Pas de paiement, pas d'abonnement : tu avances à ton rythme, comme en classe.
-                GL HUB ambitionne de devenir un point de référence pour la communauté des étudiants en Génie Logiciel,
-                en encourageant le partage, la collaboration et l’excellence.
-            </p>
-
-            <div class="welcome-grid">
-                <div class="stat-card">
-                    <span class="stat-number">5</span>
-                    Matières
-                </div>
-                <div class="stat-card">
-                    <span class="stat-number">57</span>
-                    Fichiers
-                </div>
-                <div class="stat-card">
-                    <span class="stat-number">70 %</span>
-                    Au quiz pour avancer
-                </div>
-            </div>
-        </div>
 
     </main>
 
@@ -214,7 +232,7 @@
 <script src="supabaseClient.js"></script>
 <script src="theme.js"></script>
 <script src="auth.js"></script>
-<script src="classes-nav.js"></script>
+    <script src="classes-nav.js"></script>
 <script src="niveau.js"></script>
 </body>
 </html>

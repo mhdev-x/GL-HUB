@@ -476,3 +476,97 @@ footer p {
     font-size: 0.95rem;
     color: var(--color-accent-text);
 }
+
+
+/* ==========================================================================
+   ACCUEIL : Bienvenue (deux classes) et contenu des cartes L1 / L2
+   ========================================================================== */
+.hero strong {
+    font-weight: 800;
+}
+
+/* Quatre statistiques au lieu de trois */
+.welcome-grid {
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+}
+
+.contenu-niveau {
+    flex-grow: 1;
+}
+
+.contenu-niveau p {
+    flex-grow: 0;
+    margin-bottom: 14px;
+}
+
+.liens-matieres-l1 {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0 0 20px;
+    padding: 0;
+    list-style: none;
+}
+
+/* La règle globale "a" de cette page met les liens en grand : on la neutralise pour ces puces */
+.carte-niveau .liens-matieres-l1 a {
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-decoration: none;
+    color: var(--color-accent);
+    background-color: var(--color-nav-link-active-bg);
+    border: 1px solid transparent;
+    border-radius: 999px;
+}
+
+.carte-niveau .liens-matieres-l1 a:hover,
+.carte-niveau .liens-matieres-l1 a:focus-visible {
+    border-color: var(--color-accent);
+}
+
+.fonctions-l2 {
+    display: grid;
+    gap: 10px;
+    margin: 0 0 20px;
+    padding: 0;
+    list-style: none;
+}
+
+.fonctions-l2 li {
+    display: flex;
+    gap: 10px;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    color: var(--color-text-secondary);
+}
+
+.fonctions-l2 i {
+    flex-shrink: 0;
+    width: 18px;
+    margin-top: 2px;
+    text-align: center;
+    color: var(--color-accent);
+}
+
+.fonctions-l2 strong {
+    color: var(--color-text-tertiary);
+}
+
+/* Sur téléphone, les quatre statistiques se rangent en 2 x 2 au lieu d'une longue colonne */
+@media (max-width: 600px) {
+    .hero .welcome-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .hero .welcome-grid .stat-card {
+        padding: 18px 10px;
+        font-size: 0.85rem;
+    }
+
+    .hero .welcome-grid .stat-number {
+        font-size: 1.9rem;
+    }
+}
