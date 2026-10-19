@@ -65,7 +65,8 @@ document.addEventListener("DOMContentLoaded", () => {
         plusAnciensDisponibles: false,
         canal: null,
         minuteurRafraichissement: null,
-        urlsVocaux: new Map()      // chemin du fichier -> { url, expire } : adresses d'écoute préparées à l'avance
+        urlsVocaux: new Map(),     // chemin du fichier -> { url, expire } : adresses d'écoute préparées à l'avance
+        elements: new Map()        // id du message -> élément affiché (réutilisé quand la liste est redessinée)
     };
 
     let lecteurActif = null;           // un seul vocal joue à la fois
@@ -250,6 +251,21 @@ document.addEventListener("DOMContentLoaded", () => {
         let audio = null;
         let urlDuLecteur = null;
 
+        // Coupe le son et libère le fichier : appelé quand le message est supprimé
+        conteneur.arreterLecture = () => {
+            if (audio) {
+                audio.pause();
+                audio.removeAttribute("src");
+                audio.load();
+                if (lecteurActif === audio) lecteurActif = null;
+                audio = null;
+                urlDuLecteur = null;
+            }
+            progression.style.width = "0";
+            duree.textContent = formaterDuree(message.duree_secondes);
+            majBouton(false);
+        };
+
         let creerAudio = (url) => {
             let lecteur = new Audio();
             lecteur.preload = "auto";
@@ -266,6 +282,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 majBouton(false);
             });
             lecteur.addEventListener("error", () => {
+                if (!lecteur.getAttribute("src")) return;   // arrêt volontaire (message supprimé) : pas d'erreur à afficher
                 let code = lecteur.error ? lecteur.error.code : 0;
                 console.error("Lecteur de vocal, code", code);
                 afficherErreurChat(code === 4
@@ -344,6 +361,9 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     let creerElementMessage = (message) => {
+        // Même message : même élément (un vocal en cours de lecture ne perd pas son lecteur)
+        if (etat.elements.has(message.id)) return etat.elements.get(message.id);
+
         let estPropre = message.auteur_id === etat.utilisateur.id;
 
         let conteneur = document.createElement("article");
@@ -360,7 +380,9 @@ document.addEventListener("DOMContentLoaded", () => {
         let bulle = document.createElement("div");
         bulle.className = "chat-bulle";
         if (message.type === "vocal") {
-            bulle.appendChild(creerLecteurVocal(message));
+            let lecteurVocal = creerLecteurVocal(message);
+            conteneur.arreterLecture = lecteurVocal.arreterLecture;
+            bulle.appendChild(lecteurVocal);
         } else {
             let texte = document.createElement("p");
             texte.className = "chat-texte";
@@ -386,7 +408,14 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         conteneur.appendChild(infos);
 
+        etat.elements.set(message.id, conteneur);
         return conteneur;
+    };
+
+    // Coupe le son d'un vocal (s'il joue) : à appeler dès qu'un message est supprimé
+    let arreterLectureDuMessage = (idMessage) => {
+        let element = etat.elements.get(idMessage);
+        if (element && element.arreterLecture) element.arreterLecture();
     };
 
     // Reconstruit toute la liste (chargement initial, messages plus anciens, suppression)
@@ -432,6 +461,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let retirerMessage = (idMessage) => {
         if (!etat.ids.has(idMessage)) return;
+        arreterLectureDuMessage(idMessage);
+        etat.elements.delete(idMessage);
         etat.ids.delete(idMessage);
         etat.messages = etat.messages.filter(m => m.id !== idMessage);
         rendreListeComplete();
@@ -508,6 +539,23 @@ document.addEventListener("DOMContentLoaded", () => {
         (data || []).forEach(m => ajouterMessage(m, false));
     };
 
+    // Secours si le temps réel est coupé : un message supprimé ailleurs (modération) disparaît ici aussi
+    let synchroniserSuppressions = async () => {
+        if (!etat.classe || etat.messages.length === 0) return;
+        let plusAncien = etat.messages[0].cree_le;
+        let { data, error } = await supabaseClient
+            .from("messages_l2")
+            .select("id")
+            .eq("classe_id", etat.classe.id)
+            .gte("cree_le", plusAncien)
+            .limit(500);
+        if (error || !data || data.length >= 500) return;   // trop de résultats : on ne conclut rien
+        let presents = new Set(data.map(m => m.id));
+        etat.messages
+            .filter(m => !presents.has(m.id))
+            .forEach(m => retirerMessage(m.id));
+    };
+
     // ---------- Temps réel ----------
     let arreterTempsReel = () => {
         clearInterval(etat.minuteurRafraichissement);
@@ -534,13 +582,17 @@ document.addEventListener("DOMContentLoaded", () => {
         etat.minuteurRafraichissement = setInterval(() => {
             if (!document.hidden) {
                 chargerNouveaux();
+                synchroniserSuppressions();
                 preparerUrlsVocaux(etat.messages);   // renouvelle les adresses bientôt expirées
             }
         }, INTERVALLE_RAFRAICHISSEMENT);
     };
 
     document.addEventListener("visibilitychange", () => {
-        if (!document.hidden) chargerNouveaux();
+        if (!document.hidden) {
+            chargerNouveaux();
+            synchroniserSuppressions();
+        }
     });
 
     // ---------- Supprimer un message ----------
@@ -550,6 +602,7 @@ document.addEventListener("DOMContentLoaded", () => {
             ? "Supprimer ton message ?"
             : `Supprimer le message de ${message.auteur_nom || "cet étudiant"} ? Cette action est définitive.`;
         if (!confirm(question)) return;
+        arreterLectureDuMessage(message.id);   // le son s'arrête tout de suite, sans attendre le serveur
         try {
             if (message.type === "vocal" && message.chemin_audio) {
                 let { error: erreurFichier } = await supabaseClient.storage.from(BUCKET_CHAT).remove([message.chemin_audio]);
@@ -869,6 +922,7 @@ document.addEventListener("DOMContentLoaded", () => {
         montrerVue("chargement");
         arreterTempsReel();
         etat.urlsVocaux.clear();
+        etat.elements.clear();
         if (lecteurActif) {
             lecteurActif.pause();
             lecteurActif = null;
