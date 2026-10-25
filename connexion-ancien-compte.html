@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabaseClient.js"></script>
+    <meta charset="UTF-8">
+    <meta name="robots" content="noindex">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="STYLES/acces-l2.css">
+    <link rel="stylesheet" href="STYLES/theme.css">
+    <link rel="stylesheet" href="STYLES/auth.css">
+    <link rel="icon" type="image/png" href="MEDIAS/LOGO-GL-HUB.png">    
+    <title>GL HUB - Ancien compte</title>
+    <link rel="stylesheet" href="STYLES/classes-nav.css">
+</head>
+<body>
+
+    <!-- ===================== BARRE DE NAVIGATION ===================== -->
+    <nav>
+        <div class="nav-interieur">
+            <!-- 1. Bouton Menu Mobile (Placé à gauche) -->
+            <button id="boutonMenuMobile" class="bouton-menu-mobile" aria-label="Menu">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+
+            <!-- 2. Logo de la barre (Centre sur mobile) -->
+            <a href="index.html" class="nav-logo">
+                <i class="fa-solid fa-user-graduate"></i>GL HUB
+            </a>
+
+            <!-- 3. Menu complet (Desktop) -->
+            <ul class="menu">
+                <li><a href="index.html"><i class="fa-solid fa-house fa-bounce" style="color: rgb(4, 51, 131);"></i>Accueil</a></li>
+                <li><a href="contact.html"><i class="fa-solid fa-envelope fa-bounce" style="color: rgb(4, 51, 131);"></i>Contact</a></li>
+                <li class="menu-classes">
+                    <div id="declencheurClasses" class="menu-classes-declencheur lien-menu-bouton" role="button" tabindex="0" aria-haspopup="true" aria-expanded="false" aria-controls="sousMenuClasses"><i class="fa-solid fa-people-group fa-bounce" style="color: rgb(4, 51, 131);"></i>Classes<i class="fa-solid fa-chevron-down icone-chevron"></i></div>
+                    <ul id="sousMenuClasses" class="sous-menu-classes" hidden>
+                        <li><button type="button" id="choixL1"><i class="fa-solid fa-book-open"></i>L1 Génie Logiciel</button></li>
+                        <li><a href="acces-l2.html" id="choixL2"><i class="fa-solid fa-graduation-cap"></i>L2 Génie Logiciel</a></li>
+                    </ul>
+                </li>
+                <li hidden><button id="boutonMatieres" class="lien-menu-bouton"><i class="fa-solid fa-bars"></i>Matières</button></li>
+                <li id="zoneAuthNav"><button id="boutonAuth" class="lien-menu-bouton"><i class="fa-solid fa-user"></i>Se connecter</button></li>
+                <li class="item-recherche">
+                    <form class="barre-recherche" role="search" autocomplete="off" onsubmit="return false;">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" name="q" id="rechercheCours" placeholder="Rechercher un cours..." autocomplete="off">
+                    </form>
+                    <div id="resultatsRecherche" class="resultats-recherche"></div>
+                </li>
+            </ul>
+
+            <!-- 4. Bouton Thème (Intégré à droite) -->
+            <button id="themeToggle" class="theme-toggle" aria-label="Changer de thème">
+                <i class="fa-solid fa-moon"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- ===================== HEADER SITE (Bandeau unifié 21:9) ===================== -->
+    <header class="site-header">
+        <div class="hero-overlay-texte">
+            <div class="logo-text-hero">GL HUB</div>
+            <p class="slogan-hero">
+                <span>Un Hub</span>
+                <span>Une Communauté</span>
+                <span>Une Progression</span>
+            </p>
+        </div>
+    </header>
+
+    <!-- ===================== PANNEAU BURGER : MATIÈRES ===================== -->
+    <div id="voileMatieres" class="voile"></div>
+    <aside id="panneauMatieres" class="panneau-lateral">
+        <div class="panneau-entete">
+            <h3><i class="fa-solid fa-book"></i>Espace Matières</h3>
+            <button id="fermerPanneauMatieres" class="bouton-fermer" aria-label="Fermer"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div id="matieresVerrouillees" class="panneau-message">
+            <i class="fa-solid fa-lock fa-2x"></i>
+            <p>Connecte-toi pour accéder aux cours, TD et examens de chaque matière.</p>
+            <button id="boutonConnexionDepuisPanneau" class="bouton-accent">Se connecter</button>
+        </div>
+        <ul id="listeMatieres" class="liste-matieres" style="display: none;">
+            <li><a href="langageC.html"><i class="fa-solid fa-bug" style="color: rgb(4, 51, 131);"></i>Langage C</a></li>
+            <li><a href="systemedExploitation.html"><i class="fa-brands fa-windows" style="color: rgb(6, 58, 147);"></i>Système d'Exploitation</a></li>
+            <li><a href="technologieWeb.html"><i class="fa-solid fa-laptop-code" style="color: rgb(6, 58, 147);"></i>Technologie Web</a></li>
+            <li><a href="basedeDonnees.html"><i class="fa-solid fa-database" style="color: rgb(6, 78, 146);"></i>Base de Données</a></li>
+            <li><a href="algo.html"><i class="fa-solid fa-brain" style="color: rgb(4, 51, 131);"></i>Algorithme</a></li>
+        </ul>
+    </aside>
+
+    <!-- ===================== MODALE : CONNEXION / INSCRIPTION ===================== -->
+    <div id="voileAuth" class="voile"></div>
+    <div id="modaleAuth" class="modale">
+            <!-- Contenu construit par auth.js : un seul bouton, "Continuer avec Google" -->
+        </div>
+
+    <!-- ===================== CONTENU PRINCIPAL ===================== -->
+    <main class="container">
+
+        <h2 class="section-title titre-acces-l2"><i class="fa-solid fa-key" style="color: rgb(4, 51, 131);"></i>Ancien compte GL HUB</h2>
+
+        <section class="card carte-acces-l2">
+            <div class="card-icon"><i class="fa-solid fa-link"></i></div>
+            <h4>Tu avais un compte avec une adresse @gl.com ?</h4>
+            <p>GL HUB se connecte désormais <strong>uniquement avec Google</strong>. Pour garder ta progression et tes accès,
+                connecte-toi ici une dernière fois avec ton ancienne adresse et ton mot de passe, puis lie ton compte Google
+                depuis ta page <strong>Profil</strong>. Ensuite, tu utiliseras toujours le bouton « Continuer avec Google ».</p>
+
+            <p id="messageDejaConnecte" class="bandeau-info-ancien" hidden></p>
+
+            <form id="formAncienCompte" class="formulaire-auth" novalidate>
+                <label for="champEmailAncien">Adresse e-mail</label>
+                <input type="email" id="champEmailAncien" autocomplete="username" placeholder="prenom.nom@gl.com" required>
+                <label for="champMdpAncien">Mot de passe</label>
+                <input type="password" id="champMdpAncien" autocomplete="current-password" required>
+                <p id="erreurAncienCompte" class="message-erreur" role="alert"></p>
+                <button type="submit" id="boutonAncienCompte" class="bouton-accent bouton-pleine-largeur">Me connecter</button>
+            </form>
+
+            <p class="aide-champ">Mot de passe oublié ? Contacte l'administrateur : il t'aidera à retrouver ton accès.</p>
+        </section>
+
+    </main>
+
+    <!-- ===================== PIED DE PAGE ===================== -->
+    <footer>
+        <p>&copy; 2026 - GL HUB | Département Informatique</p>
+    </footer>
+
+    <script src="theme.js"></script>
+    <script src="auth.js"></script>
+    <script src="classes-nav.js"></script>
+    <script src="connexion-ancien-compte.js"></script>
+</body>
+</html>

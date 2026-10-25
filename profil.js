@@ -36,7 +36,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             texteStatutGoogle.append(icone, " Ton compte Google est lié : tu peux te connecter avec le bouton Google.");
             boutonLierGoogle.style.display = "none";
         } else {
-            texteStatutGoogle.textContent = "Lie ton compte Google pour pouvoir te connecter avec, sans retaper ton mot de passe.";
+            texteStatutGoogle.textContent = "GL HUB se connecte désormais uniquement avec Google. Lie ton compte Google à ce compte : tu garderas toute ta progression et tes accès.";
             boutonLierGoogle.style.display = "";
         }
     };

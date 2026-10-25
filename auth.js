@@ -17,10 +17,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }, 4000);
     };
 
-    // On note tout de suite si l'URL indique une confirmation d'email qui vient
-    // d'avoir lieu (avant que Supabase ne nettoie l'URL automatiquement)
-    let vientDeConfirmerSonEmail = window.location.hash.includes("type=signup");
-    let vientDeReinitialiserSonMdp = window.location.hash.includes("type=recovery");
 
     // Nom à afficher : celui saisi à l'inscription, sinon celui fourni par Google
     let nomDe = (utilisateur) => {
@@ -41,7 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (code === "access_denied") {
             message = "Connexion Google annulée.";
         } else if (description && description.includes("Database error saving new user")) {
-            message = "Impossible de créer ton compte avec cette adresse Google : un compte GL HUB existe peut-être déjà avec cette adresse. Connecte-toi avec ton adresse institutionnelle (@gl.com), ou contacte l'administrateur.";
+            message = "Impossible de créer ton compte avec cette adresse Google : un compte GL HUB existe peut-être déjà avec cette adresse. Contacte l'administrateur pour qu'il t'aide à retrouver ton accès.";
         } else if (description && description.includes("Identity is already linked")) {
             message = "Ce compte Google est déjà lié à un autre compte GL HUB.";
         } else {
@@ -99,17 +95,11 @@ document.addEventListener("DOMContentLoaded", () => {
     let boutonConnexionDepuisPanneau = document.querySelector("#boutonConnexionDepuisPanneau");
     let voileAuth = document.querySelector("#voileAuth");
     let modaleAuth = document.querySelector("#modaleAuth");
-    let fermerModaleAuth = document.querySelector("#fermerModaleAuth");
+    let fermerModaleAuth = null;      // creees par construireModaleAuth()
+    let boutonGoogleAuth = null;
+    let erreurGoogleAuth = null;
 
-    let ongletConnexion = document.querySelector("#ongletConnexion");
-    let ongletInscription = document.querySelector("#ongletInscription");
-    let formConnexion = document.querySelector("#formConnexion");
-    let formInscription = document.querySelector("#formInscription");
 
-    let boutonValiderConnexion = document.querySelector("#boutonValiderConnexion");
-    let boutonValiderInscription = document.querySelector("#boutonValiderInscription");
-    let erreurConnexion = document.querySelector("#erreurConnexion");
-    let erreurInscription = document.querySelector("#erreurInscription");
 
     // ===== Éléments du panneau Matières =====
     let boutonMatieres = document.querySelector("#boutonMatieres");
@@ -142,7 +132,6 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     attacherBoutonAuth();
-    if (fermerModaleAuth) fermerModaleAuth.addEventListener("click", fermerLaModaleAuth);
     if (voileAuth) voileAuth.addEventListener("click", fermerLaModaleAuth);
 
     if (boutonConnexionDepuisPanneau) {
@@ -151,111 +140,6 @@ document.addEventListener("DOMContentLoaded", () => {
             ouvrirModaleAuth();
         });
     }
-
-    // ---------- Basculer entre onglet Connexion / Inscription ----------
-    let afficherConnexion = () => {
-        ongletConnexion.classList.add("actif");
-        ongletInscription.classList.remove("actif");
-        formConnexion.style.display = "flex";
-        formInscription.style.display = "none";
-    };
-
-    let afficherInscription = () => {
-        ongletInscription.classList.add("actif");
-        ongletConnexion.classList.remove("actif");
-        formInscription.style.display = "flex";
-        formConnexion.style.display = "none";
-    };
-
-    if (ongletConnexion) ongletConnexion.addEventListener("click", afficherConnexion);
-    if (ongletInscription) ongletInscription.addEventListener("click", afficherInscription);
-
-    // ---------- Mot de passe oublié ----------
-    let lienMotDePasseOublie = document.querySelector("#lienMotDePasseOublie");
-    if (lienMotDePasseOublie) {
-        lienMotDePasseOublie.addEventListener("click", (e) => {
-            e.preventDefault();
-            erreurConnexion.innerHTML = "";
-            let message = document.createElement("span");
-            message.textContent = "Une adresse @gl.com ne peut pas recevoir d'email. Contacte l'administrateur sur WhatsApp avec ton nom complet pour réinitialiser ton mot de passe : ";
-            let lienWhatsapp = document.createElement("a");
-            lienWhatsapp.href = "https://wa.me/221771216386";
-            lienWhatsapp.target = "_blank";
-            lienWhatsapp.textContent = "Ouvrir WhatsApp";
-            lienWhatsapp.style.color = "var(--color-accent)";
-            lienWhatsapp.style.fontWeight = "700";
-            erreurConnexion.append(message, lienWhatsapp);
-        });
-    }
-
-    // ---------- Traiter le retour après clic sur le lien de réinitialisation ----------
-    if (vientDeReinitialiserSonMdp) {
-        let voile = document.createElement("div");
-        voile.className = "voile visible";
-
-        let modale = document.createElement("div");
-        modale.className = "modale visible";
-        modale.innerHTML = `
-            <h3 style="margin-bottom:20px;color:var(--color-text);"><i class="fa-solid fa-key"></i> Choisis un nouveau mot de passe</h3>
-            <div class="formulaire-auth">
-                <label for="nouveauMdpRecuperation">Nouveau mot de passe</label>
-                <input type="password" id="nouveauMdpRecuperation" placeholder="6 caractères minimum">
-                <p id="erreurRecuperation" class="message-erreur"></p>
-                <button id="boutonValiderRecuperation" class="bouton-accent bouton-pleine-largeur">Valider le nouveau mot de passe</button>
-            </div>
-        `;
-
-        document.body.appendChild(voile);
-        document.body.appendChild(modale);
-
-        modale.querySelector("#boutonValiderRecuperation").addEventListener("click", async (e) => {
-            let nouveauMdp = modale.querySelector("#nouveauMdpRecuperation").value.trim();
-            let erreurRecup = modale.querySelector("#erreurRecuperation");
-
-            if (nouveauMdp.length < 6) {
-                erreurRecup.textContent = "Le mot de passe doit contenir au moins 6 caractères.";
-                return;
-            }
-
-            e.target.disabled = true;
-            e.target.textContent = "Validation...";
-
-            let { error } = await supabaseClient.auth.updateUser({ password: nouveauMdp });
-
-            if (error) {
-                erreurRecup.textContent = "Une erreur est survenue. Réessaie.";
-                e.target.disabled = false;
-                e.target.textContent = "Valider le nouveau mot de passe";
-                return;
-            }
-
-            voile.remove();
-            modale.remove();
-            window.history.replaceState({}, document.title, window.location.pathname);
-            afficherToast("Mot de passe changé avec succès !");
-        });
-    }
-
-    // ---------- Valider avec la touche Entrée ----------
-    // Sur les champs du formulaire de connexion → déclenche le bouton de connexion
-    formConnexion.querySelectorAll("input").forEach(champ => {
-        champ.addEventListener("keydown", (evenement) => {
-            if (evenement.key === "Enter") {
-                evenement.preventDefault();
-                boutonValiderConnexion.click();
-            }
-        });
-    });
-
-    // Sur les champs du formulaire d'inscription → déclenche le bouton d'inscription
-    formInscription.querySelectorAll("input").forEach(champ => {
-        champ.addEventListener("keydown", (evenement) => {
-            if (evenement.key === "Enter") {
-                evenement.preventDefault();
-                boutonValiderInscription.click();
-            }
-        });
-    });
 
     // ---------- Ouvrir / fermer le panneau Matières ----------
     let ouvrirLePanneauMatieres = () => {
@@ -377,13 +261,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // ---------- Message de bienvenue après confirmation d'email ----------
         // On ne l'affiche qu'une seule fois, juste après le clic sur le lien reçu par mail
-        if (vientDeConfirmerSonEmail) {
-            vientDeConfirmerSonEmail = false; // évite de le réafficher si la fonction est rappelée
-            let nomBienvenue = nomDe(utilisateur);
-            afficherToast(`Email confirmé ! Bienvenue sur GL HUB${nomBienvenue ? ", " + nomBienvenue : ""}.`);
-            // On nettoie l'adresse au cas où Supabase ne l'aurait pas déjà fait
-            window.history.replaceState({}, document.title, window.location.pathname);
-        }
 
         // ---------- Signaler sa présence en temps réel (pour l'admin) ----------
         // Un seul canal de présence pour tout le site : quiconque le rejoint apparaît
@@ -454,156 +331,17 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // ---------- Traduire une erreur Supabase en message compréhensible ----------
-    // Le détail technique part toujours dans la console (F12) pour le débogage,
-    // sans jamais perturber l'étudiant avec du jargon.
-    let traduireErreurAuth = (error, contexte) => {
-        console.error(`Erreur Supabase (${contexte}) :`, error);
-
-        let message = error.message || "";
-
-        if (message.includes("already registered") || message.includes("already been registered")) {
-            return "Cet email est déjà utilisé.";
-        }
-        if (message.includes("Invalid login credentials")) {
-            return "Email ou mot de passe incorrect.";
-        }
-        if (message.includes("Email not confirmed")) {
-            return "Confirme ton email avant de te connecter (vérifie ta boîte mail).";
-        }
-        if (message.includes("For security purposes") || message.includes("rate limit")) {
-            return "Trop de tentatives. Réessaie dans quelques minutes.";
-        }
-        if (message.includes("Password should be at least")) {
-            return "Le mot de passe doit contenir au moins 6 caractères.";
-        }
-        if (message.includes("Failed to fetch") || message.includes("NetworkError")) {
-            return "Problème de connexion internet. Vérifie ta connexion et réessaie.";
-        }
-
-        return "Une erreur est survenue. Contacte-nous sur WhatsApp si ça persiste.";
-    };
-
-    // ---------- Connexion ----------
-    boutonValiderConnexion.addEventListener("click", async () => {
-        let email = document.querySelector("#emailConnexion").value.trim();
-        let motDePasse = document.querySelector("#motDePasseConnexion").value.trim();
-
-        if (!email || !motDePasse) {
-            erreurConnexion.textContent = "Merci de remplir tous les champs.";
-            return;
-        }
-
-        erreurConnexion.textContent = "Connexion en cours...";
-        boutonValiderConnexion.disabled = true;
-
-        let { data, error } = await supabaseClient.auth.signInWithPassword({
-            email: email,
-            password: motDePasse
-        });
-
-        boutonValiderConnexion.disabled = false;
-
-        if (error) {
-            erreurConnexion.textContent = traduireErreurAuth(error, "connexion");
-            return;
-        }
-
-        erreurConnexion.textContent = "";
-        fermerLaModaleAuth();
-        afficherEtatConnecte(data.user);
-
-        // Si c'est un compte admin, on le redirige directement vers l'interface admin
-        // (uniquement au moment de la connexion, pas à chaque page visitée ensuite)
-        let { data: adminConnecte } = await supabaseClient
-            .from("admins")
-            .select("user_id")
-            .eq("user_id", data.user.id)
-            .maybeSingle();
-
-        if (adminConnecte && !window.location.pathname.endsWith("admin.html")) {
-            window.location.href = "admin.html";
-        }
-    });
-
-    // ---------- Inscription ----------
-    boutonValiderInscription.addEventListener("click", async () => {
-        let prenom = document.querySelector("#prenomInscription").value.trim();
-        let nomFamille = document.querySelector("#nomInscription").value.trim();
-        let dateNaissance = document.querySelector("#dateNaissanceInscription").value;
-        let email = document.querySelector("#emailInscription").value.trim();
-        let motDePasse = document.querySelector("#motDePasseInscription").value.trim();
-
-        if (!prenom || !nomFamille || !dateNaissance || !email || !motDePasse) {
-            erreurInscription.textContent = "Merci de remplir tous les champs.";
-            return;
-        }
-
-        if (motDePasse.length < 6) {
-            erreurInscription.textContent = "Le mot de passe doit contenir au moins 6 caractères.";
-            return;
-        }
-
-        erreurInscription.textContent = "Vérification de l'email...";
-        boutonValiderInscription.disabled = true;
-
-        let { data: verification } = await supabaseClient.functions.invoke("verifier-email-disponible", {
-            body: { email: email }
-        });
-
-        if (verification && verification.disponible === false) {
-            erreurInscription.textContent = "Cet email a déjà été utilisé pour créer un compte. Connecte-toi avec ton adresse institutionnelle (@gl.com), ou contacte l'administrateur si tu l'as oubliée.";
-            boutonValiderInscription.disabled = false;
-            return;
-        }
-
-        erreurInscription.textContent = "Création du compte...";
-
-        let { data, error } = await supabaseClient.auth.signUp({
-            email: email,
-            password: motDePasse,
-            options: {
-                data: {
-                    prenom: prenom,
-                    nom_famille: nomFamille,
-                    nom: `${prenom} ${nomFamille}`, // nom complet composé, utilisé pour l'affichage
-                    date_naissance: dateNaissance
-                },
-                // On force explicitement la bonne adresse de redirection ici,
-                // plutôt que de dépendre uniquement du réglage "Site URL" sur
-                // le dashboard Supabase — ça garantit que le lien de
-                // confirmation pointe toujours vers la bonne page, peu importe
-                // depuis quelle page du site l'étudiant s'est inscrit.
-                emailRedirectTo: window.location.origin + window.location.pathname
-            }
-        });
-
-        boutonValiderInscription.disabled = false;
-
-        if (error) {
-            erreurInscription.textContent = traduireErreurAuth(error, "inscription");
-            return;
-        }
-
-        erreurInscription.textContent = "";
-
-        // Si la confirmation par email est activée dans Supabase, il n'y a pas encore de session
-        if (data.session) {
-            fermerLaModaleAuth();
-            afficherEtatConnecte(data.user);
-        } else {
-            erreurInscription.textContent = "Compte créé ! Vérifie ta boîte mail pour confirmer.";
-        }
-    });
-
-    // ---------- Connexion / inscription avec Google ----------
-    // (le compte est créé automatiquement à la première connexion)
-    let connecterAvecGoogle = async (bouton) => {
-        let contenuOriginal = Array.from(bouton.childNodes);
-        bouton.disabled = true;
+    // ---------- Connexion avec Google (la seule façon de se connecter) ----------
+    // Le compte est créé automatiquement à la première connexion : plus de formulaire d'inscription,
+    // plus de mot de passe, plus d'adresse institutionnelle à générer.
+    let connecterAvecGoogle = async () => {
+        if (!boutonGoogleAuth) return;
+        let contenuOriginal = Array.from(boutonGoogleAuth.childNodes);
+        erreurGoogleAuth.textContent = "";
+        boutonGoogleAuth.disabled = true;
         let icone = document.createElement("i");
         icone.className = "fa-solid fa-spinner fa-spin";
-        bouton.replaceChildren(icone, "Redirection vers Google...");
+        boutonGoogleAuth.replaceChildren(icone, "Redirection vers Google...");
 
         let { error } = await supabaseClient.auth.signInWithOAuth({
             provider: "google",
@@ -617,99 +355,60 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (error) {
             console.error(error);
-            bouton.disabled = false;
-            bouton.replaceChildren(...contenuOriginal);
-            afficherToast("Connexion avec Google impossible pour le moment. Réessaie plus tard.", "fa-solid fa-triangle-exclamation");
+            boutonGoogleAuth.disabled = false;
+            boutonGoogleAuth.replaceChildren(...contenuOriginal);
+            erreurGoogleAuth.textContent = "Connexion avec Google impossible pour le moment. Réessaie dans un instant.";
         }
     };
 
-    // Le séparateur "ou" et le bouton Google sont ajoutés ici, sous les boutons "Se connecter" et
-    // "Créer mon compte" : aucune modification des pages HTML n'est nécessaire.
-    let ajouterBoutonGoogle = (boutonDeReference, id) => {
-        if (!boutonDeReference || document.getElementById(id)) return;
+    // ---------- Contenu de la fenêtre de connexion ----------
+    // Construit ici : même si une page HTML contient encore l'ancien formulaire (e-mail, mot de passe,
+    // inscription), il est remplacé par le seul bouton "Continuer avec Google".
+    let construireModaleAuth = () => {
+        if (!modaleAuth) return;
 
-        let separateur = document.createElement("div");
-        separateur.className = "separateur-auth";
-        let ou = document.createElement("span");
-        ou.textContent = "ou";
-        separateur.appendChild(ou);
+        let creer = (balise, classe, texte) => {
+            let element = document.createElement(balise);
+            if (classe) element.className = classe;
+            if (texte) element.textContent = texte;
+            return element;
+        };
 
-        let boutonGoogle = document.createElement("button");
-        boutonGoogle.type = "button";
-        boutonGoogle.className = "bouton-google";
-        boutonGoogle.id = id;
+        fermerModaleAuth = creer("button", "bouton-fermer");
+        fermerModaleAuth.id = "fermerModaleAuth";
+        fermerModaleAuth.type = "button";
+        fermerModaleAuth.setAttribute("aria-label", "Fermer");
+        let iconeFermer = document.createElement("i");
+        iconeFermer.className = "fa-solid fa-xmark";
+        fermerModaleAuth.appendChild(iconeFermer);
+
+        let titre = creer("h3", "titre-connexion", "Connecte-toi à GL HUB");
+        titre.id = "titreModaleAuth";
+        let introduction = creer("p", "texte-connexion",
+            "Un seul clic avec ton compte Google : pas de formulaire à remplir, pas de mot de passe à retenir.");
+
+        boutonGoogleAuth = creer("button", "bouton-google");
+        boutonGoogleAuth.id = "boutonGoogleConnexion";
+        boutonGoogleAuth.type = "button";
         let iconeGoogle = document.createElement("i");
         iconeGoogle.className = "fa-brands fa-google";
-        boutonGoogle.append(iconeGoogle, "Continuer avec Google");
-        boutonGoogle.addEventListener("click", () => connecterAvecGoogle(boutonGoogle));
+        boutonGoogleAuth.append(iconeGoogle, "Continuer avec Google");
+        boutonGoogleAuth.addEventListener("click", connecterAvecGoogle);
 
-        boutonDeReference.after(separateur, boutonGoogle);
+        erreurGoogleAuth = creer("p", "message-erreur");
+        erreurGoogleAuth.setAttribute("role", "alert");
+
+        let aideNavigateur = creer("p", "aide-connexion",
+            "Si Google refuse la connexion (par exemple depuis le navigateur intégré d'une application), ouvre GL HUB dans Chrome ou Safari.");
+        let aideDonnees = creer("p", "aide-connexion",
+            "GL HUB utilise seulement ton nom et ton adresse e-mail Google pour créer ton profil. Rien n'est publié sur ton compte.");
+
+        modaleAuth.replaceChildren(fermerModaleAuth, titre, introduction, boutonGoogleAuth, erreurGoogleAuth, aideNavigateur, aideDonnees);
+        modaleAuth.setAttribute("role", "dialog");
+        modaleAuth.setAttribute("aria-modal", "true");
+        modaleAuth.setAttribute("aria-labelledby", "titreModaleAuth");
     };
 
-    ajouterBoutonGoogle(boutonValiderConnexion, "boutonGoogleConnexion");
-    ajouterBoutonGoogle(boutonValiderInscription, "boutonGoogleInscription");
-
-    // ---------- Générer l'adresse institutionnelle après confirmation d'email ----------
-    let genererAdresseInstitutionnelleSiBesoin = async () => {
-        let { data } = await supabaseClient.functions.invoke("generer-email-institutionnel");
-
-        if (!data || !data.email_institutionnel || data.deja_genere) {
-            return; // déjà fait, ou échec silencieux (l'étudiant garde son email personnel en secours)
-        }
-
-        afficherModaleAdresseInstitutionnelle(data.email_institutionnel);
-    };
-
-    let afficherModaleAdresseInstitutionnelle = (adresse) => {
-        let voile = document.createElement("div");
-        voile.className = "voile visible";
-
-        let modale = document.createElement("div");
-        modale.className = "modale visible";
-        modale.innerHTML = `
-            <h3 style="margin-bottom:16px;color:var(--color-text);"><i class="fa-solid fa-graduation-cap"></i> Ton adresse institutionnelle</h3>
-            <p style="color:var(--color-text-secondary);margin-bottom:16px;">
-                Voici ton adresse GL HUB officielle, générée définitivement pour ton compte.
-            </p>
-            <p class="prix-a-payer" id="texteAdresseInstitutionnelle" style="font-size:1.3rem;word-break:break-all;">${adresse}</p>
-            <button class="bouton-accent bouton-pleine-largeur" id="boutonCopierAdresse" style="margin-bottom:10px;">
-                <i class="fa-solid fa-copy"></i> Copier l'adresse
-            </button>
-            <div style="background:#fff3cd;border:1px solid #ffe08a;border-radius:10px;padding:14px 16px;margin-bottom:18px;">
-                <p style="color:#7a5c00;font-weight:700;font-size:0.9rem;margin-bottom:4px;">
-                    <i class="fa-solid fa-triangle-exclamation"></i> Important — garde-la précieusement
-                </p>
-                <p style="color:#7a5c00;font-size:0.85rem;line-height:1.5;">
-                    C'est désormais ta SEULE adresse de connexion à GL HUB, avec le même mot de passe qu'à
-                    l'inscription. Ton email personnel ne fonctionnera plus. Cette adresse ne peut recevoir aucun
-                    email — si tu l'oublies, seul l'administrateur pourra te la redonner (contact WhatsApp).
-                </p>
-            </div>
-            <button class="bouton-accent bouton-pleine-largeur" id="boutonJaiNoteAdresse">J'ai bien noté et sauvegardé mon adresse</button>
-        `;
-
-        document.body.appendChild(voile);
-        document.body.appendChild(modale);
-
-        modale.querySelector("#boutonCopierAdresse").addEventListener("click", async (e) => {
-            try {
-                await navigator.clipboard.writeText(adresse);
-                let texteOriginal = e.target.innerHTML;
-                e.target.innerHTML = `<i class="fa-solid fa-check"></i> Copié !`;
-                setTimeout(() => { e.target.innerHTML = texteOriginal; }, 2000);
-            } catch (_) {
-                // Le presse-papier peut être indisponible sur certains navigateurs : pas grave,
-                // l'adresse reste visible et sélectionnable à la main.
-            }
-        });
-
-        modale.querySelector("#boutonJaiNoteAdresse").addEventListener("click", () => {
-            voile.remove();
-            modale.remove();
-        });
-    };
-
-    if (vientDeConfirmerSonEmail) {
-        genererAdresseInstitutionnelleSiBesoin();
-    }
+    construireModaleAuth();
+    if (fermerModaleAuth) fermerModaleAuth.addEventListener("click", fermerLaModaleAuth);
 });
