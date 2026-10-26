@@ -31,10 +31,6 @@
     let etatExecution = document.querySelector("#etatExecution");
     let compteurLignes = document.querySelector("#compteurLignes");
     let listeExemples = document.querySelector("#listeExemples");
-    let panneauEntrees = document.querySelector("#panneauEntrees");
-    let boutonEntrees = document.querySelector("#boutonEntrees");
-    let champEntrees = document.querySelector("#entrees");
-    let compteurEntrees = document.querySelector("#compteurEntrees");
     let boutonPas = document.querySelector("#boutonPas");
     let boutonContinuer = document.querySelector("#boutonContinuer");
     let boutonStop = document.querySelector("#boutonStop");
@@ -248,7 +244,6 @@ Fin`
     let enregistrerOngletCourant = () => {
         if (!onglets.length) return;
         onglets[ongletActif].code = lireCode();
-        if (champEntrees) onglets[ongletActif].entrees = champEntrees.value;
     };
 
     let rendreOnglets = () => {
@@ -290,9 +285,7 @@ Fin`
         let onglet = onglets[ongletActif];
         chargementOnglet = true;
         ecrireCode(onglet.code);
-        if (champEntrees) champEntrees.value = onglet.entrees;
         chargementOnglet = false;
-        mettreAJourCompteurEntrees();
         viderConsole();
         afficherVariables([]);
         arreterExecution();
@@ -343,32 +336,6 @@ Fin`
     };
 
     // ---------- Entrées du programme ----------
-    let lireEntrees = () => {
-        if (!champEntrees) return [];
-        return champEntrees.value
-            .split(/\r?\n/)
-            .map(ligne => ligne.trim())
-            .filter(ligne => ligne.length > 0);
-    };
-
-    let mettreAJourCompteurEntrees = () => {
-        if (!compteurEntrees) return;
-        let nombre = lireEntrees().length;
-        compteurEntrees.textContent = String(nombre);
-        compteurEntrees.hidden = nombre === 0;
-        if (boutonEntrees && panneauEntrees) {
-            boutonEntrees.setAttribute("aria-expanded", String(!panneauEntrees.hidden));
-        }
-    };
-
-    let basculerEntrees = (ouvrir) => {
-        if (!panneauEntrees) return;
-        let etat = typeof ouvrir === "boolean" ? ouvrir : panneauEntrees.hidden;
-        panneauEntrees.hidden = !etat;
-        if (boutonEntrees) boutonEntrees.setAttribute("aria-expanded", String(etat));
-        if (etat && champEntrees) champEntrees.focus();
-    };
-
     // ---------- Sauvegarde locale (le programme survit à un rafraîchissement) ----------
     let CLE_SAUVEGARDE = "glhub.compilateur.v1";
     let minuteurSauvegarde = null;
@@ -466,7 +433,6 @@ Fin`
     let chargerCodeInitial = () => {
         chargerOnglets();
         let onglet = onglets[ongletActif];
-        if (champEntrees) champEntrees.value = onglet.entrees || "";
         return onglet.code || EXEMPLES[0].code;
     };
 
@@ -541,7 +507,6 @@ Fin`
             });
         }
         mettreAJourCompteur();
-        mettreAJourCompteurEntrees();
         rendreOnglets();
     };
 
@@ -551,7 +516,6 @@ Fin`
         if (editeur) editeur.setValue(texte);
         else champCode.value = texte;
         mettreAJourCompteur();
-        mettreAJourCompteurEntrees();
         rendreOnglets();
     };
 
@@ -579,7 +543,7 @@ Fin`
 
         let { parse, Stepper } = await chargerMoteur();
         execution = new Stepper(parse(lireCode()), {
-            inputs: lireEntrees(),
+            inputs: [],
             interactif: true,
             historique: mode === "pas"
         });
@@ -800,10 +764,6 @@ Fin`
         let { formatError } = await chargerMoteur();
         arreterExecution();
         afficherErreurMoteur(erreur, formatError);
-        if (erreur && /plus de valeur à lire/i.test(erreur.message || "")) {
-            basculerEntrees(true);
-            ajouterLigne("→ Saisis les valeurs dans le panneau « Entrées », puis relance.", "ligne-conseil");
-        }
     };
 
     let pasAPas = async () => {
@@ -947,10 +907,6 @@ Fin`
     if (boutonNouvelOnglet) boutonNouvelOnglet.addEventListener("click", ajouterOnglet);
     if (boutonPrecedent) boutonPrecedent.addEventListener("click", allerPrecedent);
     if (boutonSuivant) boutonSuivant.addEventListener("click", allerSuivant);
-    if (boutonEntrees) boutonEntrees.addEventListener("click", () => basculerEntrees());
-    if (champEntrees) {
-        champEntrees.addEventListener("input", () => { mettreAJourCompteurEntrees(); sauvegarder(); });
-    }
     if (boutonEffacer) boutonEffacer.addEventListener("click", viderConsole);
 
     if (choixLangage) {
