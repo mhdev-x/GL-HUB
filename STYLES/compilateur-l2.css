@@ -449,3 +449,65 @@ li.CodeMirror-hint-active {
     text-align: center;
     font-variant-numeric: tabular-nums;
 }
+
+/* ---------- Onglets de programmes ---------- */
+.atelier-onglets {
+    display: flex;
+    align-items: stretch;
+    gap: 2px;
+    background: var(--atelier-fond-barre);
+    border-bottom: 1px solid var(--atelier-bordure);
+    overflow-x: auto;
+    scrollbar-width: thin;
+}
+
+.atelier-onglets-liste { display: flex; align-items: stretch; }
+
+.atelier-onglet {
+    display: flex;
+    align-items: center;
+    background: transparent;
+    border-right: 1px solid var(--atelier-bordure);
+}
+
+.atelier-onglet.actif {
+    background: var(--atelier-fond);
+    box-shadow: inset 0 -2px 0 var(--atelier-accent);
+}
+
+.onglet-nom {
+    background: none;
+    border: 0;
+    color: var(--atelier-texte-faible);
+    font: inherit;
+    font-size: 0.8rem;
+    padding: 8px 10px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.atelier-onglet.actif .onglet-nom { color: var(--atelier-texte); font-weight: 600; }
+.onglet-nom:hover { color: var(--atelier-texte); }
+
+.onglet-fermer {
+    background: none;
+    border: 0;
+    color: var(--atelier-texte-faible);
+    cursor: pointer;
+    padding: 2px 8px 2px 0;
+    font-size: 15px;
+    line-height: 1;
+}
+
+.onglet-fermer:hover { color: #ff8a80; }
+
+.atelier-onglet-ajout {
+    background: none;
+    border: 0;
+    color: var(--atelier-accent);
+    cursor: pointer;
+    padding: 6px 12px;
+    font-size: 0.85rem;
+}
+
+.atelier-onglet-ajout:hover { color: var(--atelier-accent-clair); }

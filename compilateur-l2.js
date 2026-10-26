@@ -42,6 +42,8 @@
     let boutonPrecedent = document.querySelector("#boutonPrecedent");
     let boutonSuivant = document.querySelector("#boutonSuivant");
     let compteurEtapes = document.querySelector("#compteurEtapes");
+    let listeOnglets = document.querySelector("#listeOnglets");
+    let boutonNouvelOnglet = document.querySelector("#boutonNouvelOnglet");
 
     let editeur = null;          // instance CodeMirror si disponible
     let moteur = null;           // module du moteur, chargé à la demande
@@ -183,6 +185,160 @@ Fin`
         }
     ];
 
+    // ---------- Onglets de programmes ----------
+    let CLE_ONGLETS = "glhub.compilateur.v2";
+    let CLE_ANCIENNE = "glhub.compilateur.v1";
+    let onglets = [];
+    let ongletActif = 0;
+    let compteurNoms = 1;
+    let chargementOnglet = false;
+
+    let identifiantOnglet = () => "onglet-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 6);
+
+    let chargerOnglets = () => {
+        try {
+            let brut = localStorage.getItem(CLE_ONGLETS);
+            if (brut) {
+                let donnees = JSON.parse(brut);
+                if (donnees && Array.isArray(donnees.onglets) && donnees.onglets.length) {
+                    onglets = donnees.onglets.map(o => ({
+                        id: o && o.id ? o.id : identifiantOnglet(),
+                        nom: o && o.nom ? String(o.nom).slice(0, 30) : "Programme",
+                        code: o && typeof o.code === "string" ? o.code : "",
+                        entrees: o && typeof o.entrees === "string" ? o.entrees : ""
+                    }));
+                    ongletActif = Math.min(Math.max(0, Number(donnees.actif) || 0), onglets.length - 1);
+                    compteurNoms = onglets.length + 1;
+                    return;
+                }
+            }
+
+            // Migration depuis la sauvegarde à programme unique (v1)
+            let ancien = localStorage.getItem(CLE_ANCIENNE);
+            if (ancien) {
+                let donnees = JSON.parse(ancien);
+                onglets = [{
+                    id: identifiantOnglet(),
+                    nom: "Programme 1",
+                    code: donnees && typeof donnees.code === "string" ? donnees.code : EXEMPLES[0].code,
+                    entrees: donnees && typeof donnees.entrees === "string" ? donnees.entrees : ""
+                }];
+                compteurNoms = 2;
+                return;
+            }
+        } catch (erreur) {
+            // stockage indisponible : on repart d'un programme neuf
+        }
+
+        onglets = [{ id: identifiantOnglet(), nom: "Programme 1", code: EXEMPLES[0].code, entrees: "" }];
+        compteurNoms = 2;
+    };
+
+    let sauvegarderOnglets = () => {
+        try {
+            localStorage.setItem(CLE_ONGLETS, JSON.stringify({ actif: ongletActif, onglets }));
+        } catch (erreur) {
+            // quota dépassé ou navigation privée : sans gravité
+        }
+    };
+
+    let enregistrerOngletCourant = () => {
+        if (!onglets.length) return;
+        onglets[ongletActif].code = lireCode();
+        if (champEntrees) onglets[ongletActif].entrees = champEntrees.value;
+    };
+
+    let rendreOnglets = () => {
+        if (!listeOnglets) return;
+        listeOnglets.textContent = "";
+
+        onglets.forEach((onglet, index) => {
+            let boite = document.createElement("div");
+            boite.className = "atelier-onglet" + (index === ongletActif ? " actif" : "");
+            boite.setAttribute("role", "tab");
+            boite.setAttribute("aria-selected", index === ongletActif ? "true" : "false");
+
+            let nom = document.createElement("button");
+            nom.type = "button";
+            nom.className = "onglet-nom";
+            nom.textContent = onglet.nom;
+            nom.title = "Double-clic pour renommer";
+            nom.addEventListener("click", () => activerOnglet(index));
+            nom.addEventListener("dblclick", () => renommerOnglet(index));
+
+            let fermer = document.createElement("button");
+            fermer.type = "button";
+            fermer.className = "onglet-fermer";
+            fermer.textContent = "\u00D7";
+            fermer.setAttribute("aria-label", "Fermer " + onglet.nom);
+            fermer.hidden = onglets.length === 1;
+            fermer.addEventListener("click", (evenement) => {
+                evenement.stopPropagation();
+                fermerOnglet(index);
+            });
+
+            boite.appendChild(nom);
+            boite.appendChild(fermer);
+            listeOnglets.appendChild(boite);
+        });
+    };
+
+    let chargerOngletActif = () => {
+        let onglet = onglets[ongletActif];
+        chargementOnglet = true;
+        ecrireCode(onglet.code);
+        if (champEntrees) champEntrees.value = onglet.entrees;
+        chargementOnglet = false;
+        mettreAJourCompteurEntrees();
+        viderConsole();
+        afficherVariables([]);
+        arreterExecution();
+        etatExecution.textContent = "";
+        etatExecution.className = "atelier-etat";
+        rendreOnglets();
+        sauvegarderOnglets();
+    };
+
+    let activerOnglet = (index) => {
+        if (index === ongletActif || index < 0 || index >= onglets.length) return;
+        enregistrerOngletCourant();
+        ongletActif = index;
+        chargerOngletActif();
+        if (editeur) editeur.focus();
+    };
+
+    let ajouterOnglet = () => {
+        enregistrerOngletCourant();
+        let nom = "Programme " + (compteurNoms++);
+        onglets.push({
+            id: identifiantOnglet(),
+            nom,
+            code: "Var \nDébut\n    \nFin",
+            entrees: ""
+        });
+        ongletActif = onglets.length - 1;
+        chargerOngletActif();
+        if (editeur) editeur.focus();
+    };
+
+    let fermerOnglet = (index) => {
+        if (onglets.length === 1) return;
+        enregistrerOngletCourant();
+        onglets.splice(index, 1);
+        if (ongletActif >= onglets.length) ongletActif = onglets.length - 1;
+        else if (index < ongletActif) ongletActif -= 1;
+        chargerOngletActif();
+    };
+
+    let renommerOnglet = (index) => {
+        let nom = window.prompt("Nom du programme", onglets[index].nom);
+        if (nom && nom.trim()) {
+            onglets[index].nom = nom.trim().slice(0, 30);
+            rendreOnglets();
+            sauvegarderOnglets();
+        }
+    };
+
     // ---------- Entrées du programme ----------
     let lireEntrees = () => {
         if (!champEntrees) return [];
@@ -228,14 +384,8 @@ Fin`
     let sauvegarder = () => {
         clearTimeout(minuteurSauvegarde);
         minuteurSauvegarde = setTimeout(() => {
-            try {
-                localStorage.setItem(CLE_SAUVEGARDE, JSON.stringify({
-                    code: lireCode(),
-                    entrees: champEntrees ? champEntrees.value : ""
-                }));
-            } catch (erreur) {
-                // quota dépassé ou navigation privée : sans gravité
-            }
+            enregistrerOngletCourant();
+            sauvegarderOnglets();
         }, 400);
     };
 
@@ -311,14 +461,10 @@ Fin`
     };
 
     let chargerCodeInitial = () => {
-        let sauvegarde = lireSauvegarde();
-        if (sauvegarde && typeof sauvegarde.code === "string" && sauvegarde.code.trim()) {
-            if (typeof sauvegarde.entrees === "string" && champEntrees) {
-                champEntrees.value = sauvegarde.entrees;
-            }
-            return sauvegarde.code;
-        }
-        return EXEMPLES[0].code;
+        chargerOnglets();
+        let onglet = onglets[ongletActif];
+        if (champEntrees) champEntrees.value = onglet.entrees || "";
+        return onglet.code || EXEMPLES[0].code;
     };
 
     let initialiserEditeur = () => {
@@ -360,6 +506,7 @@ Fin`
             });
 
             editeur.on("change", () => {
+                if (chargementOnglet) return;
                 if (execution && !execution.termine) {
                     execution.arreter();
                     execution = null;
@@ -388,6 +535,7 @@ Fin`
         }
         mettreAJourCompteur();
         mettreAJourCompteurEntrees();
+        rendreOnglets();
     };
 
     let lireCode = () => editeur ? editeur.getValue() : champCode.value;
@@ -397,6 +545,7 @@ Fin`
         else champCode.value = texte;
         mettreAJourCompteur();
         mettreAJourCompteurEntrees();
+        rendreOnglets();
     };
 
     let mettreAJourCompteur = () => {
@@ -710,6 +859,7 @@ Fin`
     if (boutonPas) boutonPas.addEventListener("click", pasAPas);
     if (boutonContinuer) boutonContinuer.addEventListener("click", continuerExecution);
     if (boutonStop) boutonStop.addEventListener("click", stopperExecution);
+    if (boutonNouvelOnglet) boutonNouvelOnglet.addEventListener("click", ajouterOnglet);
     if (boutonPrecedent) boutonPrecedent.addEventListener("click", allerPrecedent);
     if (boutonSuivant) boutonSuivant.addEventListener("click", allerSuivant);
     if (boutonEntrees) boutonEntrees.addEventListener("click", () => basculerEntrees());
