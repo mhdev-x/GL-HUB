@@ -33,6 +33,16 @@ export class Stepper {
         this.termine = !this.execution;
         this.historique = [];
         this.index = -1;
+        this.historiqueActif = options.historique !== false;
+        this.derniere = null;
+    }
+
+    get position() {
+        return this.historiqueActif ? this.index : (this.derniere ? 0 : -1);
+    }
+
+    get total() {
+        return this.historiqueActif ? this.historique.length : (this.derniere ? 1 : 0);
     }
 
     get sortie() {
@@ -40,7 +50,8 @@ export class Stepper {
     }
 
     get etapeCourante() {
-        return this.index >= 0 ? this.historique[this.index] : null;
+        if (this.historiqueActif) return this.index >= 0 ? this.historique[this.index] : null;
+        return this.derniere;
     }
 
     /** Décrit une valeur pour l'affichage (type + texte + enfants). */
@@ -125,8 +136,11 @@ export class Stepper {
             sortie: this.sortie
         };
 
-        this.historique.push(etape);
-        this.index = this.historique.length - 1;
+        this.derniere = etape;
+        if (this.historiqueActif) {
+            this.historique.push(etape);
+            this.index = this.historique.length - 1;
+        }
         return etape;
     }
 
@@ -161,15 +175,20 @@ export class Stepper {
 
     /** Navigation dans l'historique (lecture seule). */
     precedent() {
-        if (this.index <= 0) return null;
+        if (!this.historiqueActif || this.index <= 0) return null;
         this.index -= 1;
         return this.historique[this.index];
     }
 
     suivant() {
-        if (this.index >= this.historique.length - 1) return null;
+        if (!this.historiqueActif || this.index >= this.historique.length - 1) return null;
         this.index += 1;
         return this.historique[this.index];
+    }
+
+    /** Revenir à l'état le plus récent (avant de reprendre l'exécution). */
+    allerEnFin() {
+        if (this.historiqueActif) this.index = this.historique.length - 1;
     }
 }
 

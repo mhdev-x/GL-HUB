@@ -439,3 +439,13 @@ li.CodeMirror-hint-active {
     padding-bottom: 5px;
     margin-bottom: 5px;
 }
+
+/* Navigation dans l'historique */
+.atelier-bouton-icone { padding: 7px 10px; }
+.atelier-etapes {
+    font-size: 0.78rem;
+    color: var(--atelier-texte-faible);
+    min-width: 92px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+}

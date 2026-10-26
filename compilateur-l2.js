@@ -39,6 +39,9 @@
     let boutonContinuer = document.querySelector("#boutonContinuer");
     let boutonStop = document.querySelector("#boutonStop");
     let listeVariables = document.querySelector("#listeVariables");
+    let boutonPrecedent = document.querySelector("#boutonPrecedent");
+    let boutonSuivant = document.querySelector("#boutonSuivant");
+    let compteurEtapes = document.querySelector("#compteurEtapes");
 
     let editeur = null;          // instance CodeMirror si disponible
     let moteur = null;           // module du moteur, chargé à la demande
@@ -413,39 +416,34 @@ Fin`
 
         arreterExecution();
         afficherVariables([]);
+        afficherPile([]);
+        mettreAJourNavigation();
         etatExecution.textContent = "Exécution...";
         etatExecution.className = "atelier-etat";
         viderConsole();
 
         let debut = performance.now();
         try {
-            let { run, formatError } = await chargerMoteur();
-            let resultat = run(lireCode(), { inputs: lireEntrees() });
+            let { parse, Stepper } = await chargerMoteur();
+            let stepper = new Stepper(parse(lireCode()), { inputs: lireEntrees(), historique: false });
+            let derniere = stepper.continuer();
             let fin = performance.now();
 
-            if (!resultat.output.length) {
+            afficherSortie(stepper.sortie);
+            if (!stepper.sortie.length) {
                 ajouterLigne("Le programme s'est exécuté sans rien afficher.", "ligne-vide");
-            } else {
-                resultat.output.forEach(ligne => ajouterLigne(ligne));
             }
+            if (derniere) {
+                afficherVariables(derniere.variables);
+                afficherPile(derniere.pile);
+            }
+            surligner(null);
 
             let duree = Math.max(1, Math.round(fin - debut));
             etatExecution.textContent = `Terminé en ${duree} ms`;
             etatExecution.className = "atelier-etat succes";
         } catch (erreur) {
-            if (erreur && erreur.name === "AlgoError") {
-                // Le module est chargé : on réutilise sa mise en forme
-                let { formatError } = await chargerMoteur();
-                afficherErreurMoteur(erreur, formatError);
-                if (/plus de valeur à lire/i.test(erreur.message)) {
-                    basculerEntrees(true);
-                    ajouterLigne("→ Saisis les valeurs dans le panneau « Entrées », puis relance.", "ligne-conseil");
-                }
-            } else {
-                ajouterLigne("Erreur interne : " + (erreur && erreur.message ? erreur.message : erreur), "ligne-erreur");
-                etatExecution.textContent = "Erreur";
-                etatExecution.className = "atelier-etat erreur";
-            }
+            await gererErreurExecution(erreur);
         }
     };
 
@@ -527,6 +525,31 @@ Fin`
         listeVariables.prepend(ligne);
     };
 
+    let mettreAJourNavigation = () => {
+        if (!compteurEtapes) return;
+        if (!execution || !execution.total) {
+            compteurEtapes.textContent = "";
+            if (boutonPrecedent) boutonPrecedent.disabled = true;
+            if (boutonSuivant) boutonSuivant.disabled = true;
+            return;
+        }
+        compteurEtapes.textContent = "Étape " + (execution.position + 1) + " / " + execution.total;
+        if (boutonPrecedent) boutonPrecedent.disabled = execution.position <= 0;
+        if (boutonSuivant) boutonSuivant.disabled = execution.position >= execution.total - 1;
+    };
+
+    let allerPrecedent = () => {
+        if (!execution || execution.termine) return;
+        let etape = execution.precedent();
+        if (etape) rendreEtape(etape);
+    };
+
+    let allerSuivant = () => {
+        if (!execution || execution.termine) return;
+        let etape = execution.suivant();
+        if (etape) rendreEtape(etape);
+    };
+
     let rendreEtape = (etape) => {
         if (!etape) return;
         surligner(etape.ligne);
@@ -535,6 +558,7 @@ Fin`
         afficherSortie(etape.sortie);
         etatExecution.textContent = "Ligne " + etape.ligne;
         etatExecution.className = "atelier-etat";
+        mettreAJourNavigation();
     };
 
     let arreterExecution = () => {
@@ -543,6 +567,7 @@ Fin`
             execution = null;
         }
         surligner(null);
+        if (typeof mettreAJourNavigation === "function") mettreAJourNavigation();
     };
 
     let preparerPasAPas = async () => {
@@ -556,7 +581,7 @@ Fin`
         let { formatError } = await chargerMoteur();
         arreterExecution();
         afficherErreurMoteur(erreur, formatError);
-        if (/plus de valeur à lire/i.test(erreur.message)) {
+        if (erreur && /plus de valeur à lire/i.test(erreur.message || "")) {
             basculerEntrees(true);
             ajouterLigne("→ Saisis les valeurs dans le panneau « Entrées », puis relance.", "ligne-conseil");
         }
@@ -565,6 +590,7 @@ Fin`
     let pasAPas = async () => {
         try {
             if (!execution || execution.termine) await preparerPasAPas();
+            else execution.allerEnFin();
             let etape = execution.avancer();
             if (!etape) {
                 afficherSortie(execution.sortie);
@@ -581,6 +607,7 @@ Fin`
     let continuerExecution = async () => {
         try {
             if (!execution || execution.termine) await preparerPasAPas();
+            else execution.allerEnFin();
             let etape = execution.continuer(pointsArret);
             if (etape) rendreEtape(etape);
             afficherSortie(execution.sortie);
@@ -683,6 +710,8 @@ Fin`
     if (boutonPas) boutonPas.addEventListener("click", pasAPas);
     if (boutonContinuer) boutonContinuer.addEventListener("click", continuerExecution);
     if (boutonStop) boutonStop.addEventListener("click", stopperExecution);
+    if (boutonPrecedent) boutonPrecedent.addEventListener("click", allerPrecedent);
+    if (boutonSuivant) boutonSuivant.addEventListener("click", allerSuivant);
     if (boutonEntrees) boutonEntrees.addEventListener("click", () => basculerEntrees());
     if (champEntrees) {
         champEntrees.addEventListener("input", () => { mettreAJourCompteurEntrees(); sauvegarder(); });
