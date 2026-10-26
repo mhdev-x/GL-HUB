@@ -187,6 +187,18 @@
                         <i class="fa-solid fa-play"></i>Exécuter
                     </button>
 
+                    <button type="button" id="boutonPas" class="atelier-bouton" title="Exécuter la prochaine instruction">
+                        <i class="fa-solid fa-forward-step"></i>Pas à pas
+                    </button>
+
+                    <button type="button" id="boutonContinuer" class="atelier-bouton" title="Aller jusqu'au prochain point d'arrêt">
+                        <i class="fa-solid fa-forward"></i>Continuer
+                    </button>
+
+                    <button type="button" id="boutonStop" class="atelier-bouton" title="Arrêter l'exécution">
+                        <i class="fa-solid fa-stop"></i>Arrêter
+                    </button>
+
                     <button type="button" id="boutonEffacer" class="atelier-bouton">
                         <i class="fa-solid fa-eraser"></i>Effacer la console
                     </button>
@@ -215,6 +227,11 @@
                     <aside class="atelier-exemples" aria-label="Exemples du cours">
                         <h3><i class="fa-solid fa-book-open"></i>Exemples du cours</h3>
                         <ul id="listeExemples"></ul>
+
+                        <h3 class="atelier-titre-variables"><i class="fa-solid fa-table-list"></i>Variables</h3>
+                        <ul id="listeVariables" class="atelier-variables">
+                            <li class="atelier-vide">Lance le pas-à-pas pour voir les valeurs.</li>
+                        </ul>
                     </aside>
                 </div>
 

@@ -354,3 +354,79 @@ li.CodeMirror-hint-active {
 .cm-sugg-variable { color: #9ecbff; }
 .cm-sugg-motcle { color: var(--atelier-texte); }
 .cm-sugg-type { color: #8fbf7f; }
+
+/* ---------- Pas à pas ---------- */
+.atelier-titre-variables { margin-top: 18px !important; }
+
+.atelier-variables {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
+    font-size: 12.5px;
+    max-height: 260px;
+    overflow-y: auto;
+}
+
+.atelier-variables ul {
+    list-style: none;
+    margin: 2px 0 2px 14px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.atelier-variables li { line-height: 1.5; }
+
+.atelier-variables .var-nom { color: #9ecbff; margin-right: 6px; }
+.atelier-variables .var-type { color: #6f82a3; margin-right: 6px; font-size: 0.85em; }
+.atelier-variables .var-valeur { color: var(--atelier-accent-clair); }
+
+.atelier-variables details > summary {
+    cursor: pointer;
+    list-style: none;
+    outline: none;
+}
+
+.atelier-variables details > summary::-webkit-details-marker { display: none; }
+
+.atelier-variables details > summary::before {
+    content: "▸ ";
+    color: var(--atelier-texte-faible);
+}
+
+.atelier-variables details[open] > summary::before { content: "▾ "; }
+
+.atelier-vide {
+    color: var(--atelier-texte-faible);
+    font-family: inherit;
+    font-size: 0.85em;
+    font-style: italic;
+}
+
+/* Ligne en cours d'exécution */
+.CodeMirror .ligne-courante {
+    background: rgba(212, 175, 55, 0.14);
+    box-shadow: inset 3px 0 0 var(--atelier-accent);
+}
+
+/* Marge des points d'arrêt */
+.CodeMirror-gutter.pointsArret,
+.CodeMirror-gutter-pointsArret { width: 14px; }
+
+.point-arret {
+    color: var(--atelier-accent);
+    font-size: 11px;
+    line-height: 1.6;
+    text-align: center;
+    cursor: pointer;
+}
+
+.atelier-bouton[disabled] {
+    opacity: 0.45;
+    cursor: not-allowed;
+}

@@ -35,9 +35,17 @@
     let boutonEntrees = document.querySelector("#boutonEntrees");
     let champEntrees = document.querySelector("#entrees");
     let compteurEntrees = document.querySelector("#compteurEntrees");
+    let boutonPas = document.querySelector("#boutonPas");
+    let boutonContinuer = document.querySelector("#boutonContinuer");
+    let boutonStop = document.querySelector("#boutonStop");
+    let listeVariables = document.querySelector("#listeVariables");
 
     let editeur = null;          // instance CodeMirror si disponible
     let moteur = null;           // module du moteur, chargé à la demande
+
+    let execution = null;        // exécution pas à pas en cours (Stepper)
+    let pointsArret = new Set(); // numéros de ligne (1-based)
+    let ligneSurlignee = null;
 
     let montrerVue = (nom) => {
         Object.keys(vues).forEach(cle => { vues[cle].hidden = cle !== nom; });
@@ -332,7 +340,30 @@ Fin`
             });
             editeur.setValue(chargerCodeInitial());
             editeur.on("cursorActivity", mettreAJourCompteur);
-            editeur.on("change", sauvegarder);
+            editeur.setOption("gutters", ["pointsArret", "CodeMirror-linenumbers"]);
+
+            editeur.on("gutterClick", (editeurClique, numeroLigne) => {
+                let ligne = numeroLigne + 1;
+                if (pointsArret.has(ligne)) {
+                    pointsArret.delete(ligne);
+                    editeurClique.setGutterMarker(numeroLigne, "pointsArret", null);
+                } else {
+                    pointsArret.add(ligne);
+                    let marqueur = document.createElement("div");
+                    marqueur.className = "point-arret";
+                    marqueur.textContent = "\u25CF";
+                    editeurClique.setGutterMarker(numeroLigne, "pointsArret", marqueur);
+                }
+            });
+
+            editeur.on("change", () => {
+                if (execution && !execution.termine) {
+                    execution.arreter();
+                    execution = null;
+                    surligner(null);
+                }
+                sauvegarder();
+            });
 
             // Autocomplétion contextuelle (facultative : l'éditeur reste utilisable sans)
             if (window.GLHUBAutoCompletion && typeof window.GLHUBAutoCompletion.installer === "function") {
@@ -380,6 +411,8 @@ Fin`
     let executer = async () => {
         if (choixLangage.value !== "pseudo") return;
 
+        arreterExecution();
+        afficherVariables([]);
         etatExecution.textContent = "Exécution...";
         etatExecution.className = "atelier-etat";
         viderConsole();
@@ -414,6 +447,147 @@ Fin`
                 etatExecution.className = "atelier-etat erreur";
             }
         }
+    };
+
+
+    // ---------- Pas à pas ----------
+    let surligner = (ligne) => {
+        if (!editeur) return;
+        if (ligneSurlignee !== null) {
+            editeur.removeLineClass(ligneSurlignee - 1, "background", "ligne-courante");
+        }
+        ligneSurlignee = ligne || null;
+        if (ligne) {
+            editeur.addLineClass(ligne - 1, "background", "ligne-courante");
+            editeur.scrollIntoView({ line: ligne - 1, ch: 0 }, 80);
+        }
+    };
+
+    let afficherSortie = (lignes) => {
+        viderConsole();
+        (lignes || []).forEach(ligne => ajouterLigne(ligne));
+    };
+
+    let elementVariable = (nom, description) => {
+        let li = document.createElement("li");
+
+        let nomEl = document.createElement("span");
+        nomEl.className = "var-nom";
+        nomEl.textContent = nom;
+
+        let typeEl = document.createElement("span");
+        typeEl.className = "var-type";
+        typeEl.textContent = description.type;
+
+        let valeurEl = document.createElement("span");
+        valeurEl.className = "var-valeur";
+        valeurEl.textContent = description.texte;
+
+        let contenu = document.createElement("span");
+        contenu.appendChild(nomEl);
+        contenu.appendChild(typeEl);
+        contenu.appendChild(valeurEl);
+
+        if (description.enfants && description.enfants.length) {
+            let details = document.createElement("details");
+            let resume = document.createElement("summary");
+            resume.appendChild(contenu);
+            details.appendChild(resume);
+
+            let sousListe = document.createElement("ul");
+            description.enfants.forEach(enfant => sousListe.appendChild(elementVariable(enfant.nom, enfant)));
+            details.appendChild(sousListe);
+            li.appendChild(details);
+        } else {
+            li.appendChild(contenu);
+        }
+        return li;
+    };
+
+    let afficherVariables = (variables) => {
+        listeVariables.textContent = "";
+        if (!variables || !variables.length) {
+            let vide = document.createElement("li");
+            vide.className = "atelier-vide";
+            vide.textContent = "Aucune variable.";
+            listeVariables.appendChild(vide);
+            return;
+        }
+        variables.forEach(variable => listeVariables.appendChild(elementVariable(variable.nom, variable)));
+    };
+
+    let rendreEtape = (etape) => {
+        if (!etape) return;
+        surligner(etape.ligne);
+        afficherVariables(etape.variables);
+        afficherSortie(etape.sortie);
+        etatExecution.textContent = "Ligne " + etape.ligne;
+        etatExecution.className = "atelier-etat";
+    };
+
+    let arreterExecution = () => {
+        if (execution) {
+            execution.arreter();
+            execution = null;
+        }
+        surligner(null);
+    };
+
+    let preparerPasAPas = async () => {
+        let { parse, Stepper } = await chargerMoteur();
+        arreterExecution();
+        execution = new Stepper(parse(lireCode()), { inputs: lireEntrees() });
+        return execution;
+    };
+
+    let gererErreurExecution = async (erreur) => {
+        let { formatError } = await chargerMoteur();
+        arreterExecution();
+        afficherErreurMoteur(erreur, formatError);
+        if (/plus de valeur à lire/i.test(erreur.message)) {
+            basculerEntrees(true);
+            ajouterLigne("→ Saisis les valeurs dans le panneau « Entrées », puis relance.", "ligne-conseil");
+        }
+    };
+
+    let pasAPas = async () => {
+        try {
+            if (!execution || execution.termine) await preparerPasAPas();
+            let etape = execution.avancer();
+            if (!etape) {
+                afficherSortie(execution.sortie);
+                etatExecution.textContent = "Programme terminé";
+                etatExecution.className = "atelier-etat succes";
+                return;
+            }
+            rendreEtape(etape);
+        } catch (erreur) {
+            await gererErreurExecution(erreur);
+        }
+    };
+
+    let continuerExecution = async () => {
+        try {
+            if (!execution || execution.termine) await preparerPasAPas();
+            let etape = execution.continuer(pointsArret);
+            if (etape) rendreEtape(etape);
+            afficherSortie(execution.sortie);
+            if (etape && pointsArret.has(etape.ligne)) {
+                etatExecution.textContent = "Point d'arrêt — ligne " + etape.ligne;
+                etatExecution.className = "atelier-etat";
+            } else if (execution.termine) {
+                etatExecution.textContent = "Programme terminé";
+                etatExecution.className = "atelier-etat succes";
+            }
+        } catch (erreur) {
+            await gererErreurExecution(erreur);
+        }
+    };
+
+    let stopperExecution = () => {
+        arreterExecution();
+        etatExecution.textContent = "Arrêté";
+        etatExecution.className = "atelier-etat";
     };
 
     // ---------- Exemples ----------
@@ -494,6 +668,9 @@ Fin`
 
     // ---------- Événements ----------
     if (boutonExecuter) boutonExecuter.addEventListener("click", executer);
+    if (boutonPas) boutonPas.addEventListener("click", pasAPas);
+    if (boutonContinuer) boutonContinuer.addEventListener("click", continuerExecution);
+    if (boutonStop) boutonStop.addEventListener("click", stopperExecution);
     if (boutonEntrees) boutonEntrees.addEventListener("click", () => basculerEntrees());
     if (champEntrees) {
         champEntrees.addEventListener("input", () => { mettreAJourCompteurEntrees(); sauvegarder(); });

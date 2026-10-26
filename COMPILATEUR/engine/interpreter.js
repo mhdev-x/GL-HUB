@@ -149,13 +149,24 @@ export class Interpreter {
     }
 
     // ---------- exécution ----------
-    run() {
+    prepare() {
         for (const m of this.program.modules) this.functions.set(m.name, m);
-
         this.execDeclarations(this.program.declarations, this.global);
-        if (this.program.main) this.execBlock(this.program.main, this.global);
+    }
 
+    run() {
+        this.prepare();
+        if (this.program.main) {
+            this.executerJusquAuBout(this.execBlock(this.program.main, this.global));
+        }
         return { output: this.output, steps: this.steps };
+    }
+
+    /** Consomme un itérateur d'instructions jusqu'à la fin (appel de module). */
+    executerJusquAuBout(iterateur) {
+        let resultat;
+        do { resultat = iterateur.next(); } while (!resultat.done);
+        return resultat.value;
     }
 
     tick(line) {
@@ -169,12 +180,14 @@ export class Interpreter {
         }
     }
 
-    execBlock(block, scope) {
-        for (const st of block.body) this.execStatement(st, scope);
+    *execBlock(block, scope) {
+        for (const st of block.body) yield* this.execStatement(st, scope);
     }
 
-    execStatement(st, scope) {
+    *execStatement(st, scope) {
         this.tick(st.line);
+        // Point d'arrêt : on s'arrête AVANT d'exécuter l'instruction.
+        yield { line: st.line, scope, kind: st.kind };
         switch (st.kind) {
             case "assign": {
                 const value = this.evalExpr(st.value, scope);
@@ -206,14 +219,15 @@ export class Interpreter {
                 return;
             }
             case "if": {
-                if (this.toBool(this.evalExpr(st.cond, scope), st.line)) this.execBlock({ body: st.then }, scope);
-                else this.execBlock({ body: st.otherwise }, scope);
+                if (this.toBool(this.evalExpr(st.cond, scope), st.line)) yield* this.execBlock({ body: st.then }, scope);
+                else yield* this.execBlock({ body: st.otherwise }, scope);
                 return;
             }
             case "while": {
                 while (this.toBool(this.evalExpr(st.cond, scope), st.line)) {
                     this.tick(st.line);
-                    this.execBlock({ body: st.body }, scope);
+                    yield { line: st.line, scope, kind: "while" };
+                    yield* this.execBlock({ body: st.body }, scope);
                 }
                 return;
             }
@@ -230,14 +244,16 @@ export class Interpreter {
                 for (let i = start; step > 0 ? i <= end : i >= end; i += step) {
                     indexCell.set(i);
                     this.tick(st.line);
-                    this.execBlock({ body: st.body }, scope);
+                    yield { line: st.line, scope, kind: "for" };
+                    yield* this.execBlock({ body: st.body }, scope);
                 }
                 return;
             }
             case "repeat": {
                 do {
                     this.tick(st.line);
-                    this.execBlock({ body: st.body }, scope);
+                    yield { line: st.line, scope, kind: "repeat" };
+                    yield* this.execBlock({ body: st.body }, scope);
                 } while (!this.toBool(this.evalExpr(st.cond, scope), st.line));
                 return;
             }
@@ -247,11 +263,11 @@ export class Interpreter {
                 for (const c of st.cases) {
                     if (c.values.some(x => this.equals(v, this.evalExpr(x, scope)))) {
                         matched = true;
-                        this.execBlock({ body: c.body }, scope);
+                        yield* this.execBlock({ body: c.body }, scope);
                         break;
                     }
                 }
-                if (!matched && st.otherwise) this.execBlock({ body: st.otherwise }, scope);
+                if (!matched && st.otherwise) yield* this.execBlock({ body: st.otherwise }, scope);
                 return;
             }
             case "return": {
@@ -503,7 +519,7 @@ export class Interpreter {
         let returned = undefined;
         try {
             this.execDeclarations(fn.declarations, local);
-            this.execBlock(fn.body, local);
+            this.executerJusquAuBout(this.execBlock(fn.body, local));
             returned = this.returnStack[this.returnStack.length - 1].value;
         } catch (e) {
             if (e instanceof ReturnSignal) {

@@ -6,8 +6,9 @@
 import { AlgoError, normalizeWord, tokenize } from "./lexer.js";
 import { parse } from "./parser.js";
 import { execute } from "./interpreter.js";
+import { Stepper, creerPasAPas } from "./stepper.js";
 
-export { AlgoError, normalizeWord, tokenize, parse, execute };
+export { AlgoError, normalizeWord, tokenize, parse, execute, Stepper, creerPasAPas };
 
 /** Compile et exécute un programme pseudo-code. */
 export function run(source, options = {}) {
