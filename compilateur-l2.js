@@ -31,6 +31,10 @@
     let etatExecution = document.querySelector("#etatExecution");
     let compteurLignes = document.querySelector("#compteurLignes");
     let listeExemples = document.querySelector("#listeExemples");
+    let panneauEntrees = document.querySelector("#panneauEntrees");
+    let boutonEntrees = document.querySelector("#boutonEntrees");
+    let champEntrees = document.querySelector("#entrees");
+    let compteurEntrees = document.querySelector("#compteurEntrees");
 
     let editeur = null;          // instance CodeMirror si disponible
     let moteur = null;           // module du moteur, chargé à la demande
@@ -130,6 +134,22 @@ Début
 Fin`
         },
         {
+            titre: "Saisie au clavier",
+            detail: "Lire, variables, concaténation",
+            code: `Programme Saisie
+Var prenom, nom : chaine
+Var age : entier
+Début
+    Afficher("Votre prénom ?")
+    Lire prenom
+    Afficher("Votre nom ?")
+    Lire nom
+    Afficher("Votre âge ?")
+    Lire age
+    Afficher("Bonjour ", prenom, " ", nom, ", vous avez ", age, " ans")
+Fin`
+        },
+        {
             titre: "Palindrome",
             detail: "chaînes, Souschaine, Longueur",
             code: `Programme Palindrome
@@ -151,6 +171,62 @@ Début
 Fin`
         }
     ];
+
+    // ---------- Entrées du programme ----------
+    let lireEntrees = () => {
+        if (!champEntrees) return [];
+        return champEntrees.value
+            .split(/\r?\n/)
+            .map(ligne => ligne.trim())
+            .filter(ligne => ligne.length > 0);
+    };
+
+    let mettreAJourCompteurEntrees = () => {
+        if (!compteurEntrees) return;
+        let nombre = lireEntrees().length;
+        compteurEntrees.textContent = String(nombre);
+        compteurEntrees.hidden = nombre === 0;
+        if (boutonEntrees && panneauEntrees) {
+            boutonEntrees.setAttribute("aria-expanded", String(!panneauEntrees.hidden));
+        }
+    };
+
+    let basculerEntrees = (ouvrir) => {
+        if (!panneauEntrees) return;
+        let etat = typeof ouvrir === "boolean" ? ouvrir : panneauEntrees.hidden;
+        panneauEntrees.hidden = !etat;
+        if (boutonEntrees) boutonEntrees.setAttribute("aria-expanded", String(etat));
+        if (etat && champEntrees) champEntrees.focus();
+    };
+
+    // ---------- Sauvegarde locale (le programme survit à un rafraîchissement) ----------
+    let CLE_SAUVEGARDE = "glhub.compilateur.v1";
+    let minuteurSauvegarde = null;
+
+    let lireSauvegarde = () => {
+        try {
+            let brut = localStorage.getItem(CLE_SAUVEGARDE);
+            if (!brut) return null;
+            let donnees = JSON.parse(brut);
+            return donnees && typeof donnees === "object" ? donnees : null;
+        } catch (erreur) {
+            return null;
+        }
+    };
+
+    let sauvegarder = () => {
+        clearTimeout(minuteurSauvegarde);
+        minuteurSauvegarde = setTimeout(() => {
+            try {
+                localStorage.setItem(CLE_SAUVEGARDE, JSON.stringify({
+                    code: lireCode(),
+                    entrees: champEntrees ? champEntrees.value : ""
+                }));
+            } catch (erreur) {
+                // quota dépassé ou navigation privée : sans gravité
+            }
+        }, 400);
+    };
 
     // ---------- Console ----------
     let viderConsole = () => {
@@ -223,6 +299,17 @@ Fin`
         CodeMirror.defineMIME("text/x-pseudo", "pseudo");
     };
 
+    let chargerCodeInitial = () => {
+        let sauvegarde = lireSauvegarde();
+        if (sauvegarde && typeof sauvegarde.code === "string" && sauvegarde.code.trim()) {
+            if (typeof sauvegarde.entrees === "string" && champEntrees) {
+                champEntrees.value = sauvegarde.entrees;
+            }
+            return sauvegarde.code;
+        }
+        return EXEMPLES[0].code;
+    };
+
     let initialiserEditeur = () => {
         if (editeur || !champCode) return;
 
@@ -243,10 +330,12 @@ Fin`
                     Tab: (cm) => cm.replaceSelection("    ", "end")
                 }
             });
-            editeur.setValue(EXEMPLES[0].code);
+            editeur.setValue(chargerCodeInitial());
             editeur.on("cursorActivity", mettreAJourCompteur);
+            editeur.on("change", sauvegarder);
         } else {
-            champCode.value = EXEMPLES[0].code;
+            champCode.value = chargerCodeInitial();
+            champCode.addEventListener("input", sauvegarder);
             champCode.addEventListener("keydown", (e) => {
                 if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
                     e.preventDefault();
@@ -255,6 +344,7 @@ Fin`
             });
         }
         mettreAJourCompteur();
+        mettreAJourCompteurEntrees();
     };
 
     let lireCode = () => editeur ? editeur.getValue() : champCode.value;
@@ -263,6 +353,7 @@ Fin`
         if (editeur) editeur.setValue(texte);
         else champCode.value = texte;
         mettreAJourCompteur();
+        mettreAJourCompteurEntrees();
     };
 
     let mettreAJourCompteur = () => {
@@ -287,7 +378,7 @@ Fin`
         let debut = performance.now();
         try {
             let { run, formatError } = await chargerMoteur();
-            let resultat = run(lireCode(), { inputs: [] });
+            let resultat = run(lireCode(), { inputs: lireEntrees() });
             let fin = performance.now();
 
             if (!resultat.output.length) {
@@ -304,6 +395,10 @@ Fin`
                 // Le module est chargé : on réutilise sa mise en forme
                 let { formatError } = await chargerMoteur();
                 afficherErreurMoteur(erreur, formatError);
+                if (/plus de valeur à lire/i.test(erreur.message)) {
+                    basculerEntrees(true);
+                    ajouterLigne("→ Saisis les valeurs dans le panneau « Entrées », puis relance.", "ligne-conseil");
+                }
             } else {
                 ajouterLigne("Erreur interne : " + (erreur && erreur.message ? erreur.message : erreur), "ligne-erreur");
                 etatExecution.textContent = "Erreur";
@@ -390,6 +485,10 @@ Fin`
 
     // ---------- Événements ----------
     if (boutonExecuter) boutonExecuter.addEventListener("click", executer);
+    if (boutonEntrees) boutonEntrees.addEventListener("click", () => basculerEntrees());
+    if (champEntrees) {
+        champEntrees.addEventListener("input", () => { mettreAJourCompteurEntrees(); sauvegarder(); });
+    }
     if (boutonEffacer) boutonEffacer.addEventListener("click", viderConsole);
 
     if (choixLangage) {

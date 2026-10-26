@@ -190,7 +190,20 @@
                         <i class="fa-solid fa-eraser"></i>Effacer la console
                     </button>
 
+                    <button type="button" id="boutonEntrees" class="atelier-bouton" aria-expanded="false" aria-controls="panneauEntrees">
+                        <i class="fa-solid fa-keyboard"></i>Entrées
+                        <span id="compteurEntrees" class="atelier-compteur" hidden>0</span>
+                    </button>
+
                     <span id="etatExecution" class="atelier-etat" aria-live="polite"></span>
+                </div>
+
+                <div id="panneauEntrees" class="atelier-entrees" hidden>
+                    <label for="entrees">Entrées du programme
+                        <span class="atelier-aide">une valeur par ligne, dans l'ordre des Lire</span>
+                    </label>
+                    <textarea id="entrees" rows="3" spellcheck="false" autocomplete="off"
+                              placeholder="Awa&#10;Diallo&#10;21"></textarea>
                 </div>
 
                 <div class="atelier-corps">
