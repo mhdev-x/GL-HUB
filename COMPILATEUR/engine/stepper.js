@@ -117,9 +117,10 @@ export class Stepper {
             return null;
         }
 
-        let { line, scope } = resultat.value;
+        let { line, scope, pile } = resultat.value;
         let etape = {
             ligne: line,
+            pile: pile || [],
             variables: this.instantane(scope),
             sortie: this.sortie
         };

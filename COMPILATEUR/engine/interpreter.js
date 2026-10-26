@@ -80,7 +80,7 @@ export class Interpreter {
     }
 
     // ---------- déclarations ----------
-    instantiate(typeAst, scope) {
+    *instantiate(typeAst, scope) {
         if (!typeAst) return 0;
         if (typeAst.kind === "basic") {
             switch (typeAst.name) {
@@ -101,10 +101,13 @@ export class Interpreter {
             return v.kind === "number" ? v.value : v.value;
         }
         if (typeAst.kind === "array") {
-            const dims = typeAst.dims.map(d => ({
-                lo: this.toInt(this.evalExpr(d.lo, scope), d.lo.line),
-                hi: this.toInt(this.evalExpr(d.hi, scope), d.hi.line)
-            }));
+            const dims = [];
+            for (const d of typeAst.dims) {
+                dims.push({
+                    lo: this.toInt(yield* this.evalExpr(d.lo, scope), d.lo.line),
+                    hi: this.toInt(yield* this.evalExpr(d.hi, scope), d.hi.line)
+                });
+            }
             for (const d of dims) {
                 if (d.hi < d.lo) {
                     throw new AlgoError(
@@ -114,12 +117,12 @@ export class Interpreter {
                     );
                 }
             }
-            const elemDefault = this.instantiate(typeAst.elem, scope);
+            const elemDefault = yield* this.instantiate(typeAst.elem, scope);
             return makeArray(dims, elemDefault);
         }
         if (typeAst.kind === "struct") {
             const obj = { __type: "structure" };
-            for (const f of typeAst.fields) obj[f.name] = this.instantiate(f.typeAst, scope);
+            for (const f of typeAst.fields) obj[f.name] = yield* this.instantiate(f.typeAst, scope);
             return obj;
         }
         if (typeAst.kind === "named") {
@@ -127,22 +130,22 @@ export class Interpreter {
             if (!def) {
                 throw new AlgoError(`Type inconnu : « ${typeAst.name} ».`, typeAst.line ?? this.currentLine, 1);
             }
-            return this.instantiate(def, scope);
+            return yield* this.instantiate(def, scope);
         }
         return 0;
     }
 
-    execDeclarations(decls, scope) {
+    *execDeclarations(decls, scope) {
         for (const d of decls) {
             if (d.kind === "const") {
-                const v = this.evalExpr(d.value, scope);
+                const v = yield* this.evalExpr(d.value, scope);
                 scope.declare(d.name, { get: () => v, set: () => { throw new AlgoError(`Impossible de modifier la constante « ${d.raw} ».`, d.line, 1); }, kind: "const" });
             } else if (d.kind === "type") {
                 this.typeDefs.set(d.name, d.typeAst);
             } else if (d.kind === "var") {
                 let value;
-                if (d.init) value = this.evalExpr(d.init, scope);
-                else value = this.instantiate(d.typeAst, scope);
+                if (d.init) value = yield* this.evalExpr(d.init, scope);
+                else value = yield* this.instantiate(d.typeAst, scope);
                 scope.declare(d.name, cell(value));
             }
         }
@@ -151,7 +154,7 @@ export class Interpreter {
     // ---------- exécution ----------
     prepare() {
         for (const m of this.program.modules) this.functions.set(m.name, m);
-        this.execDeclarations(this.program.declarations, this.global);
+        this.executerJusquAuBout(this.execDeclarations(this.program.declarations, this.global));
     }
 
     run() {
@@ -187,19 +190,20 @@ export class Interpreter {
     *execStatement(st, scope) {
         this.tick(st.line);
         // Point d'arrêt : on s'arrête AVANT d'exécuter l'instruction.
-        yield { line: st.line, scope, kind: st.kind };
+        yield { line: st.line, scope, kind: st.kind, pile: this.returnStack.map(f => f.name) };
         switch (st.kind) {
             case "assign": {
-                const value = this.evalExpr(st.value, scope);
-                this.assignTo(st.target, value, scope);
+                const value = yield* this.evalExpr(st.value, scope);
+                yield* this.assignTo(st.target, value, scope);
                 return;
             }
             case "exprstmt": {
-                this.evalExpr(st.expr, scope);
+                yield* this.evalExpr(st.expr, scope);
                 return;
             }
             case "write": {
-                const parts = st.args.map(a => formatValue(this.evalExpr(a, scope)));
+                const parts = [];
+                for (const a of st.args) parts.push(formatValue(yield* this.evalExpr(a, scope)));
                 this.output.push(parts.join(""));
                 return;
             }
@@ -213,28 +217,28 @@ export class Interpreter {
                             "Fournis les valeurs d'entrée avant de lancer l'exécution."
                         );
                     }
-                    const current = this.readLValue(target, scope);
-                    this.assignTo(target, this.coerceInput(raw, current), scope);
+                    const current = yield* this.readLValue(target, scope);
+                    yield* this.assignTo(target, this.coerceInput(raw, current), scope);
                 }
                 return;
             }
             case "if": {
-                if (this.toBool(this.evalExpr(st.cond, scope), st.line)) yield* this.execBlock({ body: st.then }, scope);
+                if (this.toBool(yield* this.evalExpr(st.cond, scope), st.line)) yield* this.execBlock({ body: st.then }, scope);
                 else yield* this.execBlock({ body: st.otherwise }, scope);
                 return;
             }
             case "while": {
-                while (this.toBool(this.evalExpr(st.cond, scope), st.line)) {
+                while (this.toBool(yield* this.evalExpr(st.cond, scope), st.line)) {
                     this.tick(st.line);
-                    yield { line: st.line, scope, kind: "while" };
+                    yield { line: st.line, scope, kind: "while", pile: this.returnStack.map(f => f.name) };
                     yield* this.execBlock({ body: st.body }, scope);
                 }
                 return;
             }
             case "for": {
-                const start = this.toInt(this.evalExpr(st.start, scope), st.start.line);
-                const end = this.toInt(this.evalExpr(st.end, scope), st.end.line);
-                const step = st.step ? this.toInt(this.evalExpr(st.step, scope), st.step.line) : 1;
+                const start = this.toInt(yield* this.evalExpr(st.start, scope), st.start.line);
+                const end = this.toInt(yield* this.evalExpr(st.end, scope), st.end.line);
+                const step = st.step ? this.toInt(yield* this.evalExpr(st.step, scope), st.step.line) : 1;
                 if (step === 0) {
                     throw new AlgoError("Le pas d'une boucle Pour ne peut pas être 0.", st.line, 1);
                 }
@@ -244,7 +248,7 @@ export class Interpreter {
                 for (let i = start; step > 0 ? i <= end : i >= end; i += step) {
                     indexCell.set(i);
                     this.tick(st.line);
-                    yield { line: st.line, scope, kind: "for" };
+                    yield { line: st.line, scope, kind: "for", pile: this.returnStack.map(f => f.name) };
                     yield* this.execBlock({ body: st.body }, scope);
                 }
                 return;
@@ -252,16 +256,20 @@ export class Interpreter {
             case "repeat": {
                 do {
                     this.tick(st.line);
-                    yield { line: st.line, scope, kind: "repeat" };
+                    yield { line: st.line, scope, kind: "repeat", pile: this.returnStack.map(f => f.name) };
                     yield* this.execBlock({ body: st.body }, scope);
-                } while (!this.toBool(this.evalExpr(st.cond, scope), st.line));
+                } while (!this.toBool(yield* this.evalExpr(st.cond, scope), st.line));
                 return;
             }
             case "switch": {
-                const v = this.evalExpr(st.expr, scope);
+                const v = yield* this.evalExpr(st.expr, scope);
                 let matched = false;
                 for (const c of st.cases) {
-                    if (c.values.some(x => this.equals(v, this.evalExpr(x, scope)))) {
+                    let correspond = false;
+                    for (const x of c.values) {
+                        if (this.equals(v, yield* this.evalExpr(x, scope))) { correspond = true; break; }
+                    }
+                    if (correspond) {
                         matched = true;
                         yield* this.execBlock({ body: c.body }, scope);
                         break;
@@ -271,7 +279,8 @@ export class Interpreter {
                 return;
             }
             case "return": {
-                const value = st.value ? this.evalExpr(st.value, scope) : null;
+                let value = null;
+                if (st.value) value = yield* this.evalExpr(st.value, scope);
                 throw new ReturnSignal(value);
             }
             default:
@@ -280,7 +289,7 @@ export class Interpreter {
     }
 
     // ---------- affectation ----------
-    assignTo(node, value, scope) {
+    *assignTo(node, value, scope) {
         if (node.kind === "var") {
             const name = node.name;
             const c = scope.lookup(name);
@@ -296,9 +305,10 @@ export class Interpreter {
             return;
         }
         if (node.kind === "index") {
-            const arr = this.evalExpr(node.target, scope);
+            const arr = yield* this.evalExpr(node.target, scope);
             if (!isArray(arr)) throw new AlgoError("Cet indice s'applique à une valeur qui n'est pas un tableau.", node.line, 1);
-            const indices = node.indices.map(ix => this.toInt(this.evalExpr(ix, scope), ix.line));
+            const indices = [];
+            for (const ix of node.indices) indices.push(this.toInt(yield* this.evalExpr(ix, scope), ix.line));
             let cur = arr;
             for (let k = 0; k < indices.length; k++) {
                 if (!isArray(cur)) throw new AlgoError("Trop d'indices pour ce tableau.", node.line, 1);
@@ -317,7 +327,7 @@ export class Interpreter {
             return;
         }
         if (node.kind === "field") {
-            const obj = this.evalExpr(node.target, scope);
+            const obj = yield* this.evalExpr(node.target, scope);
             if (!obj || typeof obj !== "object") throw new AlgoError(`« ${node.name} » ne s'applique pas à cette valeur.`, node.line, 1);
             if (!(node.name in obj)) throw new AlgoError(`Le champ « ${node.name} » n'existe pas.`, node.line, 1);
             obj[node.name] = value;
@@ -326,8 +336,8 @@ export class Interpreter {
         throw new AlgoError("Cette expression ne peut pas recevoir de valeur.", node.line, 1);
     }
 
-    readLValue(node, scope) {
-        try { return this.evalExpr(node, scope); } catch { return undefined; }
+    *readLValue(node, scope) {
+        try { return yield* this.evalExpr(node, scope); } catch { return undefined; }
     }
 
     coerceInput(raw, current) {
@@ -348,7 +358,7 @@ export class Interpreter {
     }
 
     // ---------- expressions ----------
-    evalExpr(node, scope) {
+    *evalExpr(node, scope) {
         switch (node.kind) {
             case "number": return node.value;
             case "string": return node.value;
@@ -365,13 +375,13 @@ export class Interpreter {
                 return c.get();
             }
             case "index": {
-                const arr = this.evalExpr(node.target, scope);
+                const arr = yield* this.evalExpr(node.target, scope);
                 if (!isArray(arr)) throw new AlgoError("Cet indice s'applique à une valeur qui n'est pas un tableau.", node.line, 1);
                 let cur = arr;
                 for (const ix of node.indices) {
                     if (!isArray(cur)) throw new AlgoError("Trop d'indices pour ce tableau.", node.line, 1);
                     const b = cur[BOUNDS];
-                    const i = this.toInt(this.evalExpr(ix, scope), ix.line);
+                    const i = this.toInt(yield* this.evalExpr(ix, scope), ix.line);
                     if (i < b.lo || i > b.hi) {
                         throw new AlgoError(
                             `Indice ${i} hors bornes : le tableau va de ${b.lo} à ${b.hi}.`,
@@ -383,7 +393,7 @@ export class Interpreter {
                 return cur;
             }
             case "field": {
-                const obj = this.evalExpr(node.target, scope);
+                const obj = yield* this.evalExpr(node.target, scope);
                 if (!obj || typeof obj !== "object") {
                     throw new AlgoError(`« .${node.name} » s'applique à une valeur qui n'est pas un enregistrement.`, node.line, 1);
                 }
@@ -393,31 +403,31 @@ export class Interpreter {
                 return obj[node.name];
             }
             case "unary": {
-                if (node.op === "non") return !this.toBool(this.evalExpr(node.operand, scope), node.line);
-                const v = this.evalExpr(node.operand, scope);
+                if (node.op === "non") return !this.toBool(yield* this.evalExpr(node.operand, scope), node.line);
+                const v = yield* this.evalExpr(node.operand, scope);
                 return -this.toNumber(v, node.line);
             }
-            case "binary": return this.evalBinary(node, scope);
-            case "call": return this.evalCall(node, scope);
+            case "binary": return yield* this.evalBinary(node, scope);
+            case "call": return yield* this.evalCall(node, scope);
             default:
                 throw new AlgoError(`Expression inconnue : ${node.kind}`, node.line ?? this.currentLine, 1);
         }
     }
 
-    evalBinary(node, scope) {
+    *evalBinary(node, scope) {
         const op = node.op;
 
         if (op === "et") {
-            const l = this.toBool(this.evalExpr(node.left, scope), node.line);
-            return l ? this.toBool(this.evalExpr(node.right, scope), node.line) : false;
+            const l = this.toBool(yield* this.evalExpr(node.left, scope), node.line);
+            return l ? this.toBool(yield* this.evalExpr(node.right, scope), node.line) : false;
         }
         if (op === "ou") {
-            const l = this.toBool(this.evalExpr(node.left, scope), node.line);
-            return l ? true : this.toBool(this.evalExpr(node.right, scope), node.line);
+            const l = this.toBool(yield* this.evalExpr(node.left, scope), node.line);
+            return l ? true : this.toBool(yield* this.evalExpr(node.right, scope), node.line);
         }
 
-        const a = this.evalExpr(node.left, scope);
-        const b = this.evalExpr(node.right, scope);
+        const a = yield* this.evalExpr(node.left, scope);
+        const b = yield* this.evalExpr(node.right, scope);
 
         if (op === "=") return this.equals(a, b);
         if (op === "!=" || op === "#") return !this.equals(a, b);
@@ -461,14 +471,15 @@ export class Interpreter {
         }
     }
 
-    evalCall(node, scope) {
+    *evalCall(node, scope) {
         const target = node.target;
         if (target.kind !== "var") throw new AlgoError("Seul un nom de module peut être appelé.", node.line, 1);
         const name = target.name;
 
         const builtin = this.builtins[name];
         if (builtin) {
-            const args = node.args.map(a => this.evalExpr(a, scope));
+            const args = [];
+            for (const a of node.args) args.push(yield* this.evalExpr(a, scope));
             return builtin(args, node.line);
         }
 
@@ -502,13 +513,13 @@ export class Interpreter {
             const p = fn.params[i];
             const argNode = node.args[i];
             if (p.mode === "donnee") {
-                local.declare(p.name, cell(deepCopy(this.evalExpr(argNode, scope))));
+                local.declare(p.name, cell(deepCopy(yield* this.evalExpr(argNode, scope))));
             } else {
                 // Résultat et Donnée/Résultat : la cellule pointe sur l'argument
                 // de l'appelant, en lecture comme en écriture.
                 const ref = {
-                    get: () => this.evalExpr(argNode, scope),
-                    set: (v) => this.assignTo(argNode, v, scope),
+                    get: () => this.executerJusquAuBout(this.evalExpr(argNode, scope)),
+                    set: (v) => this.executerJusquAuBout(this.assignTo(argNode, v, scope)),
                     kind: "ref"
                 };
                 local.declare(p.name, ref);
@@ -518,8 +529,8 @@ export class Interpreter {
         this.returnStack.push({ name: fn.name, value: null });
         let returned = undefined;
         try {
-            this.execDeclarations(fn.declarations, local);
-            this.executerJusquAuBout(this.execBlock(fn.body, local));
+            yield* this.execDeclarations(fn.declarations, local);
+            yield* this.execBlock(fn.body, local);
             returned = this.returnStack[this.returnStack.length - 1].value;
         } catch (e) {
             if (e instanceof ReturnSignal) {

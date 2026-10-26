@@ -516,10 +516,22 @@ Fin`
         variables.forEach(variable => listeVariables.appendChild(elementVariable(variable.nom, variable)));
     };
 
+    let afficherPile = (pile) => {
+        let ancienne = listeVariables.querySelector(".atelier-pile");
+        if (ancienne) ancienne.remove();
+        if (!pile || !pile.length) return;
+
+        let ligne = document.createElement("li");
+        ligne.className = "atelier-pile";
+        ligne.textContent = "Pile : " + pile.join(" \u2192 ");
+        listeVariables.prepend(ligne);
+    };
+
     let rendreEtape = (etape) => {
         if (!etape) return;
         surligner(etape.ligne);
         afficherVariables(etape.variables);
+        afficherPile(etape.pile);
         afficherSortie(etape.sortie);
         etatExecution.textContent = "Ligne " + etape.ligne;
         etatExecution.className = "atelier-etat";

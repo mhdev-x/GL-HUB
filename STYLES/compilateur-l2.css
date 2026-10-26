@@ -430,3 +430,12 @@ li.CodeMirror-hint-active {
     opacity: 0.45;
     cursor: not-allowed;
 }
+
+/* Pile d'appels */
+.atelier-pile {
+    color: var(--atelier-accent);
+    font-size: 0.8em;
+    border-bottom: 1px dashed var(--atelier-bordure);
+    padding-bottom: 5px;
+    margin-bottom: 5px;
+}
