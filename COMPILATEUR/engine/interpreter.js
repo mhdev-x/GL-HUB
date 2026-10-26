@@ -77,6 +77,7 @@ export class Interpreter {
         this.global = new Scope();
         this.returnStack = [];
         this.currentLine = 0;
+        this.interactif = !!options.interactif;
     }
 
     // ---------- déclarations ----------
@@ -209,15 +210,26 @@ export class Interpreter {
             }
             case "read": {
                 for (const target of st.args) {
-                    const raw = this.inputs.shift();
-                    if (raw === undefined) {
-                        throw new AlgoError(
-                            "Il n'y a plus de valeur à lire : le programme attend une entrée.",
-                            st.line, 1,
-                            "Fournis les valeurs d'entrée avant de lancer l'exécution."
-                        );
-                    }
                     const current = yield* this.readLValue(target, scope);
+
+                    let raw = this.inputs.length ? this.inputs.shift() : undefined;
+                    if (raw === undefined) {
+                        if (this.interactif) {
+                            raw = yield {
+                                demandeEntree: true,
+                                line: st.line,
+                                nom: this.nomCible(target),
+                                type: this.libelleType(current)
+                            };
+                        } else {
+                            throw new AlgoError(
+                                "Il n'y a plus de valeur à lire : le programme attend une entrée.",
+                                st.line, 1,
+                                "Fournis les valeurs d'entrée avant de lancer l'exécution."
+                            );
+                        }
+                    }
+
                     yield* this.assignTo(target, this.coerceInput(raw, current), scope);
                 }
                 return;
@@ -334,6 +346,21 @@ export class Interpreter {
             return;
         }
         throw new AlgoError("Cette expression ne peut pas recevoir de valeur.", node.line, 1);
+    }
+
+    nomCible(node) {
+        if (!node) return "valeur";
+        if (node.kind === "var") return node.raw || node.name;
+        if (node.kind === "index") return this.nomCible(node.target);
+        if (node.kind === "field") return node.name;
+        return "valeur";
+    }
+
+    libelleType(valeur) {
+        if (typeof valeur === "boolean") return "booléen";
+        if (typeof valeur === "number") return Number.isInteger(valeur) ? "entier" : "réel";
+        if (typeof valeur === "string") return "chaîne";
+        return "";
     }
 
     *readLValue(node, scope) {

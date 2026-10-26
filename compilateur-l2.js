@@ -42,6 +42,9 @@
     let boutonPrecedent = document.querySelector("#boutonPrecedent");
     let boutonSuivant = document.querySelector("#boutonSuivant");
     let compteurEtapes = document.querySelector("#compteurEtapes");
+    let attendreEntree = document.querySelector("#attendreEntree");
+    let inviteEntree = document.querySelector("#inviteEntree");
+    let champEntree = document.querySelector("#champEntree");
     let listeOnglets = document.querySelector("#listeOnglets");
     let boutonNouvelOnglet = document.querySelector("#boutonNouvelOnglet");
 
@@ -564,42 +567,103 @@ Fin`
         return moteur;
     };
 
+    let modeExecution = "run";
+
+    let demarrerExecution = async (mode) => {
+        arreterExecution();
+        viderConsole();
+        cacherInvite();
+        afficherVariables([]);
+        afficherPile([]);
+        modeExecution = mode;
+
+        let { parse, Stepper } = await chargerMoteur();
+        execution = new Stepper(parse(lireCode()), {
+            inputs: lireEntrees(),
+            interactif: true,
+            historique: mode === "pas"
+        });
+        return execution;
+    };
+
     let executer = async () => {
         if (choixLangage.value !== "pseudo") return;
 
-        arreterExecution();
-        afficherVariables([]);
-        afficherPile([]);
-        mettreAJourNavigation();
-        etatExecution.textContent = "Exécution...";
-        etatExecution.className = "atelier-etat";
-        viderConsole();
-
-        let debut = performance.now();
         try {
-            let { parse, Stepper } = await chargerMoteur();
-            let stepper = new Stepper(parse(lireCode()), { inputs: lireEntrees(), historique: false });
-            let derniere = stepper.continuer();
-            let fin = performance.now();
+            await demarrerExecution("run");
+            etatExecution.textContent = "Exécution...";
+            etatExecution.className = "atelier-etat";
 
-            afficherSortie(stepper.sortie);
-            if (!stepper.sortie.length) {
-                ajouterLigne("Le programme s'est exécuté sans rien afficher.", "ligne-vide");
-            }
-            if (derniere) {
-                afficherVariables(derniere.variables);
-                afficherPile(derniere.pile);
-            }
-            surligner(null);
+            let debut = performance.now();
+            execution.continuer(new Set());
 
-            let duree = Math.max(1, Math.round(fin - debut));
-            etatExecution.textContent = `Terminé en ${duree} ms`;
-            etatExecution.className = "atelier-etat succes";
+            if (execution.enAttente) { afficherInvite(); return; }
+
+            let duree = Math.max(1, Math.round(performance.now() - debut));
+            terminerExecution("Terminé en " + duree + " ms");
         } catch (erreur) {
             await gererErreurExecution(erreur);
         }
     };
 
+    // ---------- Saisie directe dans la console ----------
+    let afficherInvite = () => {
+        if (!execution || !execution.demande) return;
+
+        afficherSortie(execution.sortie);
+        let demande = execution.demande.demandeEntree || execution.demande;
+        attendreEntree.hidden = false;
+        inviteEntree.textContent = (demande.nom || "valeur") + (demande.type ? " (" + demande.type + ")" : "");
+        champEntree.value = "";
+        etatExecution.textContent = "En attente d'une entrée";
+        etatExecution.className = "atelier-etat";
+        champEntree.focus();
+        sortie.scrollTop = sortie.scrollHeight;
+    };
+
+    let cacherInvite = () => {
+        if (attendreEntree) attendreEntree.hidden = true;
+    };
+
+    let soumettreEntree = () => {
+        if (!execution || !execution.enAttente) return;
+
+        let valeur = champEntree.value;
+        cacherInvite();
+        ajouterLigne("> " + valeur, "ligne-entree");
+
+        try {
+            let etape = execution.repondre(valeur);
+
+            if (modeExecution === "run") {
+                if (execution.enAttente) { afficherInvite(); return; }
+                execution.continuer(new Set());
+                if (execution.enAttente) { afficherInvite(); return; }
+                terminerExecution("Terminé");
+                return;
+            }
+
+            if (execution.enAttente) { afficherInvite(); return; }
+            if (etape) rendreEtape(etape);
+            else terminerExecution("Programme terminé");
+        } catch (erreur) {
+            gererErreurExecution(erreur);
+        }
+    };
+
+    let terminerExecution = (message) => {
+        if (execution) {
+            afficherSortie(execution.sortie);
+            if (execution.derniere) {
+                afficherVariables(execution.derniere.variables);
+                afficherPile(execution.derniere.pile);
+            }
+        }
+        if (message) {
+            etatExecution.textContent = message;
+            etatExecution.className = "atelier-etat succes";
+        }
+    };
 
     // ---------- Pas à pas ----------
     let surligner = (ligne) => {
@@ -704,7 +768,7 @@ Fin`
     };
 
     let rendreEtape = (etape) => {
-        if (!etape) return;
+        if (!etape || etape.demandeEntree) return;
         surligner(etape.ligne);
         afficherVariables(etape.variables);
         afficherPile(etape.pile);
@@ -720,14 +784,8 @@ Fin`
             execution = null;
         }
         surligner(null);
-        if (typeof mettreAJourNavigation === "function") mettreAJourNavigation();
-    };
-
-    let preparerPasAPas = async () => {
-        let { parse, Stepper } = await chargerMoteur();
-        arreterExecution();
-        execution = new Stepper(parse(lireCode()), { inputs: lireEntrees() });
-        return execution;
+        cacherInvite();
+        mettreAJourNavigation();
     };
 
     let gererErreurExecution = async (erreur) => {
@@ -742,15 +800,14 @@ Fin`
 
     let pasAPas = async () => {
         try {
-            if (!execution || execution.termine) await preparerPasAPas();
+            if (!execution || execution.termine || modeExecution !== "pas") await demarrerExecution("pas");
             else execution.allerEnFin();
+
+            if (execution.enAttente) { afficherInvite(); return; }
+
             let etape = execution.avancer();
-            if (!etape) {
-                afficherSortie(execution.sortie);
-                etatExecution.textContent = "Programme terminé";
-                etatExecution.className = "atelier-etat succes";
-                return;
-            }
+            if (!etape) { terminerExecution("Programme terminé"); return; }
+            if (etape.demandeEntree) { afficherInvite(); return; }
             rendreEtape(etape);
         } catch (erreur) {
             await gererErreurExecution(erreur);
@@ -759,17 +816,20 @@ Fin`
 
     let continuerExecution = async () => {
         try {
-            if (!execution || execution.termine) await preparerPasAPas();
+            if (!execution || execution.termine || modeExecution !== "pas") await demarrerExecution("pas");
             else execution.allerEnFin();
+
+            if (execution.enAttente) { afficherInvite(); return; }
+
             let etape = execution.continuer(pointsArret);
+            if (execution.enAttente) { afficherInvite(); return; }
             if (etape) rendreEtape(etape);
-            afficherSortie(execution.sortie);
+
             if (etape && pointsArret.has(etape.ligne)) {
                 etatExecution.textContent = "Point d'arrêt — ligne " + etape.ligne;
                 etatExecution.className = "atelier-etat";
             } else if (execution.termine) {
-                etatExecution.textContent = "Programme terminé";
-                etatExecution.className = "atelier-etat succes";
+                terminerExecution("Programme terminé");
             }
         } catch (erreur) {
             await gererErreurExecution(erreur);
@@ -778,6 +838,7 @@ Fin`
 
     let stopperExecution = () => {
         arreterExecution();
+        cacherInvite();
         etatExecution.textContent = "Arrêté";
         etatExecution.className = "atelier-etat";
     };
@@ -863,6 +924,18 @@ Fin`
     if (boutonPas) boutonPas.addEventListener("click", pasAPas);
     if (boutonContinuer) boutonContinuer.addEventListener("click", continuerExecution);
     if (boutonStop) boutonStop.addEventListener("click", stopperExecution);
+    if (champEntree) {
+        champEntree.addEventListener("keydown", (evenement) => {
+            if (evenement.key === "Enter") {
+                evenement.preventDefault();
+                soumettreEntree();
+            } else if (evenement.key === "Escape") {
+                evenement.preventDefault();
+                stopperExecution();
+            }
+        });
+    }
+
     if (boutonNouvelOnglet) boutonNouvelOnglet.addEventListener("click", ajouterOnglet);
     if (boutonPrecedent) boutonPrecedent.addEventListener("click", allerPrecedent);
     if (boutonSuivant) boutonSuivant.addEventListener("click", allerSuivant);

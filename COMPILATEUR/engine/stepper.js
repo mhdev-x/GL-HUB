@@ -35,6 +35,8 @@ export class Stepper {
         this.index = -1;
         this.historiqueActif = options.historique !== false;
         this.derniere = null;
+        this.enAttente = false;
+        this.demande = null;
     }
 
     get position() {
@@ -113,7 +115,7 @@ export class Stepper {
 
     /** Produit le pas suivant, ou null si le programme est terminé. */
     avancer() {
-        if (this.termine) return null;
+        if (this.termine || this.enAttente) return null;
 
         let resultat;
         try {
@@ -123,12 +125,39 @@ export class Stepper {
             throw erreur;
         }
 
+        return this.traiter(resultat);
+    }
+
+    /** Répond à une demande de saisie et poursuit l'exécution. */
+    repondre(valeur) {
+        if (!this.enAttente) return null;
+        this.enAttente = false;
+
+        let resultat;
+        try {
+            resultat = this.execution.next(valeur);
+        } catch (erreur) {
+            this.termine = true;
+            throw erreur;
+        }
+
+        return this.traiter(resultat);
+    }
+
+    traiter(resultat) {
         if (resultat.done) {
             this.termine = true;
             return null;
         }
 
-        let { line, scope, pile } = resultat.value;
+        let valeur = resultat.value;
+        if (valeur && valeur.demandeEntree) {
+            this.enAttente = true;
+            this.demande = valeur;
+            return { demandeEntree: valeur, sortie: this.sortie };
+        }
+
+        let { line, scope, pile } = valeur;
         let etape = {
             ligne: line,
             pile: pile || [],
@@ -153,6 +182,7 @@ export class Stepper {
                 let etape = this.avancer();
                 if (!etape) break;
                 derniere = etape;
+                if (etape.demandeEntree) break;
             }
             return derniere;
         }
@@ -161,6 +191,7 @@ export class Stepper {
             let etape = this.avancer();
             if (!etape) break;
             derniere = etape;
+            if (etape.demandeEntree) break;
             if (pointsArret.has(etape.ligne)) break;
         }
         return derniere;

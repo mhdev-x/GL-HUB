@@ -536,3 +536,47 @@ li.CodeMirror-hint-active {
     font-size: 0.95em;
     line-height: 1.4;
 }
+
+/* ---------- Saisie directe dans la console ---------- */
+.atelier-attente {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 10px 14px;
+    border-top: 1px solid var(--atelier-bordure);
+    background: #0b1220;
+}
+
+.atelier-attente[hidden] { display: none !important; }
+
+.atelier-invite {
+    color: var(--atelier-accent-clair);
+    font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
+    font-size: 13px;
+    min-width: 90px;
+}
+
+.atelier-attente input {
+    flex: 1;
+    min-width: 140px;
+    background: #080e1a;
+    color: var(--atelier-texte);
+    border: 1px solid var(--atelier-bordure);
+    border-radius: 6px;
+    padding: 7px 10px;
+    font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
+    font-size: 13.5px;
+}
+
+.atelier-attente input:focus {
+    outline: 2px solid var(--atelier-accent);
+    outline-offset: 1px;
+}
+
+.atelier-attente-aide {
+    font-size: 0.7rem;
+    color: var(--atelier-texte-faible);
+}
+
+.atelier-console .ligne-entree { display: block; color: var(--atelier-accent-clair); }
