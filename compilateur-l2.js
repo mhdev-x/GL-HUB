@@ -42,6 +42,8 @@
     let inviteEntree = document.querySelector("#inviteEntree");
     let champEntree = document.querySelector("#champEntree");
     let listeOnglets = document.querySelector("#listeOnglets");
+    let panneauStdin = document.querySelector("#panneauStdin");
+    let champStdin = document.querySelector("#stdin");
     let boutonNouvelOnglet = document.querySelector("#boutonNouvelOnglet");
 
     let editeur = null;          // instance CodeMirror si disponible
@@ -204,7 +206,8 @@ Fin`
                         id: o && o.id ? o.id : identifiantOnglet(),
                         nom: o && o.nom ? String(o.nom).slice(0, 30) : "Programme",
                         code: o && typeof o.code === "string" ? o.code : "",
-                        entrees: o && typeof o.entrees === "string" ? o.entrees : ""
+                        entrees: o && typeof o.entrees === "string" ? o.entrees : "",
+                        stdin: o && typeof o.stdin === "string" ? o.stdin : ""
                     }));
                     ongletActif = Math.min(Math.max(0, Number(donnees.actif) || 0), onglets.length - 1);
                     compteurNoms = onglets.length + 1;
@@ -244,6 +247,7 @@ Fin`
     let enregistrerOngletCourant = () => {
         if (!onglets.length) return;
         onglets[ongletActif].code = lireCode();
+        if (champStdin) onglets[ongletActif].stdin = champStdin.value;
     };
 
     let rendreOnglets = () => {
@@ -285,6 +289,7 @@ Fin`
         let onglet = onglets[ongletActif];
         chargementOnglet = true;
         ecrireCode(onglet.code);
+        if (champStdin) champStdin.value = onglet.stdin || "";
         chargementOnglet = false;
         viderConsole();
         afficherVariables([]);
@@ -310,7 +315,8 @@ Fin`
             id: identifiantOnglet(),
             nom,
             code: "Var \nDébut\n    \nFin",
-            entrees: ""
+            entrees: "",
+            stdin: ""
         });
         ongletActif = onglets.length - 1;
         chargerOngletActif();
@@ -433,6 +439,7 @@ Fin`
     let chargerCodeInitial = () => {
         chargerOnglets();
         let onglet = onglets[ongletActif];
+        if (champStdin) champStdin.value = onglet.stdin || "";
         return onglet.code || EXEMPLES[0].code;
     };
 
@@ -551,7 +558,7 @@ Fin`
     };
 
     let executer = async () => {
-        if (choixLangage.value !== "pseudo") return;
+        if (choixLangage.value !== "pseudo") { await executerDistant(); return; }
 
         try {
             await demarrerExecution("run");
@@ -567,6 +574,64 @@ Fin`
             terminerExecution("Terminé en " + duree + " ms");
         } catch (erreur) {
             await gererErreurExecution(erreur);
+        }
+    };
+
+    // ---------- Exécution distante C / C++ (Judge0) ----------
+    let executerDistant = async () => {
+        let idLangage = choixLangage.value === "cpp" ? 54 : 50;
+
+        arreterExecution();
+        afficherVariables([]);
+        afficherPile([]);
+        cacherInvite();
+        viderConsole();
+        etatExecution.textContent = "Compilation...";
+        etatExecution.className = "atelier-etat";
+
+        try {
+            let reponse = await fetch("https://ce.judge0.com/submissions?base64_encoded=false&wait=true", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    language_id: idLangage,
+                    source_code: lireCode(),
+                    stdin: champStdin ? champStdin.value : ""
+                })
+            });
+
+            if (!reponse.ok) throw new Error("HTTP " + reponse.status);
+            let resultat = await reponse.json();
+
+            let erreursCompilation = (resultat.compile_output || "").trim();
+            if (erreursCompilation) {
+                ajouterLigne("Compilation :", "ligne-erreur");
+                erreursCompilation.split("\n").forEach(ligne => ajouterLigne(ligne, "ligne-erreur"));
+            }
+
+            let sortieStandard = resultat.stdout || "";
+            if (sortieStandard) {
+                sortieStandard.replace(/\n$/, "").split("\n").forEach(ligne => ajouterLigne(ligne));
+            }
+
+            let erreursExecution = (resultat.stderr || "").trim();
+            if (erreursExecution) {
+                erreursExecution.split("\n").forEach(ligne => ajouterLigne(ligne, "ligne-erreur"));
+            }
+
+            if (!sortieStandard && !erreursExecution && !erreursCompilation) {
+                ajouterLigne("Le programme s'est exécuté sans rien afficher.", "ligne-vide");
+            }
+
+            let statut = resultat.status && resultat.status.description ? resultat.status.description : "Terminé";
+            let accepte = resultat.status && resultat.status.id === 3;
+            etatExecution.textContent = statut;
+            etatExecution.className = "atelier-etat " + (accepte ? "succes" : "erreur");
+        } catch (erreur) {
+            ajouterLigne("Impossible de joindre le service d'exécution : " + (erreur && erreur.message ? erreur.message : erreur), "ligne-erreur");
+            ajouterLigne("→ Vérifie ta connexion. L'exécution C/C++ passe par ce.judge0.com.", "ligne-conseil");
+            etatExecution.textContent = "Erreur réseau";
+            etatExecution.className = "atelier-etat erreur";
         }
     };
 
@@ -909,14 +974,34 @@ Fin`
     if (boutonSuivant) boutonSuivant.addEventListener("click", allerSuivant);
     if (boutonEffacer) boutonEffacer.addEventListener("click", viderConsole);
 
-    if (choixLangage) {
-        choixLangage.addEventListener("change", () => {
-            if (choixLangage.value !== "pseudo") {
-                ajouterLigne("Ce langage sera disponible dans une prochaine version.", "ligne-vide");
-                choixLangage.value = "pseudo";
-            }
+    let appliquerLangage = () => {
+        let langage = choixLangage ? choixLangage.value : "pseudo";
+        let pseudo = langage === "pseudo";
+
+        if (panneauStdin) panneauStdin.hidden = pseudo;
+
+        [boutonPas, boutonContinuer, boutonStop, boutonPrecedent, boutonSuivant].forEach(bouton => {
+            if (bouton) bouton.disabled = !pseudo;
         });
-    }
+
+        if (editeur) {
+            editeur.setOption("mode", pseudo ? "text/x-pseudo" : (langage === "c" ? "text/x-csrc" : "text/x-c++src"));
+        }
+
+        arreterExecution();
+        viderConsole();
+
+        if (pseudo) {
+            etatExecution.textContent = "";
+        } else {
+            etatExecution.textContent = "C/C++ : exécution distante";
+            ajouterLigne("Colle ton programme " + (langage === "cpp" ? "C++" : "C") + ", renseigne les entrées standard, puis Exécute.", "ligne-vide");
+            ajouterLigne("La saisie interactive n'est pas possible en C/C++ : le programme tourne sur un serveur, pas dans ton navigateur.", "ligne-vide");
+        }
+        etatExecution.className = "atelier-etat";
+    };
+
+    if (choixLangage) choixLangage.addEventListener("change", appliquerLangage);
 
     if (boutonConnexionL2) {
         boutonConnexionL2.addEventListener("click", () => {
@@ -929,5 +1014,6 @@ Fin`
     if (boutonReessayer) boutonReessayer.addEventListener("click", initialiser);
 
     construireExemples();
+    appliquerLangage();
     initialiser();
 })();
