@@ -39,7 +39,7 @@
     let boutonSuivant = document.querySelector("#boutonSuivant");
     let compteurEtapes = document.querySelector("#compteurEtapes");
     let attendreEntree = document.querySelector("#attendreEntree");
-    let inviteEntree = document.querySelector("#inviteEntree");
+    let texteInvite = document.querySelector("#texteInvite");
     let champEntree = document.querySelector("#champEntree");
     let listeOnglets = document.querySelector("#listeOnglets");
     let panneauStdin = document.querySelector("#panneauStdin");
@@ -539,6 +539,7 @@ Fin`
     };
 
     let modeExecution = "run";
+    let promptCourant = null;
 
     let demarrerExecution = async (mode) => {
         arreterExecution();
@@ -639,16 +640,21 @@ Fin`
     let afficherInvite = () => {
         if (!execution || !execution.demande) return;
 
-        afficherSortie(execution.sortie);
+        let lignes = execution.sortie.slice();
+        let derniere = lignes.length ? lignes[lignes.length - 1] : "";
+        if (lignes.length) lignes.pop();
 
-        let demande = execution.demande || {};
-        let nom = demande.nom || "valeur";
-        let type = demande.type ? " (" + demande.type + ")" : "";
+        promptCourant = {
+            texte: derniere,
+            avaitLigne: execution.sortie.length > 0
+        };
+
+        afficherSortie(lignes);
 
         attendreEntree.hidden = false;
-        inviteEntree.textContent = nom + type;
-        ajouterLigne("\u2192 " + nom + type, "ligne-conseil");
+        texteInvite.textContent = derniere;
         champEntree.value = "";
+        ajusterLargeurEntree();
         etatExecution.textContent = "En attente d'une entrée";
         etatExecution.className = "atelier-etat";
         champEntree.focus();
@@ -662,12 +668,28 @@ Fin`
         if (attendreEntree) attendreEntree.hidden = true;
     };
 
+    let ajusterLargeurEntree = () => {
+        if (!champEntree) return;
+        champEntree.style.width = Math.max(4, champEntree.value.length + 1) + "ch";
+    };
+
     let soumettreEntree = () => {
         if (!execution || !execution.enAttente) return;
 
         let valeur = champEntree.value;
         cacherInvite();
-        ajouterLigne("> " + valeur, "ligne-entree");
+
+        let sortieMoteur = execution.interpreteur.output;
+        let invite = promptCourant || { texte: "", avaitLigne: false };
+        let coller = invite.avaitLigne && (invite.texte === "" || /[:?>\s]$/.test(invite.texte));
+
+        if (coller) {
+            sortieMoteur[sortieMoteur.length - 1] = invite.texte + valeur;
+        } else {
+            sortieMoteur.push(valeur);
+        }
+        promptCourant = null;
+        afficherSortie(execution.sortie);
 
         try {
             let etape = execution.repondre(valeur);
@@ -870,8 +892,10 @@ Fin`
     };
 
     let stopperExecution = () => {
+        let sortieAvant = execution ? execution.sortie : null;
         arreterExecution();
         cacherInvite();
+        if (sortieAvant) afficherSortie(sortieAvant);
         etatExecution.textContent = "Arrêté";
         etatExecution.className = "atelier-etat";
     };
@@ -966,6 +990,14 @@ Fin`
                 evenement.preventDefault();
                 stopperExecution();
             }
+        });
+
+        champEntree.addEventListener("input", ajusterLargeurEntree);
+        champEntree.addEventListener("keyup", (evenement) => {
+            if (evenement.key !== "Enter" && evenement.key !== "Escape") ajusterLargeurEntree();
+        });
+        champEntree.addEventListener("click", (evenement) => {
+            evenement.stopPropagation();
         });
     }
 
