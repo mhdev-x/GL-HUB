@@ -484,7 +484,11 @@ Fin`
                 extraKeys: {
                     "Ctrl-Enter": () => executer(),
                     "Cmd-Enter": () => executer(),
-                    Tab: (cm) => cm.replaceSelection("    ", "end")
+                    Tab: (cm) => {
+                        // Comme dans un IDE : Tab valide la suggestion ouverte.
+                        if (cm.state && cm.state.completionActive) return CodeMirror.Pass;
+                        cm.replaceSelection("    ", "end");
+                    }
                 }
             });
             editeur.setValue(chargerCodeInitial());

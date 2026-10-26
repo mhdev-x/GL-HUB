@@ -105,13 +105,15 @@
     let extraireVariables = (code) => {
         let noms = new Map();
 
-        let ajouterNom = (nom) => {
+        let ajouterNom = (nom, type) => {
             let propre = String(nom || "").trim();
             if (!propre) return;
             let cle = normaliser(propre);
             if (!/^[a-z_][a-z0-9_]*$/.test(cle)) return;
             if (RESERVES.has(cle)) return;
-            if (!noms.has(cle)) noms.set(cle, propre);
+            if (!noms.has(cle)) {
+                noms.set(cle, { nom: propre, type: String(type || "").trim() });
+            }
         };
 
         let lignes = String(code || "").split("\n");
@@ -131,24 +133,25 @@
             if (!zoneDeclarations) continue;
 
             // « Var nom, prenom : chaine » ou, en continuation, « age : entier »
-            let declaration = ligne.match(/^(?:var|variable|variables)\s+([^:]+?)\s*:/i)
-                || ligne.match(/^([A-Za-z\u00C0-\u00FF_][A-Za-z\u00C0-\u00FF0-9_]*(?:\s*,\s*[A-Za-z\u00C0-\u00FF_][A-Za-z\u00C0-\u00FF0-9_]*)*)\s*:/);
+            let declaration = ligne.match(/^(?:var|variable|variables)\s+([^:]+?)\s*:\s*(.+)$/i)
+                || ligne.match(/^([A-Za-z\u00C0-\u00FF_][A-Za-z\u00C0-\u00FF0-9_]*(?:\s*,\s*[A-Za-z\u00C0-\u00FF_][A-Za-z\u00C0-\u00FF0-9_]*)*)\s*:\s*(.+)$/);
             if (declaration) {
-                declaration[1].split(",").forEach(nom => ajouterNom(nom.replace(/\s+/g, "")));
+                let type = declaration[2].replace(/\s+/g, " ").trim().slice(0, 24);
+                declaration[1].split(",").forEach(nom => ajouterNom(nom.replace(/\s+/g, ""), type));
             }
 
             // « Const N = 150 »
             let constante = ligne.match(/^(?:const|constante)\s+([A-Za-z\u00C0-\u00FF_][A-Za-z\u00C0-\u00FF0-9_]*)/i);
-            if (constante) ajouterNom(constante[1]);
+            if (constante) ajouterNom(constante[1], "constante");
 
             // paramètres de module : « Fonction f(Donnee X:entier, Y:chaine) »
             let module = ligne.match(/^(?:fonction|proc[ée]dure)\s+\w+\s*\((.*)/i);
             if (module) {
                 module[1].split(",").forEach((groupe) => {
-                    groupe.split(":")[0]
-                        .replace(/\(|\)/g, " ")
-                        .split(/\s+/)
-                        .forEach(ajouterNom);
+                    let morceaux = groupe.split(":");
+                    let type = (morceaux[1] || "").replace(/[)\s]+$/, "").trim().slice(0, 24);
+                    morceaux[0].replace(/\(|\)/g, " ").split(/\s+/)
+                        .forEach(nom => ajouterNom(nom, type));
                 });
             }
         }
@@ -222,7 +225,16 @@
                 return { list: liste, from, to };
             }
 
-            // 2) Modèles de blocs
+            // 2) Variables du programme (les plus pertinentes)
+            extraireVariables(editeur.getValue()).forEach(variable => {
+                ajouter({
+                    text: variable.nom,
+                    displayText: variable.type ? variable.nom + "   " + variable.type : variable.nom,
+                    className: "cm-sugg-variable"
+                });
+            });
+
+            // 3) Modèles de blocs
             MODELES.forEach(modele => {
                 if (prefixe && !normaliser(modele.mot).startsWith(prefixe)) return;
                 if (vus.has(modele.mot.toLowerCase())) return;
@@ -233,11 +245,6 @@
                     className: "cm-sugg-modele",
                     hint: (editeur2, donnees) => insererModele(editeur2, modele.modele, donnees.from, donnees.to)
                 });
-            });
-
-            // 3) Variables du programme
-            extraireVariables(editeur.getValue()).forEach(nom => {
-                ajouter({ text: nom, displayText: nom, className: "cm-sugg-variable" });
             });
 
             // 4) Mots-clés et fonctions
@@ -281,9 +288,9 @@
                 let curseur = editeur.getCursor();
                 let avant = editeur.getLine(curseur.line).slice(0, curseur.ch);
                 let mot = (avant.match(/[A-Za-z\u00C0-\u00FF_][A-Za-z\u00C0-\u00FF0-9_]*$/) || [""])[0];
-                if (mot.length < 2) return;
+                if (mot.length < 1) return;
                 ouvrir();
-            }, 180);
+            }, 120);
         });
     };
 
