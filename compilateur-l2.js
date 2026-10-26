@@ -611,14 +611,22 @@ Fin`
         if (!execution || !execution.demande) return;
 
         afficherSortie(execution.sortie);
-        let demande = execution.demande.demandeEntree || execution.demande;
+
+        let demande = execution.demande || {};
+        let nom = demande.nom || "valeur";
+        let type = demande.type ? " (" + demande.type + ")" : "";
+
         attendreEntree.hidden = false;
-        inviteEntree.textContent = (demande.nom || "valeur") + (demande.type ? " (" + demande.type + ")" : "");
+        inviteEntree.textContent = nom + type;
+        ajouterLigne("\u2192 " + nom + type, "ligne-conseil");
         champEntree.value = "";
         etatExecution.textContent = "En attente d'une entrée";
         etatExecution.className = "atelier-etat";
         champEntree.focus();
         sortie.scrollTop = sortie.scrollHeight;
+        if (attendreEntree.scrollIntoView) {
+            attendreEntree.scrollIntoView({ block: "nearest" });
+        }
     };
 
     let cacherInvite = () => {
