@@ -511,3 +511,28 @@ li.CodeMirror-hint-active {
 }
 
 .atelier-onglet-ajout:hover { color: var(--atelier-accent-clair); }
+
+/* Rappel des raccourcis */
+.atelier-aide-cles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 16px;
+    margin: 0;
+    padding: 6px 14px;
+    background: var(--atelier-fond-panneau);
+    border-bottom: 1px solid var(--atelier-bordure);
+    font-size: 0.72rem;
+    color: var(--atelier-texte-faible);
+}
+
+.atelier-aide-cles kbd {
+    display: inline-block;
+    padding: 1px 5px;
+    border: 1px solid var(--atelier-bordure);
+    border-radius: 4px;
+    background: #0b1220;
+    color: var(--atelier-accent-clair);
+    font-family: inherit;
+    font-size: 0.95em;
+    line-height: 1.4;
+}

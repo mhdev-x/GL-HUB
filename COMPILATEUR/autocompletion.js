@@ -261,9 +261,11 @@
         };
 
         let options = cm.getOption("extraKeys") || {};
+        // macOS capture Ctrl+Espace (source de saisie) et Cmd+Espace
+        // (Spotlight) : on ajoute Option+Espace, qui reste libre.
         options["Ctrl-Space"] = ouvrir;
+        options["Alt-Space"] = ouvrir;
         options["Cmd-Space"] = ouvrir;
-        options["Ctrl-Space"] = ouvrir;
         cm.setOption("extraKeys", options);
 
         // Déclenchement automatique après 2 lettres
