@@ -333,6 +333,15 @@ Fin`
             editeur.setValue(chargerCodeInitial());
             editeur.on("cursorActivity", mettreAJourCompteur);
             editeur.on("change", sauvegarder);
+
+            // Autocomplétion contextuelle (facultative : l'éditeur reste utilisable sans)
+            if (window.GLHUBAutoCompletion && typeof window.GLHUBAutoCompletion.installer === "function") {
+                try {
+                    window.GLHUBAutoCompletion.installer(CodeMirror, editeur);
+                } catch (erreur) {
+                    console.warn("Autocomplétion indisponible :", erreur);
+                }
+            }
         } else {
             champCode.value = chargerCodeInitial();
             champCode.addEventListener("input", sauvegarder);

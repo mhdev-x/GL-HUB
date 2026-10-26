@@ -320,3 +320,32 @@
     outline: 2px solid var(--atelier-vert);
     outline-offset: 1px;
 }
+
+/* ---------- Fenêtre d'autocomplétion ---------- */
+.CodeMirror-hints {
+    background: #2b2b2b;
+    border: 1px solid var(--atelier-bordure);
+    border-radius: 6px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+    font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
+    font-size: 12.5px;
+    color: var(--atelier-texte);
+    padding: 4px 0;
+    z-index: 20;
+}
+
+.CodeMirror-hint {
+    padding: 5px 12px;
+    color: var(--atelier-texte);
+    white-space: pre;
+}
+
+li.CodeMirror-hint-active {
+    background: #214283;
+    color: #ffffff;
+}
+
+.cm-sugg-modele { color: var(--atelier-accent); font-weight: 600; }
+.cm-sugg-variable { color: #9cdcfe; }
+.cm-sugg-motcle { color: var(--atelier-texte); }
+.cm-sugg-type { color: #b5cea8; }
