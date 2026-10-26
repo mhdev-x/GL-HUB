@@ -178,8 +178,6 @@
                             <option value="pseudo" selected>Pseudo-code</option>
                             <option value="python" disabled>Python (bientôt)</option>
                             <option value="javascript" disabled>JavaScript (bientôt)</option>
-                            <option value="c">C</option>
-                            <option value="cpp">C++</option>
                         </select>
                     </label>
 
@@ -228,14 +226,6 @@
                     </button>
                 </div>
 
-                <div id="panneauStdin" class="atelier-entrees" hidden>
-                    <label for="stdin">Entrées standard (stdin)
-                        <span class="atelier-aide">une valeur par ligne — l'exécution C/C++ est distante, la saisie ne peut pas être interactive</span>
-                    </label>
-                    <textarea id="stdin" rows="3" spellcheck="false" autocomplete="off"
-                              placeholder="15&#10;10&#10;11&#10;0"></textarea>
-                </div>
-
                 <div class="atelier-corps">
                     <div class="atelier-editeur">
                         <textarea id="code" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Code pseudo-code"></textarea>
@@ -277,7 +267,6 @@
     <script src="auth.js"></script>
     <script src="classes-nav.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/clike/clike.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.js"></script>
     <script src="COMPILATEUR/autocompletion.js"></script>
     <script src="compilateur-l2.js"></script>
