@@ -249,8 +249,15 @@
         });
 
         let ouvrir = () => {
-            editeur.showHint_ = true;
-            cm.showHint({ hint: CodeMirror.hint.pseudo, completeSingle: false });
+            // On passe un wrapper : certains environnements CodeMirror ne
+            // reprennent pas correctement une fonction de hint passée telle
+            // quelle (le popup ne s'ouvre alors jamais).
+            cm.showHint({
+                hint: function (editeurCourant, options) {
+                    return CodeMirror.hint.pseudo(editeurCourant, options);
+                },
+                completeSingle: false
+            });
         };
 
         let options = cm.getOption("extraKeys") || {};
