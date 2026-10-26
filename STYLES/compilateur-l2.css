@@ -1,0 +1,257 @@
+/* Sécurité d'affichage : aucune règle ne doit réafficher une vue cachée */
+[hidden] {
+    display: none !important;
+}
+
+/* ========================================================
+   GL HUB — Atelier de programmation (espace L2)
+   Charte : Darcula (JetBrains), disposition VS Code
+   ======================================================== */
+
+.atelier {
+    --atelier-fond: #2b2b2b;
+    --atelier-fond-barre: #3c3f41;
+    --atelier-fond-panneau: #313335;
+    --atelier-texte: #a9b7c6;
+    --atelier-texte-faible: #808080;
+    --atelier-bordure: #4b4b4b;
+    --atelier-accent: #cc7832;
+    --atelier-vert: #6a8759;
+    --atelier-bleu: #6897bb;
+
+    border: 1px solid var(--color-card-border);
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--atelier-fond);
+    color: var(--atelier-texte);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+}
+
+/* ---------- Barre d'outils ---------- */
+.atelier-barre {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 10px 14px;
+    background: var(--atelier-fond-barre);
+    border-bottom: 1px solid var(--atelier-bordure);
+}
+
+.atelier-langage {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: var(--atelier-texte-faible);
+}
+
+.atelier-langage select {
+    background: #2b2b2b;
+    color: var(--atelier-texte);
+    border: 1px solid var(--atelier-bordure);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 0.85rem;
+    font-family: inherit;
+}
+
+.atelier-bouton {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 14px;
+    border-radius: 6px;
+    border: 1px solid var(--atelier-bordure);
+    background: #4c5052;
+    color: #dfe1e5;
+    font-size: 0.85rem;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.atelier-bouton:hover { background: #5a5f61; }
+.atelier-bouton:active { transform: translateY(1px); }
+
+.atelier-bouton-principal {
+    background: var(--atelier-vert);
+    border-color: #7fa86a;
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.atelier-bouton-principal:hover { background: #7fa86a; }
+
+.atelier-etat {
+    margin-left: auto;
+    font-size: 0.8rem;
+    color: var(--atelier-texte-faible);
+}
+
+.atelier-etat.erreur { color: #e06c75; }
+.atelier-etat.succes { color: #98c379; }
+
+/* ---------- Corps : éditeur + exemples ---------- */
+.atelier-corps {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 270px;
+    min-height: 420px;
+}
+
+.atelier-editeur {
+    min-width: 0;
+    border-right: 1px solid var(--atelier-bordure);
+    display: flex;
+}
+
+.atelier-editeur textarea,
+.atelier-editeur .CodeMirror {
+    width: 100%;
+    height: 460px;
+    border: 0;
+    outline: none;
+    resize: none;
+    background: var(--atelier-fond);
+    color: var(--atelier-texte);
+    font-family: "JetBrains Mono", "Fira Code", "SF Mono", Consolas, monospace;
+    font-size: 14px;
+    line-height: 1.55;
+    padding: 12px 14px;
+    tab-size: 4;
+}
+
+.atelier-editeur .CodeMirror {
+    padding: 0;
+    height: 460px;
+}
+
+.atelier-editeur .CodeMirror-lines { padding: 10px 0; }
+.atelier-editeur .CodeMirror pre.CodeMirror-line { padding: 0 12px; }
+
+/* ---------- Exemples ---------- */
+.atelier-exemples {
+    background: var(--atelier-fond-panneau);
+    padding: 12px;
+    overflow-y: auto;
+    max-height: 460px;
+}
+
+.atelier-exemples h3 {
+    margin: 0 0 10px;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--atelier-texte-faible);
+    font-weight: 600;
+}
+
+.atelier-exemples ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.atelier-exemples button {
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    color: var(--atelier-texte);
+    font-size: 0.85rem;
+    font-family: inherit;
+    padding: 8px 10px;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.atelier-exemples button:hover,
+.atelier-exemples button:focus-visible {
+    background: #3a3d3f;
+    border-color: var(--atelier-bordure);
+    outline: none;
+}
+
+.atelier-exemples button small {
+    display: block;
+    color: var(--atelier-texte-faible);
+    font-size: 0.72rem;
+    margin-top: 2px;
+}
+
+/* ---------- Console ---------- */
+.atelier-console {
+    border-top: 1px solid var(--atelier-bordure);
+    background: #232323;
+}
+
+.atelier-console header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 14px;
+    background: var(--atelier-fond-barre);
+    border-bottom: 1px solid var(--atelier-bordure);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--atelier-texte-faible);
+}
+
+.atelier-console pre {
+    margin: 0;
+    padding: 12px 14px;
+    min-height: 120px;
+    max-height: 240px;
+    overflow: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: #dfe1e5;
+}
+
+.atelier-console .ligne-sortie { display: block; }
+.atelier-console .ligne-erreur { display: block; color: #e06c75; }
+.atelier-console .ligne-conseil { display: block; color: #d19a66; }
+.atelier-console .ligne-vide { display: block; color: var(--atelier-texte-faible); }
+.atelier-console .ligne-succes { display: block; color: #98c379; }
+
+/* ---------- CodeMirror / Darcula ---------- */
+.cm-s-darcula.CodeMirror {
+    background: var(--atelier-fond);
+    color: var(--atelier-texte);
+}
+
+.cm-s-darcula .CodeMirror-gutters {
+    background: var(--atelier-fond);
+    border-right: 1px solid #3a3d3f;
+}
+
+.cm-s-darcula .CodeMirror-linenumber { color: #606366; }
+.cm-s-darcula .CodeMirror-cursor { border-left: 2px solid #bbbbbb; }
+.cm-s-darcula .CodeMirror-selected { background: #214283; }
+
+.cm-s-darcula .cm-keyword { color: var(--atelier-accent); font-weight: 600; }
+.cm-s-darcula .cm-atom { color: #9876aa; }
+.cm-s-darcula .cm-number { color: var(--atelier-bleu); }
+.cm-s-darcula .cm-string { color: var(--atelier-vert); }
+.cm-s-darcula .cm-comment { color: #808080; font-style: italic; }
+.cm-s-darcula .cm-operator { color: #a9b7c6; }
+.cm-s-darcula .cm-variable { color: var(--atelier-texte); }
+.cm-s-darcula .cm-builtin { color: #8888c6; }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 900px) {
+    .atelier-corps { grid-template-columns: minmax(0, 1fr); }
+    .atelier-editeur { border-right: 0; border-bottom: 1px solid var(--atelier-bordure); }
+    .atelier-editeur textarea,
+    .atelier-editeur .CodeMirror { height: 380px; }
+    .atelier-exemples { max-height: none; }
+    .atelier-etat { margin-left: 0; width: 100%; }
+}

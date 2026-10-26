@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabaseClient.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="STYLES/discussion-l2.css">
+    <link rel="stylesheet" href="STYLES/compilateur-l2.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+    <link rel="stylesheet" href="STYLES/theme.css">
+    <link rel="stylesheet" href="STYLES/auth.css">
+    <link rel="icon" type="image/png" href="MEDIAS/LOGO-GL-HUB.png">    
+    <title>GL HUB - Compilateur L2</title>
+    <link rel="stylesheet" href="STYLES/classes-nav.css">
+</head>
+<body>
+
+    <!-- ===================== BARRE DE NAVIGATION ===================== -->
+    <nav>
+        <div class="nav-interieur">
+            <!-- 1. Bouton Menu Mobile (Placé à gauche) -->
+            <button id="boutonMenuMobile" class="bouton-menu-mobile" aria-label="Menu">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+
+            <!-- 2. Logo de la barre (Centre sur mobile) -->
+            <a href="index.html" class="nav-logo">
+                <i class="fa-solid fa-user-graduate"></i>GL HUB
+            </a>
+
+            <!-- 3. Menu complet (Desktop) -->
+            <ul class="menu">
+                <li><a href="index.html"><i class="fa-solid fa-house fa-bounce" style="color: rgb(4, 51, 131);"></i>Accueil</a></li>
+                <li><a href="contact.html"><i class="fa-solid fa-envelope fa-bounce" style="color: rgb(4, 51, 131);"></i>Contact</a></li>
+                <li class="menu-classes">
+                    <div id="declencheurClasses" class="menu-classes-declencheur lien-menu-bouton" role="button" tabindex="0" aria-haspopup="true" aria-expanded="false" aria-controls="sousMenuClasses"><i class="fa-solid fa-people-group fa-bounce" style="color: rgb(4, 51, 131);"></i>Classes<i class="fa-solid fa-chevron-down icone-chevron"></i></div>
+                    <ul id="sousMenuClasses" class="sous-menu-classes" hidden>
+                        <li><button type="button" id="choixL1"><i class="fa-solid fa-book-open"></i>L1 Génie Logiciel</button></li>
+                        <li><a href="acces-l2.html" id="choixL2"><i class="fa-solid fa-graduation-cap"></i>L2 Génie Logiciel</a></li>
+                    </ul>
+                </li>
+                <li hidden><button id="boutonMatieres" class="lien-menu-bouton"><i class="fa-solid fa-bars"></i>Matières</button></li>
+                <li id="zoneAuthNav"><button id="boutonAuth" class="lien-menu-bouton"><i class="fa-solid fa-user"></i>Se connecter</button></li>
+                <li class="item-recherche">
+                    <form class="barre-recherche" role="search" autocomplete="off" onsubmit="return false;">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" name="q" id="rechercheCours" placeholder="Rechercher un cours..." autocomplete="off">
+                    </form>
+                    <div id="resultatsRecherche" class="resultats-recherche"></div>
+                </li>
+            </ul>
+
+            <!-- 4. Bouton Thème (Intégré à droite) -->
+            <button id="themeToggle" class="theme-toggle" aria-label="Changer de thème">
+                <i class="fa-solid fa-moon"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- ===================== HEADER SITE (Bandeau unifié 21:9) ===================== -->
+    <header class="site-header">
+        <div class="hero-overlay-texte">
+            <div class="logo-text-hero">GL HUB</div>
+            <p class="slogan-hero">
+                <span>Un Hub</span>
+                <span>Une Communauté</span>
+                <span>Une Progression</span>
+            </p>
+        </div>
+    </header>
+
+    <!-- ===================== PANNEAU BURGER : MATIÈRES ===================== -->
+    <div id="voileMatieres" class="voile"></div>
+    <aside id="panneauMatieres" class="panneau-lateral">
+        <div class="panneau-entete">
+            <h3><i class="fa-solid fa-book"></i>Espace Matières</h3>
+            <button id="fermerPanneauMatieres" class="bouton-fermer" aria-label="Fermer"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div id="matieresVerrouillees" class="panneau-message">
+            <i class="fa-solid fa-lock fa-2x"></i>
+            <p>Connecte-toi pour accéder aux cours, TD et examens de chaque matière.</p>
+            <button id="boutonConnexionDepuisPanneau" class="bouton-accent">Se connecter</button>
+        </div>
+        <ul id="listeMatieres" class="liste-matieres" style="display: none;">
+            <li><a href="langageC.html"><i class="fa-solid fa-bug" style="color: rgb(4, 51, 131);"></i>Langage C</a></li>
+            <li><a href="systemedExploitation.html"><i class="fa-brands fa-windows" style="color: rgb(6, 58, 147);"></i>Système d'Exploitation</a></li>
+            <li><a href="technologieWeb.html"><i class="fa-solid fa-laptop-code" style="color: rgb(6, 58, 147);"></i>Technologie Web</a></li>
+            <li><a href="basedeDonnees.html"><i class="fa-solid fa-database" style="color: rgb(6, 78, 146);"></i>Base de Données</a></li>
+            <li><a href="algo.html"><i class="fa-solid fa-brain" style="color: rgb(4, 51, 131);"></i>Algorithme</a></li>
+        </ul>
+    </aside>
+
+    <!-- ===================== MODALE : CONNEXION / INSCRIPTION ===================== -->
+    <div id="voileAuth" class="voile"></div>
+    <div id="modaleAuth" class="modale">
+        <button id="fermerModaleAuth" class="bouton-fermer" aria-label="Fermer"><i class="fa-solid fa-xmark"></i></button>
+        <div class="onglets-auth">
+            <button id="ongletConnexion" class="onglet-auth actif">Connexion</button>
+            <button id="ongletInscription" class="onglet-auth">Inscription</button>
+        </div>
+        <div id="formConnexion" class="formulaire-auth">
+            <label for="emailConnexion">Adresse e-mail</label>
+            <input type="email" id="emailConnexion" autocomplete="username" placeholder="prenom.nom@gl.com" required>
+            <label for="motDePasseConnexion">Mot de passe</label>
+            <input type="password" id="motDePasseConnexion" autocomplete="current-password" placeholder="••••••••" required>
+            <button type="button" id="lienMotDePasseOublie" class="lien-mot-de-passe-oublie">Mot de passe oublié ?</button>
+            <p id="erreurConnexion" class="message-erreur"></p>
+            <button id="boutonValiderConnexion" class="bouton-accent bouton-pleine-largeur">Se connecter</button>
+        </div>
+        <div id="formInscription" class="formulaire-auth" style="display: none;">
+            <label for="prenomInscription">Prénom</label>
+            <input type="text" id="prenomInscription" autocomplete="given-name" placeholder="Ton prénom" required>
+            <label for="nomInscription">Nom</label>
+            <input type="text" id="nomInscription" autocomplete="family-name" placeholder="Ton nom de famille" required>
+            <label for="dateNaissanceInscription">Date de naissance</label>
+            <input type="date" id="dateNaissanceInscription" required>
+            <label for="emailInscription">Adresse e-mail</label>
+            <input type="email" id="emailInscription" autocomplete="email" placeholder="toi@exemple.com" required>
+            <label for="motDePasseInscription">Mot de passe</label>
+            <input type="password" id="motDePasseInscription" autocomplete="new-password" placeholder="6 caractères minimum" required>
+            <p id="erreurInscription" class="message-erreur"></p>
+            <button id="boutonValiderInscription" class="bouton-accent bouton-pleine-largeur">Créer mon compte</button>
+        </div>
+    </div>
+
+    <main class="container">
+
+        <h2 class="section-title titre-acces-l2"><i class="fa-solid fa-code" style="color: rgb(4, 51, 131);"></i>Compilateur L2 Génie Logiciel</h2>
+
+        <!-- 1. Chargement -->
+        <section id="vueChargement" class="card carte-acces-l2" aria-live="polite">
+            <p class="message-chargement"><i class="fa-solid fa-spinner fa-spin"></i> Vérification de ton compte...</p>
+        </section>
+
+        <!-- 2. Pas connecté -->
+        <section id="vueConnexion" class="card carte-acces-l2" hidden>
+            <div class="card-icon"><i class="fa-solid fa-lock"></i></div>
+            <h4>Connecte-toi pour continuer</h4>
+            <p>L'atelier de programmation est réservé aux camarades de la classe.</p>
+            <button type="button" id="boutonConnexionL2" class="bouton-accent">Se connecter</button>
+        </section>
+
+        <!-- 3. Pas membre -->
+        <section id="vuePasMembre" class="card carte-acces-l2" hidden>
+            <div class="card-icon"><i class="fa-solid fa-user-lock"></i></div>
+            <h4>Accès réservé à la classe</h4>
+            <p>Tu n'as pas encore accès à l'espace L2. Fais une demande : l'administrateur la vérifiera.</p>
+            <a href="acces-l2.html" class="bouton-accent bouton-lien">Demander l'accès</a>
+        </section>
+
+        <!-- 4. Erreur -->
+        <section id="vueErreur" class="card carte-acces-l2" hidden>
+            <div class="card-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            <h4>Un problème est survenu</h4>
+            <p id="messageErreurL2"></p>
+            <button type="button" id="boutonReessayer" class="bouton-accent bouton-clair">Réessayer</button>
+        </section>
+
+        <!-- 5. Atelier -->
+        <div id="vueAtelier" hidden>
+
+            <nav class="onglets-l2" aria-label="Sections de l'espace L2">
+                <a href="espace-l2.html"><i class="fa-solid fa-folder-open"></i>Ressources</a>
+                <a href="emploi-du-temps-l2.html"><i class="fa-solid fa-calendar-days"></i>Emploi du temps</a>
+                <a href="discussion-l2.html"><i class="fa-solid fa-comments"></i>Discussion</a>
+                <a href="compilateur-l2.html" aria-current="page"><i class="fa-solid fa-code"></i>Compilateur</a>
+            </nav>
+
+            <section class="atelier" aria-label="Atelier de programmation">
+
+                <div class="atelier-barre">
+                    <label class="atelier-langage">
+                        <span>Langage</span>
+                        <select id="choixLangage">
+                            <option value="pseudo" selected>Pseudo-code</option>
+                            <option value="python" disabled>Python (bientôt)</option>
+                            <option value="javascript" disabled>JavaScript (bientôt)</option>
+                            <option value="c" disabled>C (bientôt)</option>
+                            <option value="cpp" disabled>C++ (bientôt)</option>
+                        </select>
+                    </label>
+
+                    <button type="button" id="boutonExecuter" class="atelier-bouton atelier-bouton-principal">
+                        <i class="fa-solid fa-play"></i>Exécuter
+                    </button>
+
+                    <button type="button" id="boutonEffacer" class="atelier-bouton">
+                        <i class="fa-solid fa-eraser"></i>Effacer la console
+                    </button>
+
+                    <span id="etatExecution" class="atelier-etat" aria-live="polite"></span>
+                </div>
+
+                <div class="atelier-corps">
+                    <div class="atelier-editeur">
+                        <textarea id="code" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Code pseudo-code"></textarea>
+                    </div>
+
+                    <aside class="atelier-exemples" aria-label="Exemples du cours">
+                        <h3><i class="fa-solid fa-book-open"></i>Exemples du cours</h3>
+                        <ul id="listeExemples"></ul>
+                    </aside>
+                </div>
+
+                <div class="atelier-console">
+                    <header>
+                        <span><i class="fa-solid fa-terminal"></i>Console</span>
+                        <span id="compteurLignes"></span>
+                    </header>
+                    <pre id="sortie" aria-live="polite"></pre>
+                </div>
+
+            </section>
+        </div>
+
+    </main>
+
+    <footer>
+        <p>&copy; 2026 - GL HUB | Département Informatique</p>
+    </footer>
+
+    <script src="theme.js"></script>
+    <script src="auth.js"></script>
+    <script src="classes-nav.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+    <script src="compilateur-l2.js"></script>
+</body>
+</html>
