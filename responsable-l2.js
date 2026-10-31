@@ -2,7 +2,8 @@
 // ESPACE RESPONSABLE L2 — dépôt de ressources
 //
 // Réservé au responsable de classe (et à l'administrateur).
-// Un dépôt reste "en attente" jusqu'à sa publication par l'admin.
+// Une ressource est publiée tout de suite pour toute la classe : l'admin et le responsable
+// peuvent aussi corriger une erreur en supprimant la ressource.
 //
 // Ordre d'un dépôt de fichier :
 //   1. on crée la ligne dans "depots" (avec le chemin prévu)
@@ -39,8 +40,6 @@ document.addEventListener("DOMContentLoaded", () => {
     let champUrl = document.querySelector("#urlDepot");
     let apercuYoutube = document.querySelector("#apercuYoutube");
     let miniatureYoutube = document.querySelector("#miniatureYoutube");
-    let blocPublierDirect = document.querySelector("#blocPublierDirect");
-    let casePublierDirect = document.querySelector("#publierDirect");
     let erreurDepot = document.querySelector("#erreurDepot");
     let boutonEnvoyerDepot = document.querySelector("#boutonEnvoyerDepot");
     let listeMesDepots = document.querySelector("#listeMesDepots");
@@ -129,7 +128,8 @@ document.addEventListener("DOMContentLoaded", () => {
         etiquetteStatut.className = `etiquette ${CLASSES_STATUT[depot.statut] || ""}`;
         etiquetteStatut.textContent = LIBELLES_STATUT[depot.statut] || depot.statut;
         let nomMatiere = depot.matieres_classe && depot.matieres_classe.nom ? depot.matieres_classe.nom : "Matière supprimée";
-        ligneEtiquettes.append(etiquetteCategorie, etiquetteStatut, `${nomMatiere} | ${formaterDate(depot.cree_le)}`);
+        let auteur = depot.depose_par === utilisateurCourant.id ? "par toi" : "par un autre membre";
+        ligneEtiquettes.append(etiquetteCategorie, etiquetteStatut, `${nomMatiere} | ${auteur} | ${formaterDate(depot.cree_le)}`);
 
         infos.append(titre, ligneEtiquettes);
 
@@ -141,42 +141,57 @@ document.addEventListener("DOMContentLoaded", () => {
 
         carte.appendChild(infos);
 
+        let actions = document.createElement("div");
+        actions.className = "actions-depot";
+
+        // Ancien dépôt resté en attente : le responsable peut le publier lui-même
         if (depot.statut !== "publie") {
-            let boutonSupprimer = document.createElement("button");
-            boutonSupprimer.type = "button";
-            boutonSupprimer.className = "bouton-supprimer-depot";
-            let icone = document.createElement("i");
-            icone.className = "fa-solid fa-trash";
-            boutonSupprimer.append(icone, "Supprimer");
-            boutonSupprimer.addEventListener("click", () => supprimerDepot(depot, boutonSupprimer));
-            carte.appendChild(boutonSupprimer);
+            let boutonPublier = document.createElement("button");
+            boutonPublier.type = "button";
+            boutonPublier.className = "bouton-publier-depot";
+            let iconePublier = document.createElement("i");
+            iconePublier.className = "fa-solid fa-check";
+            boutonPublier.append(iconePublier, "Publier");
+            boutonPublier.addEventListener("click", () => publierDepot(depot, boutonPublier));
+            actions.appendChild(boutonPublier);
         }
 
+        // Une erreur se corrige en supprimant la ressource, puis en la déposant à nouveau
+        let boutonSupprimer = document.createElement("button");
+        boutonSupprimer.type = "button";
+        boutonSupprimer.className = "bouton-supprimer-depot";
+        let icone = document.createElement("i");
+        icone.className = "fa-solid fa-trash";
+        boutonSupprimer.append(icone, "Supprimer");
+        boutonSupprimer.addEventListener("click", () => supprimerDepot(depot, boutonSupprimer));
+        actions.appendChild(boutonSupprimer);
+
+        carte.appendChild(actions);
         return carte;
     };
 
     let chargerMesDepots = async () => {
         let { data: depots, error } = await supabaseClient
             .from("depots")
-            .select("id, titre, categorie, chemin_fichier, statut, motif_refus, cree_le, matieres_classe ( nom )")
+            .select("id, depose_par, titre, categorie, chemin_fichier, statut, motif_refus, cree_le, matieres_classe ( nom )")
             .eq("classe_id", classeL2.id)
-            .eq("depose_par", utilisateurCourant.id)
-            .order("cree_le", { ascending: false });
+            .order("cree_le", { ascending: false })
+            .limit(100);
 
         if (error) {
-            console.error("Erreur Supabase (mes dépôts) :", error);
-            listeMesDepots.replaceChildren(messageVide("Impossible de charger tes dépôts pour le moment."));
+            console.error("Erreur Supabase (ressources de la classe) :", error);
+            listeMesDepots.replaceChildren(messageVide("Impossible de charger les ressources pour le moment."));
             return;
         }
         if (!depots || depots.length === 0) {
-            listeMesDepots.replaceChildren(messageVide("Tu n'as encore rien déposé."));
+            listeMesDepots.replaceChildren(messageVide("Aucune ressource n'a encore été ajoutée."));
             return;
         }
         listeMesDepots.replaceChildren(...depots.map(creerCarteDepot));
     };
 
     let supprimerDepot = async (depot, bouton) => {
-        if (!confirm(`Supprimer « ${depot.titre} » ? Cette action est définitive.`)) return;
+        if (!confirm(`Supprimer « ${depot.titre} » ?\nElle disparaît pour toute la classe et ne pourra pas être récupérée.`)) return;
         bouton.disabled = true;
 
         try {
@@ -191,7 +206,26 @@ document.addEventListener("DOMContentLoaded", () => {
                 bouton.disabled = false;
                 return;
             }
-            notifier("Dépôt supprimé.");
+            notifier("Ressource supprimée.");
+            await chargerMesDepots();
+        } catch (e) {
+            console.error(e);
+            notifier("Erreur réseau. Réessaie dans un instant.");
+            bouton.disabled = false;
+        }
+    };
+
+    let publierDepot = async (depot, bouton) => {
+        bouton.disabled = true;
+        try {
+            let { error } = await supabaseClient.from("depots").update({ statut: "publie" }).eq("id", depot.id);
+            if (error) {
+                console.error("Erreur Supabase (publication) :", error);
+                notifier("Publication impossible pour le moment.");
+                bouton.disabled = false;
+                return;
+            }
+            notifier("Ressource publiée : toute la classe peut la voir.");
             await chargerMesDepots();
         } catch (e) {
             console.error(e);
@@ -252,12 +286,11 @@ document.addEventListener("DOMContentLoaded", () => {
             donnees.type_fichier = extension;
         }
 
-        if (estAdmin && casePublierDirect.checked) {
-            donnees.statut = "publie";
-        }
+        // L'admin et le responsable publient directement : plus de validation à attendre
+        donnees.statut = "publie";
 
         boutonEnvoyerDepot.disabled = true;
-        boutonEnvoyerDepot.textContent = "Envoi en cours...";
+        boutonEnvoyerDepot.textContent = "Publication en cours...";
 
         try {
             // 1. Ligne dans "depots"
@@ -293,7 +326,7 @@ document.addEventListener("DOMContentLoaded", () => {
             formDepot.reset();
             mettreAJourChampsSelonCategorie();
             apercuYoutube.hidden = true;
-            notifier(donnees.statut === "publie" ? "Ressource publiée." : "Dépôt envoyé : l'administrateur doit maintenant le publier.");
+            notifier("Ressource publiée : toute la classe peut la voir.");
             await chargerMesDepots();
 
         } catch (erreurReseau) {
@@ -301,7 +334,7 @@ document.addEventListener("DOMContentLoaded", () => {
             erreurDepot.textContent = "Erreur réseau. Vérifie ta connexion, puis réessaie.";
         } finally {
             boutonEnvoyerDepot.disabled = false;
-            boutonEnvoyerDepot.textContent = "Envoyer le dépôt";
+            boutonEnvoyerDepot.textContent = "Publier la ressource";
         }
     });
 
@@ -349,8 +382,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 montrerVue("interdit");
                 return;
             }
-
-            blocPublierDirect.hidden = !estAdmin;
 
             let { data: matieres, error: erreurMatieres } = await supabaseClient
                 .from("matieres_classe")

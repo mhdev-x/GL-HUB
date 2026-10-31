@@ -687,3 +687,38 @@ body.dark-theme .bouton-supprimer-depot:hover {
 .lien-secondaire {
     margin-top: 12px;
 }
+
+/* ---- Actions sur une ressource (publier un ancien dépôt, supprimer) ---- */
+.actions-depot {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.bouton-publier-depot {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #15803d;
+    background: transparent;
+    border: 1px solid #86efac;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.bouton-publier-depot:hover {
+    background-color: #dcfce7;
+}
+
+body.dark-theme .bouton-publier-depot {
+    color: #4ade80;
+    border-color: #166534;
+}
+
+body.dark-theme .bouton-publier-depot:hover {
+    background-color: #12332a;
+}
