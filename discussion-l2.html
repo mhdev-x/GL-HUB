@@ -93,35 +93,8 @@
     <!-- ===================== MODALE : CONNEXION / INSCRIPTION ===================== -->
     <div id="voileAuth" class="voile"></div>
     <div id="modaleAuth" class="modale">
-        <button id="fermerModaleAuth" class="bouton-fermer" aria-label="Fermer"><i class="fa-solid fa-xmark"></i></button>
-        <div class="onglets-auth">
-            <button id="ongletConnexion" class="onglet-auth actif">Connexion</button>
-            <button id="ongletInscription" class="onglet-auth">Inscription</button>
+            <!-- Contenu construit par auth.js : un seul bouton, "Continuer avec Google" -->
         </div>
-        <div id="formConnexion" class="formulaire-auth">
-            <label for="emailConnexion">Adresse e-mail</label>
-            <input type="email" id="emailConnexion" autocomplete="username" placeholder="prenom.nom@gl.com" required>
-            <label for="motDePasseConnexion">Mot de passe</label>
-            <input type="password" id="motDePasseConnexion" autocomplete="current-password" placeholder="••••••••" required>
-            <button type="button" id="lienMotDePasseOublie" class="lien-mot-de-passe-oublie">Mot de passe oublié ?</button>
-            <p id="erreurConnexion" class="message-erreur"></p>
-            <button id="boutonValiderConnexion" class="bouton-accent bouton-pleine-largeur">Se connecter</button>
-        </div>
-        <div id="formInscription" class="formulaire-auth" style="display: none;">
-            <label for="prenomInscription">Prénom</label>
-            <input type="text" id="prenomInscription" autocomplete="given-name" placeholder="Ton prénom" required>
-            <label for="nomInscription">Nom</label>
-            <input type="text" id="nomInscription" autocomplete="family-name" placeholder="Ton nom de famille" required>
-            <label for="dateNaissanceInscription">Date de naissance</label>
-            <input type="date" id="dateNaissanceInscription" required>
-            <label for="emailInscription">Adresse e-mail</label>
-            <input type="email" id="emailInscription" autocomplete="email" placeholder="toi@exemple.com" required>
-            <label for="motDePasseInscription">Mot de passe</label>
-            <input type="password" id="motDePasseInscription" autocomplete="new-password" placeholder="6 caractères minimum" required>
-            <p id="erreurInscription" class="message-erreur"></p>
-            <button id="boutonValiderInscription" class="bouton-accent bouton-pleine-largeur">Créer mon compte</button>
-        </div>
-    </div>
 
     <!-- ===================== CONTENU PRINCIPAL ===================== -->
     <main class="container">
@@ -164,7 +137,6 @@
                 <a href="espace-l2.html"><i class="fa-solid fa-folder-open"></i>Ressources</a>
                 <a href="emploi-du-temps-l2.html"><i class="fa-solid fa-calendar-days"></i>Emploi du temps</a>
                 <a href="discussion-l2.html" aria-current="page"><i class="fa-solid fa-comments"></i>Discussion</a>
-                <a href="compilateur-l2.html"><i class="fa-solid fa-code"></i>Compilateur</a>
             </nav>
             <section class="chat-l2" aria-label="Discussion de la classe">
 
