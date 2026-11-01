@@ -10,7 +10,7 @@
 [![Website](https://img.shields.io/badge/Website-Live-success)](https://glhub.vercel.app)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-**Version actuelle : 3.9.0** (voir le [journal des versions](CHANGELOG.md)). Pour comprendre comment le projet est né, les difficultés rencontrées et comment créer un projet du même genre, lis la [documentation du projet](DOCUMENTATION.md).
+**Version actuelle : 3.11.0** (voir le [journal des versions](CHANGELOG.md)). Pour comprendre comment le projet est né, les difficultés rencontrées et comment créer un projet du même genre, lis la [documentation du projet](DOCUMENTATION.md).
 
 ---
 
@@ -67,7 +67,7 @@ La page d'accueil présente les deux classes, et le menu **Classes** dirige chac
 
 **Communes aux deux classes**
 - **100 % gratuit** : pas de paiement, pas d'abonnement
-- **Connexion avec Google** en un clic, ou avec une adresse institutionnelle classique, avec liaison possible entre les deux comptes
+- **Connexion uniquement avec Google**, en un clic : pas de formulaire d'inscription, pas de mot de passe, pas d'adresse à créer. Le compte est créé automatiquement à la première connexion
 - **Thème clair et sombre**, interface responsive (téléphone, tablette, ordinateur)
 - **Espace administrateur** pour gérer les étudiants, les quiz et la classe L2
 
@@ -81,7 +81,7 @@ La page d'accueil présente les deux classes, et le menu **Classes** dirige chac
 
 **L2 Génie Logiciel**
 - **Accès réservé à la classe**, validé par l'administrateur après vérification du numéro WhatsApp
-- **Ressources** déposées par le responsable de classe, vérifiées puis publiées, classées par matière et par catégorie (cours, TD, examens, liens, autres), avec recherche
+- **Ressources** publiées directement par le responsable de classe ou par l'administrateur, classées par matière et par catégorie (cours, TD, examens, liens, autres), avec recherche
 - **Vidéos YouTube** : miniature affichée et lecteur intégré au site
 - **Emploi du temps** par semaine, modifiable uniquement par l'administrateur et le responsable, avec les changements (« Modifié », « Annulé ») visibles en direct
 - **Discussion** de la classe : messages écrits et vocaux (2 minutes maximum), supprimés automatiquement après 7 jours
@@ -90,7 +90,7 @@ La page d'accueil présente les deux classes, et le menu **Classes** dirige chac
 
 ## L1 : comment fonctionne le déblocage par quiz
 
-1. **Crée un compte** (gratuit) et connecte-toi.
+1. **Connecte-toi avec Google** (gratuit) : ton compte est créé automatiquement.
 2. **Les TD, TP et projets sont libres** : tu peux les lire ou les télécharger tout de suite.
 3. **Le premier cours** de chaque matière est libre aussi.
 4. Pour débloquer le **cours suivant**, passe le **quiz du cours que tu viens de lire** : 10 questions tirées au hasard dans une banque de questions.
@@ -118,7 +118,7 @@ Les administrateurs ont accès à toutes les ressources, sans quiz ni délai d'a
 
 ### Comment y entrer
 
-1. **Crée un compte** (ou connecte-toi).
+1. **Connecte-toi avec Google** (ton compte est créé automatiquement à la première connexion).
 2. Menu **Classes** → **L2 Génie Logiciel** → **Demander l'accès**.
 3. Saisis le **numéro WhatsApp** que tu utilises dans le groupe de la classe. L'administrateur le compare avec le groupe pour vérifier que tu fais bien partie de la classe, puis accepte la demande. Le numéro n'est visible que par l'administrateur.
 4. Une fois accepté, tu accèdes à l'espace, qui contient trois onglets : **Ressources**, **Emploi du temps** et **Discussion**.
@@ -130,8 +130,8 @@ L'administrateur entre directement, sans formulaire ni numéro.
 | Rôle | Peut faire |
 |---|---|
 | **Étudiant** | Consulter les ressources publiées, voir l'emploi du temps, participer à la discussion, supprimer ses propres messages |
-| **Responsable de classe** | Tout ce que fait l'étudiant, plus : déposer des ressources, modifier l'emploi du temps, supprimer n'importe quel message de la discussion |
-| **Administrateur** | Tout ce que fait le responsable, plus : valider les demandes d'accès, publier ou refuser les dépôts, gérer les matières et les membres, nommer le responsable |
+| **Responsable de classe** | Tout ce que fait l'étudiant, plus : **publier directement** des ressources et corriger ou supprimer celles de sa classe, modifier l'emploi du temps, supprimer n'importe quel message de la discussion |
+| **Administrateur** | Tout ce que fait le responsable, plus : valider les demandes d'accès, gérer les matières et les membres, nommer le responsable |
 
 ### Les trois onglets
 
@@ -200,7 +200,7 @@ L'administrateur entre directement, sans formulaire ni numéro.
 - Les fichiers sont dans des buckets Storage privés, livrés uniquement par les Edge Functions, qui revérifient l'accès à chaque lecture ou téléchargement : le navigateur ne reçoit jamais de lien réutilisable ni partageable.
 - Les quiz sont tirés au hasard et corrigés côté serveur ; la table `questions_quiz` est protégée par RLS et invisible pour les étudiants.
 - La recherche publique passe par la vue `catalogue_public` (en `security_invoker`), qui n'expose que le titre, le type et la matière.
-- La connexion Google utilise la liaison manuelle d'identité (`linkIdentity`) pour éviter les comptes en double.
+- **Google est la seule façon de se connecter** : il n'y a plus de mot de passe à voler ou à oublier. Un ancien compte (adresse `@gl.com`) se lie à Google depuis le Profil grâce à la liaison manuelle d'identité (`linkIdentity`), ce qui évite les comptes en double.
 - **Dans l'espace L2, l'accès est contrôlé en base de données (RLS et triggers), pas seulement dans l'interface** : un étudiant ne peut ni s'accepter lui-même, ni publier un dépôt, ni lire les données d'une classe dont il n'est pas membre, même en appelant Supabase directement. Le nom et l'auteur d'un message ou d'une demande sont imposés par le serveur.
 - Tous les textes saisis par les utilisateurs sont affichés avec `textContent` (jamais `innerHTML`), et le type d'un fichier est décidé par son extension : un fichier `.html` déposé par erreur ne peut pas s'exécuter sur le site.
 - Voir aussi [SECURITY.md](SECURITY.md).
@@ -214,11 +214,12 @@ GL-HUB/
 ├── index.html, contact.html, profil.html
 ├── algo.html, langageC.html, basedeDonnees.html
 ├── systemedExploitation.html, technologieWeb.html      # L1
+├── connexion-ancien-compte.html (+ .js)  # page non liée, pour lier un ancien compte à Google
 ├── acces-l2.html, espace-l2.html, emploi-du-temps-l2.html
 ├── discussion-l2.html, responsable-l2.html              # L2
 ├── admin.html, admin-quiz.html, admin-l2.html           # espace administrateur
 ├── supabaseClient.js                    # configuration Supabase (clé publique "anon")
-├── auth.js                              # connexion, inscription, Google, recherche
+├── auth.js                              # connexion avec Google, session, recherche
 ├── acces.js                             # lecture, téléchargement, quiz, déblocage (L1)
 ├── classes-nav.js                       # menu Classes
 ├── niveau.js                            # choix de la classe sur l'accueil
@@ -263,38 +264,46 @@ GL-HUB/
    | `20261013_espace_l2.sql` | **Espace L2** : classes, membres, demandes d'accès, matières, dépôts, règles RLS, bucket `ressources-l2`. Relançable : il met aussi à niveau une base créée avec une version précédente du script |
    | `20261014_chat_l2.sql` | **Discussion L2** : messages, règles RLS, bucket `chat-l2`, temps réel. Relançable |
    | `20261015_emploi_du_temps_l2.sql` | **Emploi du temps L2** : table `seances_l2`, règles RLS, temps réel. Relançable |
+   | `20261019_publication_directe_l2.sql` | **Publication directe** : le responsable et l'administrateur publient sans validation. Sert à mettre à jour une base qui a déjà l'ancienne version (le script principal contient les mêmes règles). Relançable |
 
 4. Crée un **bucket privé** dans Storage et envoie-y tes fichiers de L1. Le chemin de chaque fichier doit correspondre à la colonne `chemin_fichier` de `ressources`. Le nom attendu est `ressources-privees` (constante en haut de `supabase/functions/resource-access/index.ts`) ; s'il est différent, la fonction cherche automatiquement le fichier dans les autres buckets. Les buckets `ressources-l2` et `chat-l2` sont créés par les scripts de la L2.
 5. Déploie les fonctions de `supabase/functions/` (`supabase functions deploy quiz-start`, etc., ou en collant le code dans le tableau de bord Supabase : chaque fichier est autonome). Désactive **Verify JWT** sur `quiz-start`, `quiz-submit`, `resource-access` et `l2-resource-access` : chaque fonction vérifie elle-même l'identité de l'utilisateur. `l2-chat-purge` se déploie avec `--no-verify-jwt` et exige un secret (voir l'étape suivante).
 6. **Planifie le nettoyage de la discussion** en suivant, étape par étape, `supabase/planification_purge_chat_l2.sql` : choisir un secret (`CRON_SECRET`), activer les extensions `pg_cron` et `pg_net` (*Database → Extensions*), enregistrer le secret dans le coffre (Vault), puis programmer le job de 03:00. Sans ce nettoyage, personne ne voit un message de plus de 7 jours, mais les données restent stockées.
 7. Ajoute ton compte dans la table `admins` (`user_id` de ton compte) pour accéder à l'espace administrateur.
 8. Dans **Admin → Espace L2**, crée les matières de la classe, puis nomme le responsable (il doit d'abord avoir créé son compte et demandé l'accès).
-9. Facultatif : [active la connexion avec Google](#activer-la-connexion-avec-google).
+9. **Active la connexion avec Google** (obligatoire : c'est la seule façon de se connecter) en suivant la section ci-dessous.
 
 ---
 
 ## Activer la connexion avec Google
 
-Le bouton « Continuer avec Google » est déjà dans le site. Pour qu'il fonctionne, il faut le configurer une fois :
+Google est **la seule façon de se connecter** à GL HUB : il faut donc le configurer une fois, avant de mettre le site en ligne.
 
 1. **Google Cloud Console** → *APIs & Services* → *Credentials* → *Create credentials* → *OAuth client ID* (type **Web application**).
    - *Authorized JavaScript origins* : l'adresse de ton site, par exemple `https://glhub.vercel.app` (et `http://127.0.0.1:5500` pour tester en local).
    - *Authorized redirect URIs* : `https://<ton-projet>.supabase.co/auth/v1/callback`.
    - Dans *OAuth consent screen*, renseigne le nom « GL HUB » et passe l'application en **production** (sinon seuls les comptes de test peuvent se connecter).
 2. **Supabase** → *Authentication* → *Sign In / Providers* → **Google** : active-le et colle le *Client ID* et le *Client Secret*.
-3. **Supabase** → *Authentication* → *Sign In / Providers* → active **Allow manual linking of accounts** (nécessaire pour l'étape de liaison ci-dessous).
+3. **Supabase** → *Authentication* → *Sign In / Providers* → active **Allow manual linking of accounts** (nécessaire pour lier un ancien compte, voir plus bas).
 4. **Supabase** → *Authentication* → *URL Configuration* :
    - *Site URL* : l'adresse de ton site, par exemple `https://glhub.vercel.app/`
    - *Redirect URLs* : `https://glhub.vercel.app/**` et `http://127.0.0.1:5500/**`
 
-**Un nouvel étudiant** qui clique sur « Continuer avec Google » obtient un compte créé automatiquement, sans adresse `@gl.com` ni mot de passe GL HUB.
+**Un nouvel étudiant** clique sur « Se connecter », puis « Continuer avec Google » : son compte est créé automatiquement, sans formulaire ni mot de passe.
 
-**Un étudiant qui a déjà un compte `@gl.com`** doit d'abord **lier** son compte Google au sien (sinon un second compte, vide, serait créé par erreur) :
-1. se connecter normalement avec son adresse `@gl.com` et son mot de passe ;
-2. sur sa page **Profil**, cliquer sur **Lier mon compte Google** ;
-3. ensuite, le bouton Google du site le connecte directement à ce même compte, avec sa progression.
+**Si Google refuse la connexion**, c'est souvent parce que le lien a été ouvert dans le navigateur intégré d'une application (par exemple un réseau social) : il suffit d'ouvrir GL HUB dans Chrome ou Safari.
 
-Un compte Google déjà lié à quelqu'un d'autre ne peut pas être relié une seconde fois : le site l'indique clairement plutôt que de planter.
+### Anciens comptes (adresse `@gl.com` et mot de passe)
+
+Un étudiant qui avait un compte créé avant la version 3.11.0 **ne peut plus se connecter** avec son mot de passe depuis le site. S'il se connectait avec Google sans autre précaution, il obtiendrait un **compte neuf, sans sa progression**. Pour éviter cela :
+
+1. il ouvre la page non liée **`connexion-ancien-compte.html`** et se connecte une dernière fois avec son ancienne adresse et son mot de passe ;
+2. il est envoyé sur son **Profil**, où il clique sur **Lier mon compte Google** ;
+3. ensuite, il utilise toujours « Continuer avec Google », avec toute sa progression.
+
+> **Administrateur : fais-le en premier.** Ton compte administrateur est un ancien compte : lie ton compte Google à celui-ci **avant** de déployer la version 3.11.0, puis vérifie dans une fenêtre de navigation privée que « Continuer avec Google » te connecte bien en administrateur. Sinon Google te connecterait à un compte neuf, sans droits d'administration.
+
+Un compte Google déjà lié à quelqu'un d'autre ne peut pas être relié une seconde fois : le site l'indique clairement plutôt que de planter. Un étudiant qui oublie son mot de passe ancien se fait aider par l'administrateur.
 
 ---
 
@@ -325,16 +334,16 @@ Seuls les **cours** ont un quiz : les TD n'apparaissent qu'avec la mention « Ac
 
 ### Administrateur : page Admin → Espace L2 (`admin-l2.html`)
 
-- **Dépôts à valider** : ouvre chaque fichier ou lien avant de le publier. Une fois publié, toute la classe le voit. Tu peux refuser avec un motif, que le responsable verra.
+- **Dépôts en attente** : depuis la version 3.10.0, le responsable et toi publiez directement. Cette liste ne contient que d'éventuels anciens dépôts restés en attente : ouvre chaque fichier ou lien avant de le publier, ou refuse-le avec un motif.
 - **Demandes en attente** : compare le numéro WhatsApp affiché (boutons *Copier* et *Ouvrir dans WhatsApp*) avec celui du groupe de la classe, puis **Accepter** ou **Refuser** (avec un motif facultatif). Vérifie aussi que le nom correspond.
 - **Matières de la L2** : ajoute une matière en tapant son nom ; une matière ne peut être supprimée que si aucune ressource ne l'utilise.
 - **Membres** : nomme un responsable, retire-lui ce rôle, ou retire un membre (il perd l'accès et doit refaire une demande).
-- **Ressources publiées** : supprime une ressource (son fichier est supprimé aussi).
+- **Ressources publiées** : supprime une ressource (son fichier est supprimé aussi). Le responsable peut le faire aussi, sans attendre l'administrateur.
 
 ### Responsable : page Espace responsable (`responsable-l2.html`)
 
 - Dans l'onglet **Ressources**, le bouton **Déposer une ressource** ouvre le formulaire : matière, catégorie, titre, description, puis un fichier (PDF, Word, Excel, PowerPoint, images, archives, code ; 50 Mo maximum) ou, pour la catégorie *Lien*, une adresse (YouTube comprise).
-- Un dépôt reste **en attente** jusqu'à sa validation par l'administrateur. La liste *Mes dépôts* indique l'état de chacun, et le responsable peut supprimer ceux qui ne sont pas encore publiés.
+- La ressource est **publiée tout de suite** pour toute la classe : vérifie bien le fichier avant de l'envoyer. La liste *Ressources de la classe* montre ce qui est publié ; une erreur se corrige en **supprimant** la ressource (son fichier est supprimé aussi), puis en la déposant à nouveau.
 - Dans l'onglet **Emploi du temps**, le bouton **Modifier l'emploi du temps** permet d'ajouter (avec répétition hebdomadaire), de modifier, d'annuler, de rétablir ou de supprimer une séance, et de copier la semaine précédente.
 - Dans **Discussion**, le responsable peut supprimer n'importe quel message (bouton *Supprimer* sous le message).
 
@@ -399,4 +408,4 @@ Merci aussi à mes camarades de classe, qui ont découvert GL HUB lors de l'exam
 
 ## Licence
 
-Ce projet est sous licence **MIT** — voir le fichier [LICENSE](LICENSE) pour plus de détails.
+Ce projet est sous licence **MIT** : voir le fichier [LICENSE](LICENSE) pour plus de détails.

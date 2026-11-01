@@ -1,6 +1,6 @@
 # Documentation du projet GL HUB
 
-**Version du document : 3.9.0 (18 octobre 2026)**
+**Version du document : 3.11.0 (19 octobre 2026)**
 
 Ce document raconte comment GL HUB est né, les étapes que j'ai suivies, les difficultés que j'ai rencontrées et ce que j'en ai appris. Il s'adresse :
 
@@ -65,6 +65,7 @@ Entre mars et octobre 2026, le projet a changé de nature plusieurs fois :
 3. **Un modèle à repenser** : un premier système de paiement par ressource a existé, puis il a été remplacé en septembre par un déblocage progressif grâce à des quiz. La plateforme est devenue 100 % gratuite.
 4. **De la sécurité** : les fichiers ne sont plus livrés par des liens copiables, mais par une fonction serveur qui vérifie l'accès à chaque fois.
 5. **Plusieurs classes** : en octobre, GL HUB accueille la **L1** et la **L2**, avec pour la L2 un espace privé (ressources, emploi du temps, discussion).
+6. **Une connexion plus simple** : le formulaire d'inscription, le mot de passe et l'adresse institutionnelle générée automatiquement disparaissent au profit d'un seul bouton, « Continuer avec Google ».
 
 ---
 
@@ -87,6 +88,8 @@ Le détail complet est dans le [journal des versions](CHANGELOG.md). Voici le fi
 | **3.8.0** | 17 oct. 2026 | Menu Classes, **emploi du temps**, modération | Tout ce dont la classe a besoin au même endroit |
 | **3.8.1** | 18 oct. 2026 | Vocaux lisibles sur les anciens iPad, vocal supprimé coupé | Corriger ce que les vrais appareils ont révélé |
 | **3.9.0** | 18 oct. 2026 | Nouvelle page d'accueil, documentation, README | Raconter le projet et le rendre reproductible |
+| **3.10.0** | 19 oct. 2026 | **Publication directe** par le responsable et l'administrateur | Ne plus dépendre d'une seule personne |
+| **3.11.0** | 19 oct. 2026 | **Connexion uniquement avec Google** | Supprimer le formulaire d'inscription, le mot de passe et l'adresse `@gl.com` |
 
 ---
 
@@ -98,7 +101,7 @@ Le détail complet est dans le [journal des versions](CHANGELOG.md). Voici le fi
 |---|---|---|
 | Interface | HTML, CSS, JavaScript (sans framework) | Je maîtrisais déjà ces trois langages, et le résultat est léger et facile à comprendre pour d'autres étudiants |
 | Base de données | PostgreSQL via **Supabase** | Une vraie base relationnelle, avec des règles de sécurité intégrées (RLS) |
-| Comptes | Authentification **Supabase** (e-mail et Google) | Éviter de réinventer la gestion des mots de passe |
+| Comptes | Authentification **Supabase**, avec **Google** comme seule connexion | Éviter de gérer des mots de passe : pas d'oubli, pas de vol |
 | Fichiers | **Supabase Storage** (buckets privés) | Des fichiers qui ne sont jamais publics |
 | Code serveur | **Edge Functions** Supabase | Vérifier les accès et corriger les quiz côté serveur, là où on ne peut pas tricher |
 | Temps réel | **Supabase Realtime** | Messages et emploi du temps qui se mettent à jour sans recharger |
@@ -126,7 +129,7 @@ Voici comment cette idée est devenue l'espace L2.
 |---|---|
 | N'accepter que les camarades de la classe | Demande d'accès avec le numéro WhatsApp du groupe, comparé par l'administrateur, qui valide |
 | Que le responsable dépose les cours et TD | Page responsable avec catégories (cours, TD, examen, lien, autre) |
-| Éviter qu'un fichier erroné soit vu par tous | Chaque dépôt est « en attente » jusqu'à sa publication par l'administrateur |
+| Ne pas dépendre d'une seule personne | Le responsable et l'administrateur publient directement, et peuvent corriger ou supprimer une ressource de leur classe |
 | Partager des vidéos | Liens YouTube avec miniature et lecteur intégré au site |
 | Un emploi du temps qui change en cours de semaine | Une séance par ligne, marquée « Modifié » ou « Annulé » automatiquement, visible en direct |
 | Échanger en écrit et en vocal sans alourdir la base | Fenêtre glissante de 7 jours : masquage par la base, puis suppression réelle chaque nuit |
@@ -281,6 +284,22 @@ bouton.addEventListener("click", () => {
 - **Solution** : les règles de sécurité ont été testées sur un vrai PostgreSQL, rôle par rôle ; les pages ont été testées dans un navigateur automatisé, avec un faux serveur pour simuler Supabase, en versions bureau, mobile et thème sombre, avec un faux micro pour les vocaux.
 - **Leçon** : on peut très bien tester un projet sans framework : l'essentiel est de **tester les cas de refus** (ce qui ne doit pas marcher) autant que les cas qui doivent marcher.
 
+#### 20. Un seul humain comme passage obligatoire
+
+- **Problème** : au départ, un dépôt du responsable restait « en attente » jusqu'à ce que l'administrateur le publie. Mais si l'administrateur est absent ou malade, plus rien ne se publie : tout dépend d'une seule personne.
+- **Solution** : en version 3.10.0, le responsable et l'administrateur publient directement. Le responsable peut aussi corriger une erreur lui-même (supprimer et déposer à nouveau) et publier un ancien dépôt resté en attente. Les règles de sécurité en base restent strictes : un étudiant ne peut rien publier, et chaque responsable n'agit que dans sa propre classe (vérifié entre deux classes sur un vrai PostgreSQL).
+- **Contrepartie assumée** : on perd le contrôle avant publication. Il est remplacé par la possibilité de **corriger après coup** (suppression, modération) et par le choix d'un responsable de confiance.
+- **Leçon** : repérer les **points de passage obligatoires** d'un système. Si une personne indisponible bloque tout, il faut soit déléguer, soit prévoir une alternative, tout en gardant les garde-fous dans la base de données.
+
+#### 21. Simplifier la connexion sans enfermer personne dehors
+
+- **Problème** : l'inscription par formulaire demandait un prénom, un nom, une date de naissance, une adresse e-mail et un mot de passe, puis générait une adresse `prenom.nom@gl.com`. C'était long pour l'étudiant, et source de comptes en double dès que Google a été ajouté.
+- **Solution** : en version 3.11.0, un seul bouton « Continuer avec Google ». Le compte est créé automatiquement, sans mot de passe à retenir, et la fenêtre de connexion est construite par le script, de sorte qu'une page HTML restée ancienne ne ré-affiche jamais l'ancien formulaire.
+- **Le risque** : les étudiants qui avaient un ancien compte (adresse `@gl.com` et mot de passe) ne peuvent plus se connecter. Pire : en cliquant sur Google, ils obtiendraient un **compte neuf, sans progression**. Pour l'administrateur, ce serait un compte sans droits d'administration.
+- **La parade** : une page non liée dans le site, `connexion-ancien-compte.html`, où l'on se connecte une dernière fois avant de **lier son compte Google** depuis le Profil. L'administrateur lie le sien **avant** le déploiement.
+- **Autre détail** : Google refuse la connexion depuis le navigateur intégré de certaines applications. Un conseil dans la fenêtre invite à ouvrir le site dans Chrome ou Safari.
+- **Leçon** : avant de supprimer une façon de se connecter, se demander **qui l'utilise aujourd'hui** et ce qui leur arrive le lendemain. Prévoir le chemin de migration avant de couper l'ancien.
+
 ---
 
 ## Guide : créer un projet du même genre
@@ -339,7 +358,7 @@ end $$;
 
 ### Étape 5 : les comptes
 
-Utilisez l'authentification du service choisi plutôt que de la recréer. Pensez dès le départ à **ce qui arrive à ceux qui ont déjà un compte** si vous ajoutez plus tard une autre façon de se connecter (voir la difficulté 5).
+Utilisez l'authentification du service choisi plutôt que de la recréer. Pour une classe, une **connexion unique avec Google** est la plus simple : pas de mot de passe à retenir ni à protéger, pas de formulaire à remplir. Pensez dès le départ à **ce qui arrive à ceux qui ont déjà un compte** si vous ajoutez ou retirez plus tard une façon de se connecter (voir les difficultés 5 et 21).
 
 ### Étape 6 : les fichiers privés
 
@@ -380,6 +399,7 @@ Pour une discussion ou un emploi du temps qui change, le temps réel évite de r
 - [ ] Les scripts de base de données sont relançables
 - [ ] La page a été testée sur téléphone, en thème sombre, et sur un appareil ancien
 - [ ] Il existe un moyen de supprimer un contenu abusif (modération)
+- [ ] Aucune action importante ne dépend d'une seule personne qui pourrait être absente
 - [ ] Les utilisateurs savent ce qui est conservé et pendant combien de temps (ici : 7 jours pour la discussion)
 - [ ] Le README explique comment installer et administrer le projet
 

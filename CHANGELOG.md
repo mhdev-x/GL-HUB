@@ -6,6 +6,36 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) ; le
 
 ---
 
+## [3.11.0] - 2026-10-19
+
+### Modifié
+- **Connexion uniquement avec Google.** Le bouton « Se connecter » ouvre une fenêtre qui ne propose plus que « Continuer avec Google » : plus de formulaire d'inscription, plus d'adresse e-mail ni de mot de passe à saisir. Le compte est créé automatiquement à la première connexion. La fenêtre est construite par `auth.js`, donc même une page HTML restée à l'ancienne version affiche seulement le bouton Google.
+- Un conseil s'affiche dans la fenêtre : si Google refuse la connexion depuis le navigateur intégré d'une application, ouvrir GL HUB dans Chrome ou Safari.
+- Page Profil : le texte de liaison Google explique que Google est désormais la seule façon de se connecter.
+
+### Supprimé
+- Le formulaire d'inscription, la connexion par e-mail et mot de passe, le « mot de passe oublié » et la confirmation d'adresse e-mail.
+- La **génération automatique de l'adresse institutionnelle** (`prenom.nom@gl.com`) et la fenêtre qui l'annonçait.
+
+### Ajouté
+- `connexion-ancien-compte.html` : page **non liée dans le site**, pour les étudiants qui avaient un ancien compte (adresse `@gl.com` et mot de passe). Ils s'y connectent une dernière fois, puis lient leur compte Google depuis leur Profil afin de garder leur progression. Aucune inscription n'y est possible.
+
+### À savoir
+- Un ancien compte qui n'a **pas** été lié à Google ne peut plus se connecter par le site : un étudiant qui se connecterait avec Google obtiendrait un compte neuf, sans progression. L'administrateur doit lier son propre compte Google **avant** le déploiement.
+
+## [3.10.0] - 2026-10-19
+
+### Modifié
+- **Publication directe dans l'espace L2.** Le responsable de classe et l'administrateur publient désormais les ressources tout de suite pour toute la classe, sans validation : l'espace ne dépend plus de la disponibilité de l'administrateur.
+- Le responsable peut corriger une erreur lui-même : il voit, supprime (fichier compris) et, pour un ancien dépôt resté en attente, publie les ressources de sa classe. Il ne peut ni déplacer une ressource dans une autre classe ni changer son auteur.
+- La page responsable affiche les ressources de toute la classe (avec « par toi » ou « par un autre membre ») ; le bouton devient « Publier la ressource » et la case « Publier tout de suite » disparaît.
+
+### Ajouté
+- Migration `20261019_publication_directe_l2.sql` (relançable) pour les bases qui ont déjà exécuté l'ancienne version ; `20261013_espace_l2.sql` contient maintenant les mêmes règles.
+
+### Inchangé
+- Les étudiants ne voient que ce qui est publié dans leur classe, et un utilisateur ne peut rien faire dans une classe dont il n'est ni membre ni responsable. Vérifié sur PostgreSQL, y compris entre deux classes.
+
 ## [3.9.0] - 2026-10-18
 
 ### Modifié
@@ -157,6 +187,8 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) ; le
 
 ---
 
+[3.11.0]: https://github.com/mhdev-x/GL-HUB
+[3.10.0]: https://github.com/mhdev-x/GL-HUB
 [3.9.0]: https://github.com/mhdev-x/GL-HUB
 [3.8.1]: https://github.com/mhdev-x/GL-HUB
 [3.8.0]: https://github.com/mhdev-x/GL-HUB
