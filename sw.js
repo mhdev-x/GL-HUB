@@ -1,20 +1,20 @@
 // =====================================================================
-// GL HUB : service worker (étape 1 : PWA de base)
+// GL HUB : service worker (v2)
 //
 // Ce que fait ce fichier :
 //  - installe l'application (précache d'une page « hors connexion » et des icônes) ;
 //  - garde en mémoire les pages déjà visitées pour les rouvrir sans réseau ;
-//  - reçoit les notifications push et gère le clic dessus (squelette, complété à l'étape 7).
+//  - reçoit les notifications push et gère le clic dessus.
 //
 // Principe de prudence : le site n'a pas de build, donc des pages, des scripts et des styles
-// qui changent souvent. Ils sont donc servis RÉSEAU D'ABORD : avec une connexion, on a toujours
+// qui changent souvent. Ils sont servis RÉSEAU D'ABORD : avec une connexion, on a toujours
 // la dernière version ; le cache ne sert qu'en cas de coupure. Rien de ce qui vient d'un autre
 // site (Supabase, Google, YouTube, CDN) n'est jamais touché : les connexions, la messagerie
 // en temps réel et les fichiers privés passent directement par le réseau.
 //
 // À CHAQUE modification de ce fichier ou de la liste PRECACHE, change VERSION.
 // =====================================================================
-const VERSION = "glhub-v1";
+const VERSION = "glhub-v2";
 const PREFIXE = "glhub-";
 const CACHE_FIXE = `${VERSION}-fixe`;        // installé une fois : page hors connexion, icônes
 const CACHE_PAGES = `${VERSION}-pages`;      // pages, scripts, styles visités (réseau d'abord)
@@ -38,12 +38,19 @@ const JAMAIS_EN_CACHE = [/\/admin[^/]*\.html$/, /\/connexion-ancien-compte\.html
 const adresse = (chemin) => new URL(chemin, self.registration.scope).href;
 
 // ---------- Installation ----------
+// Chaque fichier est ajouté séparément : un fichier manquant (404, majuscule/minuscule
+// différente sur Vercel ou GitHub Pages) ne doit JAMAIS empêcher le service worker de s'installer.
 self.addEventListener("install", (evenement) => {
-    evenement.waitUntil(
-        caches.open(CACHE_FIXE)
-            .then((cache) => cache.addAll(PRECACHE.map(adresse)))
-            .then(() => self.skipWaiting())
-    );
+    evenement.waitUntil((async () => {
+        const cache = await caches.open(CACHE_FIXE);
+        const resultats = await Promise.allSettled(PRECACHE.map((chemin) => cache.add(adresse(chemin))));
+        resultats.forEach((resultat, i) => {
+            if (resultat.status === "rejected") {
+                console.warn("[GL HUB] Fichier introuvable pour le précache :", PRECACHE[i]);
+            }
+        });
+        await self.skipWaiting();
+    })());
 });
 
 // ---------- Activation : on retire les caches des anciennes versions ----------
@@ -123,7 +130,7 @@ self.addEventListener("fetch", (evenement) => {
     }
 });
 
-// ---------- Notifications push (squelette ; la logique complète vient à l'étape 7) ----------
+// ---------- Notifications push ----------
 self.addEventListener("push", (evenement) => {
     let donnees = {};
     try {

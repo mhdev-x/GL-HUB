@@ -1,40 +1,49 @@
 // =====================================================================
-// GL HUB : enregistrement du service worker (PWA, étape 1)
-//
-// Ce script est chargé dans le <head> de chaque page (voir outils/ajouter-pwa.py).
-// Il enregistre sw.js et expose quelques aides pour les étapes suivantes
-// (notifications push) : window.GLHubPWA.
+// GL HUB : enregistrement du service worker (PWA)
+// À charger sur TOUTES les pages : <script src="pwa.js" defer></script>
+// Ce fichier doit être placé à côté de sw.js (même dossier, la racine du site).
 // =====================================================================
 (function () {
     "use strict";
 
-    // iPhone, iPad (y compris iPadOS qui se présente comme un Mac)
-    let estIOS = () =>
-        /iphone|ipad|ipod/i.test(navigator.userAgent) ||
-        (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    // ---------- Enregistrement du service worker ----------
+    if ("serviceWorker" in navigator) {
+        const script = document.currentScript;
+        const base = script && script.src ? new URL("./", script.src) : new URL("./", location.href);
 
-    // Vrai quand l'application est lancée depuis l'écran d'accueil (et non dans un onglet)
-    let estInstallee = () =>
-        window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
-
-    // Les notifications push sont possibles si le navigateur les gère ;
-    // sur iPhone et iPad (iOS 16.4 minimum), seulement si l'application est installée.
-    let pushPossible = () =>
-        "serviceWorker" in navigator && "PushManager" in window && "Notification" in window &&
-        (!estIOS() || estInstallee());
-
-    window.GLHubPWA = Object.freeze({ estIOS, estInstallee, pushPossible });
-
-    if (!("serviceWorker" in navigator)) return;
-
-    window.addEventListener("load", () => {
-        navigator.serviceWorker.register("sw.js")
-            .then((enregistrement) => {
-                // Cherche une nouvelle version du service worker quand on revient sur l'application
-                document.addEventListener("visibilitychange", () => {
-                    if (!document.hidden) enregistrement.update().catch(() => {});
+        window.addEventListener("load", function () {
+            navigator.serviceWorker
+                .register(new URL("sw.js", base).href)
+                .catch(function (erreur) {
+                    console.warn("[GL HUB] Le service worker n'a pas pu être enregistré :", erreur);
                 });
-            })
-            .catch((erreur) => console.error("Service worker :", erreur));
+        });
+    }
+
+    // ---------- Bouton « Installer l'application » (Chrome, Edge, Android) ----------
+    let invite = null;
+
+    window.addEventListener("beforeinstallprompt", function (evenement) {
+        evenement.preventDefault();
+        invite = evenement;
+        window.dispatchEvent(new CustomEvent("glhub:installable"));
     });
+
+    window.addEventListener("appinstalled", function () {
+        invite = null;
+        window.dispatchEvent(new CustomEvent("glhub:installee"));
+    });
+
+    window.GLHubPWA = {
+        // true si le navigateur propose l'installation (Chrome, Edge, Android)
+        peutInstaller: function () { return invite !== null; },
+        // à appeler depuis un clic sur un bouton
+        installer: async function () {
+            if (!invite) return false;
+            invite.prompt();
+            const choix = await invite.userChoice;
+            invite = null;
+            return choix.outcome === "accepted";
+        }
+    };
 })();
