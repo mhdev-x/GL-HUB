@@ -1,0 +1,25 @@
+{
+  "id": "/",
+  "name": "GL HUB",
+  "short_name": "GL HUB",
+  "description": "Plateforme gratuite pour les étudiants en Génie Logiciel : cours, TD, examens, emploi du temps et discussion de classe.",
+  "lang": "fr",
+  "dir": "ltr",
+  "start_url": "./index.html?source=pwa",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#ffffff",
+  "theme_color": "#0B204C",
+  "categories": ["education"],
+  "icons": [
+    { "src": "MEDIAS/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "MEDIAS/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "MEDIAS/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Emploi du temps", "short_name": "Emploi du temps", "url": "./emploi-du-temps-l2.html" },
+    { "name": "Discussion de la classe", "short_name": "Discussion", "url": "./discussion-l2.html" },
+    { "name": "Ressources de la classe", "short_name": "Ressources", "url": "./espace-l2.html" }
+  ]
+}

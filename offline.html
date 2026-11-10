@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex">
+    <meta name="theme-color" content="#0B204C">
+    <title>GL HUB - Hors connexion</title>
+    <!-- Page autonome : elle doit s'afficher sans réseau, donc aucun fichier externe -->
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0; min-height: 100dvh; display: grid; place-items: center; padding: 24px;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            color: #e8eefc; background: #0B204C; text-align: center;
+        }
+        main { max-width: 440px; }
+        .icone { font-size: 3.2rem; margin-bottom: 8px; }
+        h1 { margin: 0 0 12px; font-size: 1.6rem; }
+        p { margin: 0 0 14px; line-height: 1.55; color: #c7d3f0; }
+        .actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 22px; }
+        button, a {
+            padding: 12px 20px; font: inherit; font-weight: 700; text-decoration: none; cursor: pointer;
+            border-radius: 10px; border: 2px solid #ffffff;
+        }
+        button { color: #0B204C; background: #ffffff; }
+        a { color: #ffffff; background: transparent; }
+        button:focus-visible, a:focus-visible { outline: 3px solid #93c5fd; outline-offset: 2px; }
+    </style>
+</head>
+<body>
+    <main>
+        <div class="icone" aria-hidden="true">📡</div>
+        <h1>Tu es hors connexion</h1>
+        <p>GL HUB a besoin d'internet pour cette page. Vérifie ta connexion, puis réessaie.</p>
+        <p>Les pages que tu as déjà ouvertes restent disponibles sans connexion.</p>
+        <div class="actions">
+            <button type="button" id="reessayer">Réessayer</button>
+            <a href="index.html">Accueil</a>
+        </div>
+    </main>
+    <script>
+        document.getElementById("reessayer").addEventListener("click", function () { window.location.reload(); });
+        // Dès que la connexion revient, on recharge la page demandée
+        window.addEventListener("online", function () { window.location.reload(); });
+    </script>
+</body>
+</html>
