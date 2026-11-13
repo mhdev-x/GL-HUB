@@ -1,19 +1,34 @@
 // =====================================================================
 // GL HUB : abonnement aux notifications push (côté page)
 //
-// À charger uniquement sur les pages de l'espace L2 (discussion, emploi du temps...) :
-//   <script src="notifications.js"></script>
-//   <script>
-//     GLHubPush.init({ supabase: supabaseClient, clePublique: "TA_CLE_VAPID_PUBLIQUE", espace: "l2" });
-//     GLHubPush.lierBouton(document.getElementById("btn-notifications"));
-//   </script>
+// À charger AVANT notifications-l2.js (la cloche), qui l'utilise pour proposer
+// l'activation des notifications dans son panneau :
+//   <script src="notifications.js" defer></script>
+//   <script src="notifications-l2.js" defer></script>
 //
-// Remplace "supabaseClient" par le nom de la variable qui contient ton client Supabase.
+// Utilisation directe possible (sans la cloche) :
+//   GLHubPush.init({ supabase: supabaseClient, clePublique: "TA_CLE_VAPID_PUBLIQUE", espace: "l2" });
+//   GLHubPush.lierBouton(document.getElementById("btn-notifications"));
 // =====================================================================
 (function () {
     "use strict";
 
     const config = { supabase: null, cle: null, espace: "l2" };
+
+    // Si l'utilisateur désactive lui-même les notifications, on s'en souvient :
+    // la resynchronisation automatique ne doit pas le réabonner contre son gré.
+    const CLE_DESACTIVE = "glhub-push-desactive";
+
+    function desactiveParUtilisateur() {
+        try { return localStorage.getItem(CLE_DESACTIVE) === "1"; } catch (erreur) { return false; }
+    }
+
+    function memoriserDesactivation(desactive) {
+        try {
+            if (desactive) localStorage.setItem(CLE_DESACTIVE, "1");
+            else localStorage.removeItem(CLE_DESACTIVE);
+        } catch (erreur) { /* stockage indisponible : sans conséquence */ }
+    }
 
     // ---------- Outils ----------
     function versUint8(base64) {
@@ -81,6 +96,7 @@
             if (permission !== "granted") {
                 return { ok: false, raison: permission === "denied" ? "refuse" : "ignore" };
             }
+            memoriserDesactivation(false);
             const reg = await registrationPrete();
             let abonnement = await reg.pushManager.getSubscription();
             if (!abonnement) {
@@ -98,8 +114,12 @@
     }
 
     // ---------- Désactiver ----------
-    async function desactiver() {
+    // desactiver()                        : choix de l'utilisateur, on ne le réabonne pas tout seul
+    // desactiver({ definitif: false })    : simple nettoyage (déconnexion), il sera réabonné à sa prochaine visite
+    async function desactiver(options) {
+        const definitif = !(options && options.definitif === false);
         try {
+            if (definitif) memoriserDesactivation(true);
             const reg = await registrationPrete();
             const abonnement = await reg.pushManager.getSubscription();
             if (abonnement) {
@@ -119,6 +139,7 @@
     async function synchroniser() {
         try {
             if (!supporte() || iosNonInstalle() || Notification.permission !== "granted") return;
+            if (desactiveParUtilisateur()) return;
             const session = await config.supabase.auth.getSession();
             if (!session.data || !session.data.session) return;
             const reg = await registrationPrete();
