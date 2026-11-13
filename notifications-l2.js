@@ -11,7 +11,8 @@
 //  2. ajoute une cloche avec un compteur dans la barre de navigation ;
 //  3. écoute la table notifications_l2 en temps réel : un bandeau apparaît
 //     dès qu'une notification arrive, sans recharger la page ;
-//  4. propose dans le panneau d'activer les notifications sur l'appareil
+//  4. permet d'effacer ses notifications (les lues d'un coup, ou une par une) ;
+//  5. propose dans le panneau d'activer les notifications sur l'appareil
 //     (push, même quand le site est fermé) grâce à notifications.js.
 //
 // Sécurité : tout ce qui vient de la base (noms, messages) est affiché avec
@@ -187,10 +188,18 @@
         panneau.hidden = true;
 
         const entete = creer("div", "cloche-entete");
-        const toutLu = creer("button", "cloche-tout-lu", "Tout marquer comme lu");
+        entete.appendChild(creer("strong", null, "Notifications"));
+
+        // Actions groupées : visibles seulement quand elles ont un sens
+        const actions = creer("div", "cloche-actions");
+        actions.hidden = true;
+        const toutLu = creer("button", "cloche-tout-lu");
         toutLu.type = "button";
-        toutLu.hidden = true;
-        entete.append(creer("strong", null, "Notifications"), toutLu);
+        toutLu.append(icone("fa-check-double"), document.createTextNode(" Tout marquer comme lu"));
+        const effacerLues = creer("button", "cloche-tout-lu cloche-effacer-lues");
+        effacerLues.type = "button";
+        effacerLues.append(icone("fa-trash-can"), document.createTextNode(" Effacer les lues"));
+        actions.append(toutLu, effacerLues);
 
         const liste = creer("ul", "cloche-liste");
         const vide = creer("p", "cloche-vide", "Aucune notification pour le moment.");
@@ -201,16 +210,17 @@
         boutonPush.type = "button";
         pied.appendChild(boutonPush);
 
-        panneau.append(entete, liste, vide, pied);
+        panneau.append(entete, actions, liste, vide, pied);
         zone.insertBefore(bouton, zone.firstChild);
         zone.appendChild(panneau);
 
-        Object.assign(el, { zone, bouton, badge, panneau, toutLu, liste, vide, pied, boutonPush });
+        Object.assign(el, { zone, bouton, badge, panneau, actions, toutLu, effacerLues, liste, vide, pied, boutonPush });
 
         bouton.addEventListener("click", function () {
             if (etat.ouvert) fermerPanneau(); else ouvrirPanneau();
         });
         toutLu.addEventListener("click", function () { marquerLues(null); });
+        effacerLues.addEventListener("click", function () { effacer(null); });
         document.addEventListener("click", clicExterieur);
         document.addEventListener("keydown", toucheClavier);
         return true;
@@ -240,7 +250,18 @@
             ouvrirNotification(n);
         });
 
-        li.appendChild(lien);
+        const supprimer = creer("button", "cloche-item-supprimer");
+        supprimer.type = "button";
+        supprimer.title = "Effacer";
+        supprimer.setAttribute("aria-label", "Effacer cette notification");
+        supprimer.appendChild(icone("fa-xmark"));
+        supprimer.addEventListener("click", function (evenement) {
+            evenement.stopPropagation();   // la ligne disparaît : le panneau ne doit pas se fermer
+            effacer([n.id]);
+        });
+
+        li.className = "cloche-ligne";
+        li.append(lien, supprimer);
         return li;
     }
 
@@ -248,6 +269,7 @@
         if (!el.bouton) return;
 
         const nonLues = etat.notifs.filter(function (n) { return !n.lu_le; }).length;
+        const lues = etat.notifs.length - nonLues;
         el.badge.hidden = nonLues === 0;
         el.badge.textContent = nonLues > 9 ? "9+" : String(nonLues);
         el.bouton.setAttribute(
@@ -255,6 +277,8 @@
             nonLues === 0 ? "Notifications" : "Notifications : " + nonLues + (nonLues > 1 ? " non lues" : " non lue")
         );
         el.toutLu.hidden = nonLues === 0;
+        el.effacerLues.hidden = lues === 0;
+        el.actions.hidden = nonLues === 0 && lues === 0;
         el.vide.hidden = etat.notifs.length > 0;
         el.liste.replaceChildren.apply(el.liste, etat.notifs.map(creerItem));
     }
@@ -325,6 +349,41 @@
             if (reponse.error) console.warn("[GL HUB] Notifications non marquées comme lues :", reponse.error.message);
         } catch (erreur) {
             console.warn("[GL HUB] Notifications non marquées comme lues :", erreur);
+        }
+    }
+
+    // Efface des notifications.
+    //   effacer(null)       : toutes les notifications LUES (jamais une non lue par accident)
+    //   effacer([id, ...])  : celles indiquées, lues ou non (la croix de chaque ligne)
+    async function effacer(ids) {
+        const avant = etat.notifs.slice();
+        const position = ids ? etat.notifs.findIndex(function (n) { return n.id === ids[0]; }) : -1;
+
+        // L'écran réagit tout de suite ; si le serveur refuse, on remet les notifications
+        etat.notifs = etat.notifs.filter(function (n) {
+            return ids ? ids.indexOf(n.id) === -1 : !n.lu_le;
+        });
+        rendre();
+
+        // Le focus clavier ne doit pas se perdre avec la ligne disparue
+        if (ids) {
+            const restantes = el.liste.querySelectorAll(".cloche-item");
+            const suivante = restantes[Math.min(Math.max(position, 0), restantes.length - 1)];
+            (suivante || el.bouton).focus();
+        } else if (el.effacerLues.hidden) {
+            el.bouton.focus();
+        }
+
+        try {
+            const reponse = await supabaseClient.rpc("effacer_notifications_l2", {
+                p_ids: ids,
+                p_seulement_lues: !ids
+            });
+            if (reponse.error) throw reponse.error;
+        } catch (erreur) {
+            console.warn("[GL HUB] Notifications non effacées :", erreur);
+            etat.notifs = avant;
+            rendre();
         }
     }
 
