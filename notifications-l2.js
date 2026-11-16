@@ -270,6 +270,8 @@
 
         const nonLues = etat.notifs.filter(function (n) { return !n.lu_le; }).length;
         const lues = etat.notifs.length - nonLues;
+        // La pastille de l'icône de l'application suit ce compteur (voir pwa.js)
+        window.dispatchEvent(new CustomEvent("glhub:nonlues", { detail: { nombre: nonLues } }));
         el.badge.hidden = nonLues === 0;
         el.badge.textContent = nonLues > 9 ? "9+" : String(nonLues);
         el.bouton.setAttribute(
@@ -554,6 +556,8 @@
         etat.ouvert = false;
         etat.notifs = [];
         etat.pushPret = false;
+        // Plus de session : la pastille de l'icône est effacée
+        window.dispatchEvent(new CustomEvent("glhub:nonlues", { detail: { nombre: 0 } }));
     }
 
     function demarrer() {

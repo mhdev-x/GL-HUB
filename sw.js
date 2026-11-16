@@ -1,10 +1,13 @@
 // =====================================================================
-// GL HUB : service worker (v2)
+// GL HUB : service worker (v3)
 //
 // Ce que fait ce fichier :
 //  - installe l'application (précache d'une page « hors connexion » et des icônes) ;
 //  - garde en mémoire les pages déjà visitées pour les rouvrir sans réseau ;
-//  - reçoit les notifications push et gère le clic dessus.
+//  - reçoit les notifications push, gère le clic dessus et met à jour la pastille
+//    (nombre de non lues) sur l'icône de l'application ;
+//  - laisse la personne choisir le moment de la mise à jour (message « Nouvelle version
+//    disponible » affiché par pwa.js).
 //
 // Principe de prudence : le site n'a pas de build, donc des pages, des scripts et des styles
 // qui changent souvent. Ils sont servis RÉSEAU D'ABORD : avec une connexion, on a toujours
@@ -12,9 +15,12 @@
 // site (Supabase, Google, YouTube, CDN) n'est jamais touché : les connexions, la messagerie
 // en temps réel et les fichiers privés passent directement par le réseau.
 //
-// À CHAQUE modification de ce fichier ou de la liste PRECACHE, change VERSION.
+// À CHAQUE mise en ligne importante, et à chaque modification de ce fichier ou de la
+// liste PRECACHE, change VERSION : c'est ce qui déclenche, chez tout le monde, le message
+// « Nouvelle version disponible ». Sans changement dans ce fichier, rien n'est signalé
+// (les pages et scripts, eux, sont toujours rechargés depuis le réseau).
 // =====================================================================
-const VERSION = "glhub-v2";
+const VERSION = "glhub-v3";
 const PREFIXE = "glhub-";
 const CACHE_FIXE = `${VERSION}-fixe`;        // installé une fois : page hors connexion, icônes
 const CACHE_PAGES = `${VERSION}-pages`;      // pages, scripts, styles visités (réseau d'abord)
@@ -49,7 +55,9 @@ self.addEventListener("install", (evenement) => {
                 console.warn("[GL HUB] Fichier introuvable pour le précache :", PRECACHE[i]);
             }
         });
-        await self.skipWaiting();
+        // Pas de skipWaiting() ici : une nouvelle version attend que la personne clique sur
+        // « Mettre à jour » (message SKIP_WAITING plus bas). Lors de la toute première
+        // installation, elle s'active d'elle-même puisqu'aucune ancienne version n'existe.
     })());
 });
 
@@ -149,9 +157,22 @@ self.addEventListener("push", (evenement) => {
         data: { url: donnees.url || "index.html" }
     };
 
+    // Pastille sur l'icône : le serveur envoie le nombre de notifications non lues de cette personne
+    // (nombre sur iPhone, iPad, Windows et Mac ; simple point sur Android, c'est le système qui décide)
+    const majBadge = (async () => {
+        if (typeof donnees.badge !== "number" || !self.navigator) return;
+        try {
+            if (donnees.badge > 0 && typeof self.navigator.setAppBadge === "function") {
+                await self.navigator.setAppBadge(donnees.badge);
+            } else if (typeof self.navigator.clearAppBadge === "function") {
+                await self.navigator.clearAppBadge();
+            }
+        } catch (erreur) { /* non pris en charge : sans conséquence */ }
+    })();
+
     // On affiche TOUJOURS une notification : iOS et Chrome révoquent l'abonnement
     // si un push arrive sans qu'une notification soit montrée.
-    evenement.waitUntil(self.registration.showNotification(titre, options));
+    evenement.waitUntil(Promise.all([self.registration.showNotification(titre, options), majBadge]));
 });
 
 // ---------- Clic sur une notification ----------
@@ -177,7 +198,7 @@ self.addEventListener("notificationclick", (evenement) => {
     })());
 });
 
-// ---------- Messages de la page (mise à jour immédiate si on le demande) ----------
+// ---------- Messages de la page (mise à jour quand la personne clique sur « Mettre à jour ») ----------
 self.addEventListener("message", (evenement) => {
     if (evenement.data && evenement.data.type === "SKIP_WAITING") self.skipWaiting();
 });
